@@ -1,5 +1,10 @@
 import { useState } from 'react';
-import { Link, Outlet } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import Profile from './Profile';
+
+interface DashboardProps {}
+
+type NavItem = 'workout' | 'diet' | 'profile' | 'store';
 
 export default function Dashboard() {
   const [calories, setCalories] = useState(2000); // Example daily calorie goal
