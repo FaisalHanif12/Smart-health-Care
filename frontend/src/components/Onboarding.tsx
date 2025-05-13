@@ -44,6 +44,8 @@ export default function Onboarding() {
     try {
       // Save profile data to localStorage to persist it
       localStorage.setItem('userProfile', JSON.stringify(profile));
+      // Set profile completion flag
+      localStorage.setItem('userProfileComplete', 'true');
       // Navigate to dashboard and prevent going back to onboarding
       navigate('/dashboard', { replace: true });
     } catch (error) {
