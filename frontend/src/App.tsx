@@ -1,39 +1,22 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from 'react-query';
-
-// Import auth pages
-import LoginPage from './pages/auth/LoginPage';
-import RegisterPage from './pages/auth/RegisterPage';
-import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
-
-// Import onboarding and dashboard pages
-import OnboardingPage from './pages/onboarding/OnboardingPage';
-import DashboardPage from './pages/dashboard/DashboardPage';
-
-// Create a client for React Query
-const queryClient = new QueryClient();
+import { Routes, Route } from 'react-router-dom';
+import './App.css';
+import Login from './components/Login';
+import LoginPage from './pages/LoginPage';
+import Register from './components/Register';
+import ForgotPassword from './components/ForgotPassword';
+import Onboarding from './components/Onboarding';
+import DashboardPage from './pages/DashboardPage';
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen">
-        <Routes>
-          {/* Auth Routes */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          
-          {/* App Routes */}
-          <Route path="/onboarding" element={<OnboardingPage />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          
-          {/* Redirect to login by default */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-      </div>
-    </QueryClientProvider>
-  );
+    <Routes>
+      <Route path="/" element={<LoginPage />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/onboarding" element={<Onboarding />} />
+      <Route path="/dashboard" element={<DashboardPage />} />
+    </Routes>
+  )
 }
-
-export default App;
+export default App
