@@ -116,111 +116,26 @@ const DashboardPage = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Diet Plan */}
-          <div className="bg-black/20 backdrop-blur-sm rounded-xl border border-white/10 shadow-xl p-6">
-            <h2 className="text-xl font-bold text-white mb-4">Your Diet Plan</h2>
-            <div className="space-y-4">
-              {dietPlan.map((meal, index) => (
-                <div key={index} className="bg-white/10 rounded-lg p-4 flex justify-between items-center">
-                  <div>
-                    <h3 className="font-medium text-white">{meal.meal}</h3>
-                    <p className="text-white/70">{meal.food}</p>
-                    <p className="text-sm text-white/50">{meal.calories} calories</p>
-                  </div>
-                  <button
-                    onClick={() => toggleMealCompletion(index)}
-                    className={`px-3 py-1 rounded-md transition-colors duration-200 ${
-                      meal.completed 
-                        ? 'bg-slate-600 text-white' 
-                        : 'bg-white/10 text-white hover:bg-white/20'
-                    }`}
-                  >
-                    {meal.completed ? 'Completed' : 'Mark Done'}
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Workout Plan */}
-          <div className="bg-black/20 backdrop-blur-sm rounded-xl border border-white/10 shadow-xl p-6">
-            <h2 className="text-xl font-bold text-white mb-4">Your Workout Plan</h2>
-            <div className="space-y-4">
-              {workoutPlan.map((workout, index) => (
-                <div key={index} className="bg-white/10 rounded-lg p-4 flex justify-between items-center">
-                  <div>
-                    <h3 className="font-medium text-white">{workout.name}</h3>
-                    <p className="text-white/70">{workout.description}</p>
-                  </div>
-                  <button
-                    onClick={() => toggleWorkoutCompletion(index)}
-                    className={`px-3 py-1 rounded-md transition-colors duration-200 ${
-                      workout.completed 
-                        ? 'bg-slate-600 text-white' 
-                        : 'bg-white/10 text-white hover:bg-white/20'
-                    }`}
-                  >
-                    {workout.completed ? 'Completed' : 'Mark Done'}
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Progress Tracker */}
-          <div className="bg-black/20 backdrop-blur-sm rounded-xl border border-white/10 shadow-xl p-6">
-            <h2 className="text-xl font-bold text-white mb-4">Progress Tracker</h2>
-            <div className="bg-white/10 rounded-lg p-4">
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                  <p className="text-sm text-white/70">Current Week</p>
-                  <p className="text-xl font-bold text-white">{progressData.currentWeek}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-white/70">Weight Lost</p>
-                  <p className="text-xl font-bold text-white">{progressData.weightLost}</p>
-                </div>
+        {/* Progress Tracker */}
+        <div className="bg-black/20 backdrop-blur-sm rounded-xl border border-white/10 shadow-xl p-6 max-w-2xl mx-auto">
+          <h2 className="text-xl font-bold text-white mb-4">Progress Tracker</h2>
+          <div className="bg-white/10 rounded-lg p-4">
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <p className="text-sm text-white/70">Current Week</p>
+                <p className="text-xl font-bold text-white">{progressData.currentWeek}</p>
               </div>
-              <div className="mb-4">
-                <p className="text-sm text-white/70">1 Month Prediction</p>
-                <p className="text-white">{progressData.prediction}</p>
-              </div>
-              <div className="bg-slate-500/20 border border-slate-500/30 rounded-lg p-3">
-                <p className="text-white">{progressData.motivation}</p>
+              <div>
+                <p className="text-sm text-white/70">Weight Lost</p>
+                <p className="text-xl font-bold text-white">{progressData.weightLost}</p>
               </div>
             </div>
-          </div>
-
-          {/* Mini Store */}
-          <div className="bg-black/20 backdrop-blur-sm rounded-xl border border-white/10 shadow-xl p-6">
-            <h2 className="text-xl font-bold text-white mb-4">Healthy Food Store</h2>
-            <div className="grid grid-cols-2 gap-4">
-              {storeItems.map(item => (
-                <div key={item.id} className="bg-white/10 rounded-lg p-4">
-                  <div className="flex items-center mb-2">
-                    <span className="text-3xl mr-3">{item.image}</span>
-                    <div>
-                      <h3 className="font-medium text-white">{item.name}</h3>
-                      <p className="text-white/70">{item.price}</p>
-                    </div>
-                  </div>
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => addToCart(item.id)}
-                      className="flex-1 px-2 py-1 bg-slate-600 text-white text-sm rounded-md hover:bg-slate-500 transition-colors duration-200"
-                    >
-                      Add to Cart
-                    </button>
-                    <button
-                      onClick={() => markAsBought(item.id)}
-                      className="flex-1 px-2 py-1 bg-white/10 text-white text-sm rounded-md hover:bg-white/20 transition-colors duration-200"
-                    >
-                      Mark as Bought
-                    </button>
-                  </div>
-                </div>
-              ))}
+            <div className="mb-4">
+              <p className="text-sm text-white/70">1 Month Prediction</p>
+              <p className="text-white">{progressData.prediction}</p>
+            </div>
+            <div className="bg-slate-500/20 border border-slate-500/30 rounded-lg p-3">
+              <p className="text-white">{progressData.motivation}</p>
             </div>
           </div>
         </div>
