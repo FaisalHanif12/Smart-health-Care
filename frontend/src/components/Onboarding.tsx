@@ -39,11 +39,16 @@ export default function Onboarding() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // For now, just log the data and navigate to dashboard
-    console.log('Profile data:', profile);
-    navigate('/dashboard');
+    try {
+      // Save profile data to localStorage to persist it
+      localStorage.setItem('userProfile', JSON.stringify(profile));
+      // Navigate to dashboard and prevent going back to onboarding
+      navigate('/dashboard', { replace: true });
+    } catch (error) {
+      console.error('Error saving profile:', error);
+    }
   };
 
   const nextStep = () => setStep(prev => prev + 1);
