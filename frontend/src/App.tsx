@@ -15,7 +15,7 @@ function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/onboarding" element={<Onboarding />} />
-      <Route path="/dashboard" element={<DashboardPage />} />
+      <Route path="/dashboard/*" element={<DashboardPage />} />
     </Routes>
   )
 }

@@ -19,7 +19,7 @@ export default function Profile() {
     weight: '70',
     healthConditions: ['None'],
     fitnessGoal: 'Muscle Building'
-  });
+  }});
 
   const [isEditing, setIsEditing] = useState(false);
 

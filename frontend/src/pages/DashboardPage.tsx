@@ -1,5 +1,10 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Routes, Route } from 'react-router-dom';
+import Dashboard from '../components/Dashboard/Dashboard';
+import WorkoutPlan from '../components/Dashboard/WorkoutPlan';
+import DietPlan from '../components/Dashboard/DietPlan';
+import Profile from '../components/Dashboard/Profile';
+import Store from '../components/Dashboard/Store';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -13,11 +18,12 @@ export default function DashboardPage() {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Dashboard</h1>
-        <p className="text-gray-600">Welcome to your fitness journey! Your personalized plan is coming soon.</p>
-      </div>
-    </div>
+    <Routes>
+      <Route path="" element={<Dashboard />} />
+      <Route path="workout" element={<WorkoutPlan />} />
+      <Route path="diet" element={<DietPlan />} />
+      <Route path="profile" element={<Profile />} />
+      <Route path="store" element={<Store />} />
+    </Routes>
   );
 }
