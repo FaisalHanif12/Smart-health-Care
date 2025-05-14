@@ -57,7 +57,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-white flex flex-col md:flex-row">
       {/* Mobile Header */}
       <div className="bg-gray-900 p-4 flex justify-between items-center md:hidden">
-        <h1 className="text-xl font-bold text-white">Fitness Planner</h1>
+        <h1 className="text-xl font-bold text-white">Health Tracker</h1>
         <button className="text-white" onClick={toggleMobileMenu}>
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -68,18 +68,11 @@ export default function Dashboard() {
       {/* Side Navigation */}
       <nav className={`w-64 bg-gray-900 min-h-screen p-4 ${isMobileMenuOpen ? 'block' : 'hidden'} md:block fixed md:relative z-50`}>
         <div className="flex items-center mb-8">
-          <h1 className="text-xl font-bold text-yellow-400">FITNESS PLANNER</h1>
+          <h1 className="text-xl font-bold text-yellow-400">HEALTH TRACKER</h1>
         </div>
         
         {/* User Profile Summary */}
         <div className="mb-8 flex flex-col">
-          <div className="flex items-center space-x-3 p-3 rounded-lg bg-gray-800 mb-2">
-            <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-            </svg>
-            <span className="text-yellow-400 font-medium">Dashboard</span>
-          </div>
-        
         <div className="space-y-2">
           <Link
             to="/dashboard"
@@ -127,28 +120,15 @@ export default function Dashboard() {
             </svg>
             <span>Profile</span>
           </Link>
-          
         </div>
-        
-        {/* Logout Button */}
-        <div className="mt-auto pt-8">
-          <Link
-            to="/dashboard/profile"
-            className="flex items-center space-x-3 p-3 rounded-lg transition-colors text-gray-300 hover:bg-gray-800 mb-4"
-          >
-            <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center">
-              <span className="text-sm font-medium text-white">{userName.charAt(0)}</span>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-white">{userName}</p>
-              <p className="text-xs text-gray-400">View Profile</p>
-            </div>
-          </Link>
-          
-          <button
-            onClick={handleLogout}
-            className="flex items-center space-x-3 p-3 rounded-lg transition-colors w-full text-left text-gray-300 hover:bg-gray-800"
-          >
+      </div>
+      
+      {/* Logout Button - Fixed at bottom */}
+      <div className="absolute bottom-0 left-0 right-0 p-4">
+        <button
+          onClick={handleLogout}
+          className="flex items-center space-x-3 p-3 rounded-lg transition-colors w-full text-left text-gray-300 hover:bg-gray-800"
+        >
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V4a1 1 0 00-1-1H3zm1 2h10v10H4V5zm4 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" clipRule="evenodd" />
             </svg>
