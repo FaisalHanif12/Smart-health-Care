@@ -136,6 +136,42 @@ export default function Cart() {
           image: '🥤',
           category: 'Supplements',
         },
+        {
+          id: 13,
+          name: 'Chia Seeds',
+          price: 9.99,
+          calories: 137,
+          protein: 4,
+          image: '🌱',
+          category: 'Seeds',
+        },
+        {
+          id: 14,
+          name: 'Kale',
+          price: 2.99,
+          calories: 33,
+          protein: 3,
+          image: '🥬',
+          category: 'Vegetables',
+        },
+        {
+          id: 15,
+          name: 'Turkey Breast',
+          price: 11.99,
+          calories: 135,
+          protein: 30,
+          image: '🦃',
+          category: 'Protein',
+        },
+        {
+          id: 16,
+          name: 'Coconut Oil',
+          price: 13.99,
+          calories: 121,
+          protein: 0,
+          image: '🥥',
+          category: 'Oils',
+        },
       ];
       setProducts(productsList);
     };

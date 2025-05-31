@@ -15,7 +15,10 @@ export default function Store() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const [products] = useState<Product[]>([
+  const [showMoreItems, setShowMoreItems] = useState(false);
+  
+  // Initial 12 products
+  const initialProducts: Product[] = [
     {
       id: 1,
       name: 'Organic Eggs',
@@ -124,7 +127,51 @@ export default function Store() {
       image: '🥤',
       category: 'Supplements',
     },
-  ]);
+  ];
+
+  // Additional 4 products that appear when "Load More" is clicked
+  const additionalProducts: Product[] = [
+    {
+      id: 13,
+      name: 'Chia Seeds',
+      price: 9.99,
+      calories: 137,
+      protein: 4,
+      image: '🌱',
+      category: 'Seeds',
+    },
+    {
+      id: 14,
+      name: 'Kale',
+      price: 2.99,
+      calories: 33,
+      protein: 3,
+      image: '🥬',
+      category: 'Vegetables',
+    },
+    {
+      id: 15,
+      name: 'Turkey Breast',
+      price: 11.99,
+      calories: 135,
+      protein: 30,
+      image: '🦃',
+      category: 'Protein',
+    },
+    {
+      id: 16,
+      name: 'Coconut Oil',
+      price: 13.99,
+      calories: 121,
+      protein: 0,
+      image: '🥥',
+      category: 'Oils',
+    },
+  ];
+
+  // Combine products based on showMoreItems state
+  const [products] = useState<Product[]>(initialProducts);
+  const displayedProducts = showMoreItems ? [...products, ...additionalProducts] : products;
 
   const [cart, setCart] = useState<number[]>(() => {
     const savedCart = localStorage.getItem('cart');
@@ -144,6 +191,10 @@ export default function Store() {
   };
 
   const isInCart = (productId: number) => cart.includes(productId);
+
+  const handleLoadMore = () => {
+    setShowMoreItems(true);
+  };
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -234,57 +285,87 @@ export default function Store() {
       <div className="flex-1 overflow-auto max-h-screen">
         <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 min-h-full">
           <div className="bg-white shadow rounded-lg p-6 mb-8">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Health Food Store</h2>
-        <div className="relative">
-          <span className="absolute -top-2 -right-2 bg-indigo-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-            {cart.length}
-          </span>
-          <Link to="/dashboard/cart" className="p-2 text-gray-500 hover:text-gray-700">
-            <svg
-              className="h-6 w-6"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-              />
-            </svg>
-          </Link>
-        </div>
-      </div>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">Health Food Store</h2>
+              <div className="relative">
+                <span className="absolute -top-2 -right-2 bg-indigo-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                  {cart.length}
+                </span>
+                <Link to="/dashboard/cart" className="p-2 text-gray-500 hover:text-gray-700">
+                  <svg
+                    className="h-6 w-6"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                    />
+                  </svg>
+                </Link>
+              </div>
+            </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pb-6">
-        {products.map(product => (
-          <div key={product.id} className="bg-gray-50 rounded-lg p-4 flex flex-col">
-            <div className="text-4xl mb-2">{product.image}</div>
-            <h3 className="text-lg font-medium text-gray-900">{product.name}</h3>
-            <div className="mt-2 text-sm text-gray-500">
-              <p>{product.calories} calories</p>
-              <p>{product.protein}g protein</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pb-6">
+              {displayedProducts.map(product => (
+                <div key={product.id} className="bg-gray-50 rounded-lg p-4 flex flex-col">
+                  <div className="text-4xl mb-2">{product.image}</div>
+                  <h3 className="text-lg font-medium text-gray-900">{product.name}</h3>
+                  <div className="mt-2 text-sm text-gray-500">
+                    <p>{product.calories} calories</p>
+                    <p>{product.protein}g protein</p>
+                  </div>
+                  <div className="mt-4 flex items-center justify-between">
+                    <span className="text-lg font-medium text-gray-900">${product.price}</span>
+                    <button
+                      onClick={() =>
+                        isInCart(product.id) ? removeFromCart(product.id) : addToCart(product.id)
+                      }
+                      className={`px-4 py-2 rounded-md text-sm font-medium ${isInCart(product.id)
+                        ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                        : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                        }`}
+                    >
+                      {isInCart(product.id) ? 'Remove' : 'Add to Cart'}
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
-            <div className="mt-4 flex items-center justify-between">
-              <span className="text-lg font-medium text-gray-900">${product.price}</span>
-              <button
-                onClick={() =>
-                  isInCart(product.id) ? removeFromCart(product.id) : addToCart(product.id)
-                }
-                className={`px-4 py-2 rounded-md text-sm font-medium ${isInCart(product.id)
-                  ? 'bg-red-100 text-red-700 hover:bg-red-200'
-                  : 'bg-indigo-600 text-white hover:bg-indigo-700'
-                  }`}
-              >
-                {isInCart(product.id) ? 'Remove' : 'Add to Cart'}
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
+
+            {/* Load More Button */}
+            {!showMoreItems && (
+              <div className="flex justify-center mt-8">
+                <button
+                  onClick={handleLoadMore}
+                  className="group relative inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-md text-white bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transform transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                >
+                  <svg className="w-5 h-5 mr-2 transition-transform group-hover:rotate-180 duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Load More Items
+                  <span className="ml-2 inline-flex items-center justify-center w-6 h-6 bg-white bg-opacity-20 rounded-full text-sm font-bold">
+                    4
+                  </span>
+                </button>
+              </div>
+            )}
+
+            {/* Show message when all items are loaded */}
+            {showMoreItems && (
+              <div className="flex justify-center mt-8">
+                <div className="inline-flex items-center px-4 py-2 border border-emerald-200 rounded-lg bg-emerald-50 text-emerald-700 shadow-sm">
+                  <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  All {displayedProducts.length} healthy items loaded!
+                </div>
+              </div>
+            )}
           </div>
         </main>
       </div>
