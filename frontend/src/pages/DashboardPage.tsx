@@ -6,6 +6,8 @@ import DietPlan from '../components/Dashboard/DietPlan';
 import Profile from '../components/Dashboard/Profile';
 import Store from '../components/Dashboard/Store';
 import Cart from '../components/Dashboard/Cart';
+import Payment from '../components/Dashboard/Payment';
+import PaymentSuccess from '../components/Dashboard/PaymentSuccess';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -26,6 +28,8 @@ export default function DashboardPage() {
       <Route path="profile" element={<Profile />} />
       <Route path="store" element={<Store />} />
       <Route path="cart" element={<Cart />} />
+      <Route path="payment" element={<Payment />} />
+      <Route path="payment-success" element={<PaymentSuccess />} />
     </Routes>
   );
 }

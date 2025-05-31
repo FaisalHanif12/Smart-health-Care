@@ -172,6 +172,9 @@ export default function Cart() {
     setTotalPrice(price);
     setTotalCalories(calories);
     setTotalProtein(protein);
+    
+    // Save total to localStorage for payment page
+    localStorage.setItem('cartTotal', price.toString());
   }, [products, cartItems]);
 
   const removeFromCart = (productId: number) => {
@@ -376,11 +379,12 @@ export default function Cart() {
                     <p>{totalProtein}g</p>
                   </div>
                   <div className="mt-6">
-                    <button
+                    <Link
+                      to="/dashboard/payment"
                       className="w-full flex justify-center items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700"
                     >
                       Checkout
-                    </button>
+                    </Link>
                   </div>
                   <div className="mt-6 flex justify-center text-sm text-gray-500">
                     <p>
