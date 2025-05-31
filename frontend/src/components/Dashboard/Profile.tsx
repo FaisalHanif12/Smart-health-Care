@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 interface UserProfile {
@@ -9,12 +9,14 @@ interface UserProfile {
   weight: string;
   healthConditions: string[];
   fitnessGoal: string;
+  profileImage?: string;
 }
 
 export default function Profile() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [profile, setProfile] = useState<UserProfile>(() => {
     const savedProfile = localStorage.getItem('userProfile');
@@ -25,7 +27,8 @@ export default function Profile() {
       height: '175',
       weight: '70',
       healthConditions: ['None'],
-      fitnessGoal: 'Muscle Building'
+      fitnessGoal: 'Muscle Building',
+      profileImage: ''
     }
   });
 
@@ -46,6 +49,24 @@ export default function Profile() {
         ? prev.healthConditions.filter(c => c !== condition)
         : [...prev.healthConditions, condition]
     }));
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const imageUrl = event.target?.result as string;
+        setProfile(prev => ({ ...prev, profileImage: imageUrl }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleImageClick = () => {
+    if (isEditing) {
+      fileInputRef.current?.click();
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -87,7 +108,7 @@ export default function Profile() {
   const bmiInfo = getBMICategory(bmi);
 
   return (
-    <div className="min-h-screen bg-white flex flex-col md:flex-row">
+    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
       {/* Mobile Header */}
       <div className="bg-gray-900 p-4 flex justify-between items-center md:hidden">
         <h1 className="text-xl font-bold text-white">Health Tracker</h1>
@@ -177,10 +198,38 @@ export default function Profile() {
           <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-6 mb-6 text-white">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                  <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                  </svg>
+                <div className="relative">
+                  <div 
+                    className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center cursor-pointer overflow-hidden"
+                    onClick={handleImageClick}
+                  >
+                    {profile.profileImage ? (
+                      <img 
+                        src={profile.profileImage} 
+                        alt="Profile" 
+                        className="w-full h-full object-cover rounded-full"
+                      />
+                    ) : (
+                      <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                  </div>
+                  {isEditing && (
+                    <div className="absolute -bottom-1 -right-1 bg-blue-500 rounded-full p-1 cursor-pointer" onClick={handleImageClick}>
+                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                    </div>
+                  )}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold">{profile.username}</h1>
@@ -263,7 +312,7 @@ export default function Profile() {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Username */}
               <div>
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700">Username</label>
+                <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">Username</label>
                 <input
                   type="text"
                   id="username"
@@ -271,14 +320,16 @@ export default function Profile() {
                   value={profile.username}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 disabled:bg-gray-100"
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
+                    !isEditing ? 'bg-gray-50 text-gray-600' : 'bg-white text-gray-900'
+                  }`}
                 />
               </div>
 
               {/* Basic Info */}
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
-                  <label htmlFor="age" className="block text-sm font-medium text-gray-700">Age</label>
+                  <label htmlFor="age" className="block text-sm font-medium text-gray-700 mb-2">Age</label>
                   <input
                     type="number"
                     id="age"
@@ -286,19 +337,23 @@ export default function Profile() {
                     value={profile.age}
                     onChange={handleInputChange}
                     disabled={!isEditing}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 disabled:bg-gray-100"
+                    className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
+                      !isEditing ? 'bg-gray-50 text-gray-600' : 'bg-white text-gray-900'
+                    }`}
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="gender" className="block text-sm font-medium text-gray-700">Gender</label>
+                  <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
                   <select
                     id="gender"
                     name="gender"
                     value={profile.gender}
                     onChange={handleInputChange}
                     disabled={!isEditing}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 disabled:bg-gray-100"
+                    className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
+                      !isEditing ? 'bg-gray-50 text-gray-600' : 'bg-white text-gray-900'
+                    }`}
                   >
                     <option value="male">Male</option>
                     <option value="female">Female</option>
@@ -307,7 +362,7 @@ export default function Profile() {
                 </div>
 
                 <div>
-                  <label htmlFor="height" className="block text-sm font-medium text-gray-700">Height (cm)</label>
+                  <label htmlFor="height" className="block text-sm font-medium text-gray-700 mb-2">Height (cm)</label>
                   <input
                     type="number"
                     id="height"
@@ -315,12 +370,14 @@ export default function Profile() {
                     value={profile.height}
                     onChange={handleInputChange}
                     disabled={!isEditing}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 disabled:bg-gray-100"
+                    className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
+                      !isEditing ? 'bg-gray-50 text-gray-600' : 'bg-white text-gray-900'
+                    }`}
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="weight" className="block text-sm font-medium text-gray-700">Weight (kg)</label>
+                  <label htmlFor="weight" className="block text-sm font-medium text-gray-700 mb-2">Weight (kg)</label>
                   <input
                     type="number"
                     id="weight"
@@ -328,7 +385,9 @@ export default function Profile() {
                     value={profile.weight}
                     onChange={handleInputChange}
                     disabled={!isEditing}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 disabled:bg-gray-100"
+                    className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
+                      !isEditing ? 'bg-gray-50 text-gray-600' : 'bg-white text-gray-900'
+                    }`}
                   />
                 </div>
               </div>
@@ -338,7 +397,9 @@ export default function Profile() {
                 <label className="block text-sm font-medium text-gray-700 mb-3">Health Conditions</label>
                 <div className="grid grid-cols-2 gap-4">
                   {healthConditionOptions.map(condition => (
-                    <label key={condition} className="flex items-center p-3 border rounded-lg hover:bg-gray-50">
+                    <label key={condition} className={`flex items-center p-3 border rounded-lg transition-colors cursor-pointer ${
+                      !isEditing ? 'bg-gray-50 border-gray-200' : 'bg-white border-gray-300 hover:bg-gray-50'
+                    }`}>
                       <input
                         type="checkbox"
                         checked={profile.healthConditions.includes(condition)}
@@ -346,7 +407,7 @@ export default function Profile() {
                         disabled={!isEditing}
                         className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                       />
-                      <span className="ml-3 text-sm text-gray-700">{condition}</span>
+                      <span className={`ml-3 text-sm ${!isEditing ? 'text-gray-600' : 'text-gray-700'}`}>{condition}</span>
                     </label>
                   ))}
                 </div>
@@ -354,14 +415,16 @@ export default function Profile() {
 
               {/* Fitness Goal */}
               <div>
-                <label htmlFor="fitnessGoal" className="block text-sm font-medium text-gray-700">Fitness Goal</label>
+                <label htmlFor="fitnessGoal" className="block text-sm font-medium text-gray-700 mb-2">Fitness Goal</label>
                 <select
                   id="fitnessGoal"
                   name="fitnessGoal"
                   value={profile.fitnessGoal}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 disabled:bg-gray-100"
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
+                    !isEditing ? 'bg-gray-50 text-gray-600' : 'bg-white text-gray-900'
+                  }`}
                 >
                   {fitnessGoalOptions.map(goal => (
                     <option key={goal} value={goal}>{goal}</option>
@@ -370,17 +433,17 @@ export default function Profile() {
               </div>
 
               {isEditing && (
-                <div className="flex justify-end space-x-3">
+                <div className="flex justify-end space-x-3 pt-4">
                   <button
                     type="button"
                     onClick={() => setIsEditing(false)}
-                    className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
                   >
                     Save Changes
                   </button>
