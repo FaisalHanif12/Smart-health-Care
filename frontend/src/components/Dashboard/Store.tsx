@@ -88,16 +88,59 @@ export default function Store() {
       image: '🍠',
       category: 'Vegetables',
     },
+    {
+      id: 9,
+      name: 'Blueberries',
+      price: 6.99,
+      calories: 84,
+      protein: 1,
+      image: '🫐',
+      category: 'Fruits',
+    },
+    {
+      id: 10,
+      name: 'Spinach',
+      price: 3.49,
+      calories: 23,
+      protein: 3,
+      image: '🥬',
+      category: 'Vegetables',
+    },
+    {
+      id: 11,
+      name: 'Brown Rice',
+      price: 4.99,
+      calories: 111,
+      protein: 3,
+      image: '🍚',
+      category: 'Grains',
+    },
+    {
+      id: 12,
+      name: 'Protein Powder',
+      price: 24.99,
+      calories: 120,
+      protein: 25,
+      image: '🥤',
+      category: 'Supplements',
+    },
   ]);
 
-  const [cart, setCart] = useState<number[]>([]);
+  const [cart, setCart] = useState<number[]>(() => {
+    const savedCart = localStorage.getItem('cart');
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
 
   const addToCart = (productId: number) => {
-    setCart([...cart, productId]);
+    const newCart = [...cart, productId];
+    setCart(newCart);
+    localStorage.setItem('cart', JSON.stringify(newCart));
   };
 
   const removeFromCart = (productId: number) => {
-    setCart(cart.filter(id => id !== productId));
+    const newCart = cart.filter(id => id !== productId);
+    setCart(newCart);
+    localStorage.setItem('cart', JSON.stringify(newCart));
   };
 
   const isInCart = (productId: number) => cart.includes(productId);
@@ -125,7 +168,7 @@ export default function Store() {
       </div>
       
       {/* Side Navigation */}
-      <nav className={`w-64 bg-gray-900 min-h-screen p-4 ${isMobileMenuOpen ? 'block' : 'hidden'} md:block fixed md:relative z-50`}>
+      <nav className={`w-64 bg-gray-900 min-h-screen p-4 flex flex-col ${isMobileMenuOpen ? 'block' : 'hidden'} md:block fixed md:relative z-50`}>
         <div className="flex items-center mb-8">
           <h1 className="text-xl font-bold text-yellow-400">HEALTH TRACKER</h1>
         </div>
@@ -188,16 +231,16 @@ export default function Store() {
       </nav>
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-auto">
-        <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          <div className="bg-white shadow rounded-lg p-6">
+      <div className="flex-1 overflow-auto max-h-screen">
+        <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 min-h-full">
+          <div className="bg-white shadow rounded-lg p-6 mb-8">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900">Health Food Store</h2>
         <div className="relative">
           <span className="absolute -top-2 -right-2 bg-indigo-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
             {cart.length}
           </span>
-          <button className="p-2 text-gray-500 hover:text-gray-700">
+          <Link to="/dashboard/cart" className="p-2 text-gray-500 hover:text-gray-700">
             <svg
               className="h-6 w-6"
               xmlns="http://www.w3.org/2000/svg"
@@ -212,11 +255,11 @@ export default function Store() {
                 d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
               />
             </svg>
-          </button>
+          </Link>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pb-6">
         {products.map(product => (
           <div key={product.id} className="bg-gray-50 rounded-lg p-4 flex flex-col">
             <div className="text-4xl mb-2">{product.image}</div>

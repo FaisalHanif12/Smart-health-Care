@@ -5,6 +5,7 @@ import WorkoutPlan from '../components/Dashboard/WorkoutPlan';
 import DietPlan from '../components/Dashboard/DietPlan';
 import Profile from '../components/Dashboard/Profile';
 import Store from '../components/Dashboard/Store';
+import Cart from '../components/Dashboard/Cart';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ export default function DashboardPage() {
       <Route path="diet" element={<DietPlan />} />
       <Route path="profile" element={<Profile />} />
       <Route path="store" element={<Store />} />
+      <Route path="cart" element={<Cart />} />
     </Routes>
   );
 }
