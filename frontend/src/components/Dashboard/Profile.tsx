@@ -126,7 +126,7 @@ export default function Profile() {
         </div>
         
         {/* Navigation Links */}
-        <div className="mb-8 flex flex-col">
+        <div className="flex-1 flex flex-col">
           <div className="space-y-2">
             <Link
               to="/dashboard"
@@ -176,11 +176,11 @@ export default function Profile() {
             </Link>
           </div>
           
-          {/* Logout Button */}
-          <div className="mt-auto pt-8">          
+          {/* Logout Button - Positioned at bottom */}
+          <div className="mt-auto">          
             <button
               onClick={handleLogout}
-              className="flex items-center space-x-3 p-3 rounded-lg transition-colors w-full text-left text-gray-300 hover:bg-gray-800"
+              className="flex items-center space-x-3 p-3 rounded-lg transition-colors w-full text-left text-gray-300 hover:bg-gray-800 hover:text-yellow-400"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V4a1 1 0 00-1-1H3zm1 2h10v10H4V5zm4 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" clipRule="evenodd" />
