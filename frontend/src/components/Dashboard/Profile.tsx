@@ -120,14 +120,15 @@ export default function Profile() {
       </div>
       
       {/* Side Navigation */}
-      <nav className={`w-64 bg-gray-900 min-h-screen p-4 flex flex-col ${isMobileMenuOpen ? 'block' : 'hidden'} md:block fixed md:relative z-50`}>
+      <nav className={`w-64 bg-gray-900 h-screen p-4 flex flex-col ${isMobileMenuOpen ? 'block' : 'hidden'} md:block fixed md:relative z-50`}>
         <div className="flex items-center mb-8">
           <h1 className="text-xl font-bold text-yellow-400">HEALTH TRACKER</h1>
         </div>
         
-        {/* Navigation Links */}
-        <div className="flex-1 flex flex-col">
-          <div className="space-y-2">
+        {/* Navigation Links Container */}
+        <div className="flex flex-col h-full">
+          {/* Main Navigation Links */}
+          <div className="space-y-2 flex-shrink-0">
             <Link
               to="/dashboard"
               className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${location.pathname === '/dashboard' ? 'bg-gray-800 text-yellow-400' : 'text-gray-300 hover:text-yellow-400'}`}
@@ -176,8 +177,11 @@ export default function Profile() {
             </Link>
           </div>
           
-          {/* Logout Button - Positioned at bottom */}
-          <div className="mt-auto">          
+          {/* Spacer to push logout to bottom */}
+          <div className="flex-1"></div>
+          
+          {/* Logout Button - Fixed at bottom */}
+          <div className="flex-shrink-0 mt-4">          
             <button
               onClick={handleLogout}
               className="flex items-center space-x-3 p-3 rounded-lg transition-colors w-full text-left text-gray-300 hover:bg-gray-800 hover:text-yellow-400"
