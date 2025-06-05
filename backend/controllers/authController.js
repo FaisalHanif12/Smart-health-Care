@@ -46,7 +46,7 @@ const login = asyncHandler(async (req, res, next) => {
   const user = await User.findOne({ email }).select('+password');
 
   if (!user) {
-    return next(new ErrorResponse('Invalid credentials', 401));
+    return next(new ErrorResponse('No account found with this email address. Please register first or check your email.', 404));
   }
 
   // Check if account is locked
@@ -60,7 +60,7 @@ const login = asyncHandler(async (req, res, next) => {
   if (!isMatch) {
     // Increment login attempts
     await user.incLoginAttempts();
-    return next(new ErrorResponse('Invalid credentials', 401));
+    return next(new ErrorResponse('Incorrect password. Please check your password and try again.', 401));
   }
 
   // Reset login attempts on successful login

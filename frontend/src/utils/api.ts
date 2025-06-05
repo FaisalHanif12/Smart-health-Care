@@ -38,20 +38,42 @@ export const authAPI = {
     email: string;
     password: string;
   }): Promise<ApiResponse<User>> => {
-    const response = await fetch(`${API_BASE_URL}/auth/register`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(userData),
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Registration failed');
+      if (!response.ok) {
+        try {
+          const error = await response.json();
+          throw new Error(error.message || 'Registration failed');
+        } catch (parseError) {
+          // If we can't parse the error response, provide a generic message
+          if (response.status === 400) {
+            throw new Error('Invalid registration data. Please check your information and try again.');
+          } else if (response.status === 409) {
+            throw new Error('An account with this email already exists. Please try logging in instead.');
+          } else if (response.status >= 500) {
+            throw new Error('Server error. Please try again later.');
+          } else {
+            throw new Error('Registration failed. Please try again.');
+          }
+        }
+      }
+
+      return response.json();
+    } catch (error: any) {
+      // Handle network errors (server not reachable, etc.)
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        throw new Error('Unable to connect to server. Please check your internet connection and try again.');
+      }
+      // Re-throw other errors (including our custom ones)
+      throw error;
     }
-
-    return response.json();
   },
 
   // Login user
@@ -59,20 +81,42 @@ export const authAPI = {
     email: string;
     password: string;
   }): Promise<ApiResponse<User>> => {
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(credentials),
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials),
+      });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Login failed');
+      if (!response.ok) {
+        try {
+          const error = await response.json();
+          throw new Error(error.message || 'Login failed');
+        } catch (parseError) {
+          // If we can't parse the error response, provide a generic message
+          if (response.status === 404) {
+            throw new Error('No account found with this email address. Please register first or check your email.');
+          } else if (response.status === 401) {
+            throw new Error('Incorrect password. Please check your password and try again.');
+          } else if (response.status >= 500) {
+            throw new Error('Server error. Please try again later.');
+          } else {
+            throw new Error('Login failed. Please check your credentials.');
+          }
+        }
+      }
+
+      return response.json();
+    } catch (error: any) {
+      // Handle network errors (server not reachable, etc.)
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        throw new Error('Unable to connect to server. Please check your internet connection and try again.');
+      }
+      // Re-throw other errors (including our custom ones)
+      throw error;
     }
-
-    return response.json();
   },
 
   // Logout user
