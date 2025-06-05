@@ -2,7 +2,25 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-require('dotenv').config();
+const path = require('path');
+
+// Configure dotenv with explicit path
+require('dotenv').config({ path: path.join(__dirname, '.env') });
+
+// Fallback environment variables if .env doesn't load properly
+process.env.NODE_ENV = process.env.NODE_ENV || 'development';
+process.env.MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://mehrfaisal111:q5V8kT2NjcWH9nyf@smart-health-care.kjxomvs.mongodb.net/?retryWrites=true&w=majority&appName=Smart-Health-Care';
+process.env.JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_jwt_key_here_make_it_long_and_complex_12345678';
+process.env.JWT_EXPIRE = process.env.JWT_EXPIRE || '7d';
+process.env.PORT = process.env.PORT || '5000';
+process.env.FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+
+// Debug: Check if environment variables are loaded
+console.log('🔧 Environment Debug:');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('MONGODB_URI:', process.env.MONGODB_URI ? 'Set' : 'Not Set');
+console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'Set' : 'Not Set');
+console.log('PORT:', process.env.PORT);
 
 const connectDB = require('./config/database');
 const { errorHandler } = require('./middleware/errorHandler');

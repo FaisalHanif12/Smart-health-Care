@@ -111,9 +111,7 @@ userSchema.virtual('bmi').get(function() {
   return null;
 });
 
-// Index for faster queries
-userSchema.index({ email: 1 });
-userSchema.index({ username: 1 });
+// Index for faster queries (email and username already have unique: true, so no need to index again)
 userSchema.index({ 'profile.fitnessGoal': 1 });
 
 // Pre-save middleware to hash password
