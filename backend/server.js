@@ -12,8 +12,9 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 process.env.MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://mehrfaisal111:q5V8kT2NjcWH9nyf@smart-health-care.kjxomvs.mongodb.net/?retryWrites=true&w=majority&appName=Smart-Health-Care';
 process.env.JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_jwt_key_here_make_it_long_and_complex_12345678';
 process.env.JWT_EXPIRE = process.env.JWT_EXPIRE || '7d';
+process.env.JWT_COOKIE_EXPIRE = process.env.JWT_COOKIE_EXPIRE || '7';
 process.env.PORT = process.env.PORT || '5000';
-process.env.FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+process.env.FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 // Debug: Check if environment variables are loaded
 console.log('🔧 Environment Debug:');
@@ -46,7 +47,7 @@ app.use(limiter);
 
 // CORS configuration
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
   credentials: true,
   optionsSuccessStatus: 200
 }));
