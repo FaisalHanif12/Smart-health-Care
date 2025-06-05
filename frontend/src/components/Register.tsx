@@ -9,6 +9,7 @@ export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [shouldShowLoginLink, setShouldShowLoginLink] = useState(false);
 
   const navigate = useNavigate();
   const { register } = useAuth();
@@ -34,6 +35,7 @@ export default function Register() {
     e.preventDefault();
     setIsLoading(true);
     setError('');
+    setShouldShowLoginLink(false);
 
     // Validation
     if (password !== confirmPassword) {
@@ -56,7 +58,13 @@ export default function Register() {
       navigate('/onboarding', { replace: true });
     } catch (error: any) {
       console.error('Registration failed:', error);
-      setError(error.message || 'Registration failed. Please try again.');
+      const errorMessage = error.message || 'Registration failed. Please try again.';
+      setError(errorMessage);
+      
+      // Show login link if email already exists
+      if (errorMessage.includes('already exists') || errorMessage.includes('already registered')) {
+        setShouldShowLoginLink(true);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -72,8 +80,48 @@ export default function Register() {
         </div>
 
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-            <span className="block sm:inline">{error}</span>
+          <div className={`border px-4 py-4 rounded-lg relative ${
+            shouldShowLoginLink 
+              ? 'bg-blue-50 border-blue-300 text-blue-800' 
+              : 'bg-red-100 border-red-400 text-red-700'
+          }`} role="alert">
+            <div className="flex items-start space-x-3">
+              <div className="flex-shrink-0">
+                {shouldShowLoginLink ? (
+                  <svg className="h-5 w-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                ) : (
+                  <svg className="h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium">{error}</p>
+                {shouldShowLoginLink && (
+                  <div className="mt-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+                      <p className="text-sm text-blue-600 font-medium">
+                        Already have an account? Sign in instead!
+                      </p>
+                      <Link 
+                        to="/login" 
+                        className="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-sm font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 group"
+                      >
+                        <svg className="w-4 h-4 mr-2 group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14" />
+                        </svg>
+                        Sign In
+                        <svg className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
 

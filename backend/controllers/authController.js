@@ -18,15 +18,38 @@ const register = asyncHandler(async (req, res, next) => {
 
   const { username, email, password } = req.body;
 
-  // Create user
-  const user = await User.create({
-    username,
-    email,
-    password
-  });
+  try {
+    // Create user
+    const user = await User.create({
+      username,
+      email,
+      password
+    });
 
-  // Send token response
-  sendTokenResponse(user, 201, res, 'User registered successfully');
+    // Send token response
+    sendTokenResponse(user, 201, res, 'User registered successfully');
+  } catch (error) {
+    // Handle duplicate key errors (email or username already exists)
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyValue)[0];
+      if (field === 'email') {
+        return next(new ErrorResponse('An account with this email already exists. Please try logging in instead.', 409));
+      } else if (field === 'username') {
+        return next(new ErrorResponse('This username is already taken. Please choose a different one.', 409));
+      } else {
+        return next(new ErrorResponse('Registration failed. Please try again.', 400));
+      }
+    }
+    
+    // Handle other mongoose validation errors
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map(val => val.message);
+      return next(new ErrorResponse(messages.join('. '), 400));
+    }
+    
+    // For any other errors, pass them to the error handler
+    return next(error);
+  }
 });
 
 // @desc    Login user
