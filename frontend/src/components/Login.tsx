@@ -78,7 +78,7 @@ export default function Login() {
                   <div className="mt-4">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
                       <p className="text-sm text-blue-600 font-medium">
-                        Ready to join? Create your account now!
+                        Ready to join? 
                       </p>
                       <Link 
                         to="/register" 

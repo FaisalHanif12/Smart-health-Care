@@ -54,8 +54,9 @@ export default function Register() {
     try {
       await register(username, email, password);
       
-      // After successful registration, go to onboarding
-      navigate('/onboarding', { replace: true });
+      // After successful registration, go directly to dashboard
+      // The ProtectedRoute will handle redirecting to onboarding if profile is incomplete
+      navigate('/dashboard', { replace: true });
     } catch (error: any) {
       console.error('Registration failed:', error);
       const errorMessage = error.message || 'Registration failed. Please try again.';

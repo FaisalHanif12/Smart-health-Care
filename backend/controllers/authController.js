@@ -4,6 +4,7 @@ const User = require('../models/User');
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../utils/asyncHandler');
 const sendTokenResponse = require('../utils/sendTokenResponse');
+const { sendPasswordResetEmail } = require('../utils/emailService');
 
 // @desc    Register user
 // @route   POST /api/auth/register
@@ -226,7 +227,11 @@ const forgotPassword = asyncHandler(async (req, res, next) => {
   const user = await User.findOne({ email: req.body.email });
 
   if (!user) {
-    return next(new ErrorResponse('There is no user with that email', 404));
+    // Don't reveal if email exists or not for security
+    return res.status(200).json({
+      success: true,
+      message: 'If an account with this email exists, you will receive a password reset link shortly.'
+    });
   }
 
   // Get reset token
@@ -234,37 +239,31 @@ const forgotPassword = asyncHandler(async (req, res, next) => {
 
   await user.save({ validateBeforeSave: false });
 
-  // Create reset url
-  const resetUrl = `${req.protocol}://${req.get(
-    'host'
-  )}/api/auth/resetpassword/${resetToken}`;
-
-  const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;
-
   try {
-    // Here you would send the email using nodemailer
-    // For now, we'll just return the reset token in development
-    if (process.env.NODE_ENV === 'development') {
-      return res.status(200).json({
-        success: true,
-        message: 'Password reset email sent',
-        resetToken: resetToken, // Only for development
-        resetUrl: resetUrl // Only for development
-      });
-    }
+    // Send password reset email
+    await sendPasswordResetEmail(user, resetToken, req);
 
     res.status(200).json({
       success: true,
-      message: 'Password reset email sent'
+      message: 'Password reset email sent successfully. Please check your inbox.',
+      // Only include reset info in development
+      ...(process.env.NODE_ENV === 'development' && {
+        dev_info: {
+          resetToken: resetToken,
+          resetUrl: `http://localhost:5173/reset-password/${resetToken}`,
+          note: 'In development mode - check console for email content'
+        }
+      })
     });
-  } catch (err) {
-    console.log(err);
+  } catch (error) {
+    console.error('Password reset email error:', error);
+    
+    // Reset the token fields if email failed
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
-
     await user.save({ validateBeforeSave: false });
 
-    return next(new ErrorResponse('Email could not be sent', 500));
+    return next(new ErrorResponse('Email could not be sent. Please try again later.', 500));
   }
 });
 
