@@ -120,15 +120,15 @@ export default function Profile() {
       </div>
       
       {/* Side Navigation */}
-      <nav className={`w-64 bg-gray-900 h-screen p-4 flex flex-col ${isMobileMenuOpen ? 'block' : 'hidden'} md:block fixed md:relative z-50`}>
+      <nav className={`w-64 bg-gray-900 min-h-screen p-4 flex flex-col ${isMobileMenuOpen ? 'block' : 'hidden'} md:block fixed md:relative z-50`}>
         <div className="flex items-center mb-8">
           <h1 className="text-xl font-bold text-yellow-400">HEALTH TRACKER</h1>
         </div>
         
         {/* Navigation Links Container */}
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col flex-1 overflow-hidden">
           {/* Main Navigation Links */}
-          <div className="space-y-2 flex-shrink-0">
+          <div className="space-y-2 flex-grow-0">
             <Link
               to="/dashboard"
               className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${location.pathname === '/dashboard' ? 'bg-gray-800 text-yellow-400' : 'text-gray-300 hover:text-yellow-400'}`}
@@ -180,14 +180,14 @@ export default function Profile() {
           {/* Spacer to push logout to bottom */}
           <div className="flex-1"></div>
           
-          {/* Logout Button - Fixed at bottom */}
-          <div className="flex-shrink-0 mt-4">          
+          {/* Logout Button - Always visible at bottom */}
+          <div className="mt-auto py-4 border-t border-gray-800">          
             <button
               onClick={handleLogout}
               className="flex items-center space-x-3 p-3 rounded-lg transition-colors w-full text-left text-gray-300 hover:bg-gray-800 hover:text-yellow-400"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V4a1 1 0 00-1-1H3zm1 2h10v10H4V5zm4 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" clipRule="evenodd" />
+                <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V4a1 1 0 00-1-1H3zm3 6V7a1 1 0 012 0v2h2a1 1 0 110 2H8v2a1 1 0 11-2 0v-2H4a1 1 0 110-2h2z" clipRule="evenodd" />
               </svg>
               <span>Log Out</span>
             </button>
