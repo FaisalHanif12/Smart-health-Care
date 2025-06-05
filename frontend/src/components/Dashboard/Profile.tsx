@@ -1,5 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface UserProfile {
   username: string;
@@ -17,22 +18,37 @@ export default function Profile() {
   const location = useLocation();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { user, logout, updateProfile } = useAuth();
   
-  const [profile, setProfile] = useState<UserProfile>(() => {
-    const savedProfile = localStorage.getItem('userProfile');
-    return savedProfile ? JSON.parse(savedProfile) : {
-      username: 'John Doe',
-      age: '25',
-      gender: 'male',
-      height: '175',
-      weight: '70',
-      healthConditions: ['None'],
-      fitnessGoal: 'Muscle Building',
-      profileImage: ''
-    }
-  });
+  const [profile, setProfile] = useState<UserProfile>(() => ({
+    username: user?.username || '',
+    age: user?.profile?.age?.toString() || '',
+    gender: user?.profile?.gender || 'male',
+    height: user?.profile?.height?.toString() || '',
+    weight: user?.profile?.weight?.toString() || '',
+    healthConditions: user?.profile?.healthConditions || ['None'],
+    fitnessGoal: user?.profile?.fitnessGoal || 'General Fitness',
+    profileImage: user?.profile?.profileImage || ''
+  }));
 
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (user) {
+      setProfile({
+        username: user.username,
+        age: user.profile?.age?.toString() || '',
+        gender: user.profile?.gender || 'male',
+        height: user.profile?.height?.toString() || '',
+        weight: user.profile?.weight?.toString() || '',
+        healthConditions: user.profile?.healthConditions || ['None'],
+        fitnessGoal: user.profile?.fitnessGoal || 'General Fitness',
+        profileImage: user.profile?.profileImage || ''
+      });
+    }
+  }, [user]);
 
   const healthConditionOptions = ['Diabetes', 'PCOS', 'High Blood Pressure', 'None'];
   const fitnessGoalOptions = ['Muscle Building', 'Fat Burning', 'Weight Gain', 'General Fitness'];
@@ -69,21 +85,42 @@ export default function Profile() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsEditing(false);
-    // Save updated profile to localStorage
-    localStorage.setItem('userProfile', JSON.stringify(profile));
+    setLoading(true);
+    setError('');
+
+    try {
+      const profileData = {
+        age: parseInt(profile.age),
+        gender: profile.gender,
+        height: parseInt(profile.height),
+        weight: parseInt(profile.weight),
+        healthConditions: profile.healthConditions,
+        fitnessGoal: profile.fitnessGoal,
+        profileImage: profile.profileImage
+      };
+
+      await updateProfile(profileData);
+      setIsEditing(false);
+    } catch (err: any) {
+      setError(err.message || 'Failed to update profile');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('userProfileComplete');
-    localStorage.removeItem('userProfile');
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/');
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
   };
 
   // Calculate BMI
@@ -312,6 +349,12 @@ export default function Profile() {
           {/* Profile Details */}
           <div className="bg-white shadow rounded-lg p-6">
             <h2 className="text-xl font-bold text-gray-900 mb-6">Profile Information</h2>
+            
+            {error && (
+              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-red-600 text-sm">{error}</p>
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Username */}
@@ -447,9 +490,10 @@ export default function Profile() {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                    disabled={loading}
+                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Save Changes
+                    {loading ? 'Saving...' : 'Save Changes'}
                   </button>
                 </div>
               )}

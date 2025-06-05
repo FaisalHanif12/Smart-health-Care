@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface Exercise {
   name: string;
@@ -17,6 +18,7 @@ export default function WorkoutPlan() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const [workoutPlan, setWorkoutPlan] = useState<WorkoutDay[]>([
     {
       day: 'Monday',
@@ -55,10 +57,13 @@ export default function WorkoutPlan() {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('userProfileComplete');
-    localStorage.removeItem('userProfile');
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/');
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
   };
 
   return (

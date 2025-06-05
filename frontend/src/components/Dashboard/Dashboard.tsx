@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Profile from './Profile';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface DashboardProps {}
 
@@ -18,39 +19,23 @@ export default function Dashboard() {
   const [caloriesConsumed, setCaloriesConsumed] = useState(1200);
   const [workoutProgress, setWorkoutProgress] = useState<ProgressData>({ value: 3, max: 5, percentage: 60 });
   const [waterIntake, setWaterIntake] = useState<ProgressData>({ value: 5, max: 8, percentage: 62.5 });
-  const [userName, setUserName] = useState('User');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
   
-  
-  useEffect(() => {
-    // Get user profile from localStorage
-    const userProfileStr = localStorage.getItem('userProfile');
-    if (userProfileStr) {
-      try {
-        const userProfile = JSON.parse(userProfileStr);
-        // Set user name if available (could be expanded with more profile data)
-        if (userProfile.name) {
-          setUserName(userProfile.name);
-        }
-      } catch (error) {
-        console.error('Error parsing user profile:', error);
-      }
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/');
+    } catch (error) {
+      console.error('Error logging out:', error);
     }
-  }, []);
-  
-  const handleLogout = () => {
-    // Clear user data from localStorage
-    localStorage.removeItem('userProfileComplete');
-    localStorage.removeItem('userProfile');
-    // Redirect to login page
-    navigate('/');
   };
 
   return (

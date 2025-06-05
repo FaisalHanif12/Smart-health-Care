@@ -1,22 +1,32 @@
 import { Routes, Route } from 'react-router-dom';
 import './App.css';
+import { AuthProvider } from './contexts/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import AuthRoute from './components/AuthRoute';
 import Login from './components/Login';
 import LoginPage from './pages/LoginPage';
 import Register from './components/Register';
 import ForgotPassword from './components/ForgotPassword';
 import Onboarding from './components/Onboarding';
 import DashboardPage from './pages/DashboardPage';
+import LoadingSpinner from './components/LoadingSpinner';
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<LoginPage />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/onboarding" element={<Onboarding />} />
-      <Route path="/dashboard/*" element={<DashboardPage />} />
-    </Routes>
+    <AuthProvider>
+      <Routes>
+        {/* Public routes - redirect to dashboard if already authenticated */}
+        <Route path="/" element={<AuthRoute><LoginPage /></AuthRoute>} />
+        <Route path="/login" element={<AuthRoute><Login /></AuthRoute>} />
+        <Route path="/register" element={<AuthRoute><Register /></AuthRoute>} />
+        <Route path="/forgot-password" element={<AuthRoute><ForgotPassword /></AuthRoute>} />
+        
+        {/* Protected routes - require authentication */}
+        <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+        <Route path="/dashboard/*" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+      </Routes>
+    </AuthProvider>
   )
 }
+
 export default App
