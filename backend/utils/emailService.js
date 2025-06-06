@@ -16,15 +16,6 @@ const createTransporter = () => {
     });
   }
   
-  console.log('⚠️  No email credentials configured');
-  console.log('📧 To send real emails, set up Gmail App Password:');
-  console.log('1. Go to Google Account Settings');
-  console.log('2. Security → App Passwords');
-  console.log('3. Generate password for "Mail"');
-  console.log('4. Create .env file with:');
-  console.log('   EMAIL_FROM=your-email@gmail.com');
-  console.log('   EMAIL_PASSWORD=your-16-character-app-password');
-  console.log('');
   
   return null;
 };
@@ -38,20 +29,7 @@ const sendEmail = async (options) => {
     const transporter = createTransporter();
     
     if (!transporter) {
-      console.log('\n🚨 EMAIL NOT CONFIGURED - Cannot send real emails');
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.log('📧 To:', options.email);
-      console.log('📋 Subject:', options.subject);
-      console.log('🔗 Reset URL:', options.resetUrl || 'N/A');
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.log('');
-      console.log('💡 TO SEND REAL EMAILS TO GMAIL:');
-      console.log('   1. See backend/EMAIL_SETUP.md for 5-minute setup');
-      console.log('   2. Create .env file with Gmail app password');
-      console.log('   3. Restart server');
-      console.log('');
-      console.log('👉 FOR NOW, USE THIS RESET URL:');
-      console.log('   ' + (options.resetUrl || 'N/A'));
+      
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       
       return {
@@ -79,15 +57,7 @@ const sendEmail = async (options) => {
     const previewUrl = nodemailer.getTestMessageUrl(info);
     if (previewUrl) {
       console.log('');
-      console.log('🌐 EMAIL PREVIEW (Test Email):');
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.log('📱 Since this is a test email, view it here:');
-      console.log('👉', previewUrl);
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.log('');
-      console.log('💡 ALTERNATIVE: Use the reset URL directly:');
-      console.log('👉', options.resetUrl || 'N/A');
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+     
     }
     
     return {
@@ -98,17 +68,7 @@ const sendEmail = async (options) => {
   } catch (error) {
     console.error('\n❌ Email send error:', error.message);
     
-    // Fallback to simulation with clear instructions
-    console.log('\n📧 Email Failed - Using Simulation Mode:');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('📧 To:', options.email);
-    console.log('📋 Subject:', options.subject);
-    console.log('🔗 Reset URL:', options.resetUrl || 'N/A');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('');
-    console.log('💡 TO RESET PASSWORD:');
-    console.log('   Copy this URL and open it in your browser:');
-    console.log('   👉', options.resetUrl || 'N/A');
+   
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     
     return {

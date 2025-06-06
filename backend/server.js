@@ -5,7 +5,15 @@ const rateLimit = require('express-rate-limit');
 const path = require('path');
 
 // Configure dotenv with explicit path
-require('dotenv').config({ path: path.join(__dirname, '.env') });
+const dotenvResult = require('dotenv').config({ path: path.join(__dirname, '.env') });
+
+// Debug dotenv loading
+if (dotenvResult.error) {
+  console.log('❌ Error loading .env file:', dotenvResult.error);
+} else {
+  console.log('✅ .env file loaded successfully');
+  console.log('📁 .env path:', path.join(__dirname, '.env'));
+}
 
 // Fallback environment variables if .env doesn't load properly
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
@@ -21,6 +29,9 @@ console.log('🔧 Environment Debug:');
 console.log('NODE_ENV:', process.env.NODE_ENV);
 console.log('MONGODB_URI:', process.env.MONGODB_URI ? 'Set' : 'Not Set');
 console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'Set' : 'Not Set');
+console.log('EMAIL_FROM:', process.env.EMAIL_FROM ? 'Set (' + process.env.EMAIL_FROM + ')' : 'Not Set');
+console.log('EMAIL_PASSWORD:', process.env.EMAIL_PASSWORD ? 'Set (****)' : 'Not Set');
+console.log('FROM_NAME:', process.env.FROM_NAME || 'Not Set');
 console.log('PORT:', process.env.PORT);
 
 const connectDB = require('./config/database');

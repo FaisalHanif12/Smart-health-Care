@@ -7,18 +7,46 @@ export default function ForgotPassword() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [statusMessage, setStatusMessage] = useState('');
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
+    setStatusMessage('');
+
+    // Validate email format
+    if (!email.trim()) {
+      setError('Please enter your email address.');
+      setIsLoading(false);
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      setError('Please enter a valid email address.');
+      setIsLoading(false);
+      return;
+    }
 
     try {
-      await authAPI.forgotPassword(email);
+      setStatusMessage('Checking if account exists...');
+      const response = await authAPI.forgotPassword(email);
       setSuccess(true);
+      setStatusMessage('Password reset link sent successfully!');
     } catch (error: any) {
       console.error('Password reset failed:', error);
-      setError(error.message || 'Failed to send reset email. Please try again.');
+      if (error.message.includes('No account found')) {
+        setError('No account found with this email address. Please check your email or register for a new account.');
+      } else if (error.message.includes('deactivated')) {
+        setError('Account is deactivated. Please contact support.');
+      } else {
+        setError(error.message || 'Failed to send reset email. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -36,6 +64,24 @@ export default function ForgotPassword() {
           </p>
         </div>
 
+        {/* Status Message */}
+        {statusMessage && !error && !success && (
+          <div className="border px-4 py-4 rounded-lg relative bg-blue-50 border-blue-300 text-blue-800" role="alert">
+            <div className="flex items-start space-x-3">
+              <div className="flex-shrink-0">
+                <svg className="animate-spin h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium">{statusMessage}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Error Message */}
         {error && (
           <div className="border px-4 py-4 rounded-lg relative bg-red-100 border-red-400 text-red-700" role="alert">
             <div className="flex items-start space-x-3">
@@ -51,24 +97,61 @@ export default function ForgotPassword() {
           </div>
         )}
 
+        {/* Success Message */}
         {success && (
-          <div className="border px-4 py-4 rounded-lg relative bg-green-50 border-green-300 text-green-800" role="alert">
+          <div className="border px-4 py-6 rounded-lg relative bg-green-50 border-green-300 text-green-800" role="alert">
             <div className="flex items-start space-x-3">
               <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="h-6 w-6 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
               </div>
               <div className="flex-1">
-                <h3 className="text-sm font-medium">Email sent successfully!</h3>
-                <p className="text-sm mt-1">
-                  Password reset link has been sent to <span className="font-semibold">{email}</span>. 
-                  Please check your inbox and follow the instructions to reset your password.
+                <h3 className="text-lg font-bold text-green-800 mb-2">📧 Reset Link Sent Successfully!</h3>
+                <p className="text-sm mb-3">
+                  A password reset link has been sent to <span className="font-semibold bg-green-100 px-2 py-1 rounded">{email}</span>
                 </p>
-                <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-700">
-                  <strong>Note:</strong> The email may take a few minutes to arrive. Please also check your spam/junk folder if you don't see it in your inbox.
+                
+                <div className="bg-white border border-green-200 rounded-lg p-4 mb-3">
+                  <h4 className="font-semibold text-green-700 mb-2">📋 Next Steps:</h4>
+                  <ol className="text-sm text-green-700 space-y-1">
+                    <li>1. Check your email inbox for a message from Smart Health Care</li>
+                    <li>2. Click the "Reset My Password" button in the email</li>
+                    <li>3. Create a new secure password</li>
+                    <li>4. Sign in with your new password</li>
+                  </ol>
                 </div>
-                <div className="mt-4">
+
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-800">
+                  <div className="flex items-start space-x-2">
+                    <svg className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                    </svg>
+                    <div>
+                      <p><strong>Important:</strong></p>
+                      <ul className="mt-1 space-y-1">
+                        <li>• The reset link expires in 10 minutes for security</li>
+                        <li>• Check your spam/junk folder if you don't see the email</li>
+                        <li>• The email may take 1-2 minutes to arrive</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-4 flex flex-col sm:flex-row gap-3">
+                  <button
+                    onClick={() => {
+                      setSuccess(false);
+                      setEmail('');
+                      setError('');
+                      setStatusMessage('');
+                    }}
+                    className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-md hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Send to different email
+                  </button>
                   <Link 
                     to="/login" 
                     className="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white text-sm font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 group"
