@@ -16,17 +16,9 @@ const createTransporter = () => {
     });
   }
   
-  // For development, use a working free SMTP service (Brevo/Sendinblue)
-  console.log('📧 Using free SMTP service for development');
-  return nodemailer.createTransport({
-    host: 'smtp-relay.brevo.com',
-    port: 587,
-    secure: false,
-    auth: {
-      user: 'smarthealth.demo@gmail.com',
-      pass: 'xsmtpsib-demo-key-here'
-    }
-  });
+  // For development, use environment variables or skip email sending
+  console.log('📧 No email credentials provided - using simulation mode');
+  return null;
 };
 
 const sendEmail = async (options) => {
@@ -59,6 +51,15 @@ const sendEmail = async (options) => {
   // For production mode, try to send real email
   try {
     const transporter = createTransporter();
+    
+    if (!transporter) {
+      console.log('⚠️  No email transporter configured - email sending disabled');
+      return {
+        success: true,
+        messageId: 'no-email-' + Date.now(),
+        note: 'Email sending disabled - no credentials provided'
+      };
+    }
 
     const message = {
       from: `${process.env.FROM_NAME || 'Smart Health Care'} <${process.env.EMAIL_FROM}>`,
