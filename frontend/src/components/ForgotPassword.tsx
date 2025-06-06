@@ -7,6 +7,7 @@ export default function ForgotPassword() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [resetUrl, setResetUrl] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -14,8 +15,13 @@ export default function ForgotPassword() {
     setError('');
 
     try {
-      await authAPI.forgotPassword(email);
+      const response = await authAPI.forgotPassword(email);
       setSuccess(true);
+      
+      // Check if we're in development mode and got a reset URL
+      if (response.dev_info && response.dev_info.resetUrl) {
+        setResetUrl(response.dev_info.resetUrl);
+      }
     } catch (error: any) {
       console.error('Password reset failed:', error);
       setError(error.message || 'Failed to send reset email. Please try again.');
@@ -60,11 +66,55 @@ export default function ForgotPassword() {
                 </svg>
               </div>
               <div className="flex-1">
-                <h3 className="text-sm font-medium">Email sent successfully!</h3>
+                <h3 className="text-sm font-medium">
+                  {resetUrl ? 'Reset token generated!' : 'Email sent successfully!'}
+                </h3>
                 <p className="text-sm mt-1">
-                  Password reset link has been sent to <span className="font-semibold">{email}</span>. 
-                  Please check your inbox and follow the instructions to reset your password.
+                  {resetUrl ? (
+                    <>
+                      Password reset token generated for <span className="font-semibold">{email}</span>.
+                      <br />
+                      <strong>Development Mode:</strong> Use the link below to reset your password.
+                    </>
+                  ) : (
+                    <>
+                      Password reset link has been sent to <span className="font-semibold">{email}</span>. 
+                      Please check your inbox and follow the instructions to reset your password.
+                    </>
+                  )}
                 </p>
+                
+                {resetUrl && (
+                  <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-xs text-blue-700 font-medium mb-2">Development Reset Link:</p>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="text"
+                        value={resetUrl}
+                        readOnly
+                        className="flex-1 text-xs bg-white border border-blue-300 rounded px-2 py-1 font-mono"
+                      />
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(resetUrl);
+                          alert('Reset link copied to clipboard!');
+                        }}
+                        className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                      >
+                        Copy
+                      </button>
+                      <a
+                        href={resetUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                      >
+                        Open
+                      </a>
+                    </div>
+                  </div>
+                )}
+                
                 <div className="mt-4">
                   <Link 
                     to="/login" 

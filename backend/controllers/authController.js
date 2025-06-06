@@ -224,14 +224,19 @@ const forgotPassword = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse(errorMessages.join(', '), 400));
   }
 
-  const user = await User.findOne({ email: req.body.email });
+  const { email } = req.body;
+
+  // Check if user exists with this email
+  const user = await User.findOne({ email: email.toLowerCase() });
 
   if (!user) {
-    // Don't reveal if email exists or not for security
-    return res.status(200).json({
-      success: true,
-      message: 'If an account with this email exists, you will receive a password reset link shortly.'
-    });
+    // For better UX, let the user know if email doesn't exist
+    return next(new ErrorResponse('No account found with this email address. Please check your email or register for a new account.', 404));
+  }
+
+  // Check if user account is active
+  if (!user.isActive) {
+    return next(new ErrorResponse('Account is deactivated. Please contact support.', 403));
   }
 
   // Get reset token
@@ -240,20 +245,37 @@ const forgotPassword = asyncHandler(async (req, res, next) => {
   await user.save({ validateBeforeSave: false });
 
   try {
-    // Send password reset email
+    // In development mode, just return the reset token for testing
+    if (process.env.NODE_ENV === 'development') {
+      console.log('\n🔐 Password Reset Token Generated:');
+      console.log('User:', user.email);
+      console.log('Reset Token:', resetToken);
+      console.log('Reset URL:', `http://localhost:5173/reset-password/${resetToken}`);
+      console.log('Token expires in 10 minutes');
+      console.log('==========================================\n');
+
+      return res.status(200).json({
+        success: true,
+        message: 'Password reset token generated successfully. In development mode, check the console for the reset link.',
+        dev_info: {
+          resetToken: resetToken,
+          resetUrl: `http://localhost:5173/reset-password/${resetToken}`,
+          expiresIn: '10 minutes',
+          note: 'In development mode - Use the resetUrl above to reset your password'
+        }
+      });
+    }
+
+    // In production, send email
     await sendPasswordResetEmail(user, resetToken, req);
 
     res.status(200).json({
       success: true,
-      message: 'Password reset email sent successfully. Please check your inbox.',
-      // Only include reset info in development
-      ...(process.env.NODE_ENV === 'development' && {
-        dev_info: {
-          resetToken: resetToken,
-          resetUrl: `http://localhost:5173/reset-password/${resetToken}`,
-          note: 'In development mode - check console for email content'
-        }
-      })
+      message: 'Password reset email sent successfully. Please check your inbox and follow the instructions.',
+      resetInfo: {
+        email: user.email,
+        expiresIn: '10 minutes'
+      }
     });
   } catch (error) {
     console.error('Password reset email error:', error);
@@ -263,7 +285,7 @@ const forgotPassword = asyncHandler(async (req, res, next) => {
     user.passwordResetExpires = undefined;
     await user.save({ validateBeforeSave: false });
 
-    return next(new ErrorResponse('Email could not be sent. Please try again later.', 500));
+    return next(new ErrorResponse('Failed to process password reset request. Please try again later.', 500));
   }
 });
 
