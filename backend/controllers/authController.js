@@ -316,7 +316,7 @@ const resetPassword = asyncHandler(async (req, res, next) => {
     .digest('hex');
 
   const user = await User.findOne({
-    passwordResetToken,
+    passwordResetToken: resetPasswordToken,
     passwordResetExpires: { $gt: Date.now() },
   });
 
