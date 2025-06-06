@@ -1,7 +1,7 @@
 const nodemailer = require('nodemailer');
 
 // Create transporter
-const createTransporter = async () => {
+const createTransporter = () => {
   console.log('📧 Setting up email transporter...');
   
   // If real Gmail credentials are provided, use them
@@ -16,24 +16,17 @@ const createTransporter = async () => {
     });
   }
   
-  // For development, use Ethereal Email (generates real test emails)
-  console.log('📧 Creating test email account for development...');
-  try {
-    const testAccount = await nodemailer.createTestAccount();
-    
-    return nodemailer.createTransport({
-      host: 'smtp.ethereal.email',
-      port: 587,
-      secure: false,
-      auth: {
-        user: testAccount.user,
-        pass: testAccount.pass
-      }
-    });
-  } catch (error) {
-    console.error('Failed to create test account:', error);
-    return null;
-  }
+  console.log('⚠️  No email credentials configured');
+  console.log('📧 To send real emails, set up Gmail App Password:');
+  console.log('1. Go to Google Account Settings');
+  console.log('2. Security → App Passwords');
+  console.log('3. Generate password for "Mail"');
+  console.log('4. Create .env file with:');
+  console.log('   EMAIL_FROM=your-email@gmail.com');
+  console.log('   EMAIL_PASSWORD=your-16-character-app-password');
+  console.log('');
+  
+  return null;
 };
 
 const sendEmail = async (options) => {
@@ -42,24 +35,29 @@ const sendEmail = async (options) => {
     console.log('To:', options.email);
     console.log('Subject:', options.subject);
 
-    const transporter = await createTransporter();
+    const transporter = createTransporter();
     
     if (!transporter) {
-      console.log('⚠️  Failed to create email transporter');
-      // Fallback to simulation mode
-      console.log('\n📧 Email Simulation (Fallback Mode):');
+      console.log('\n🚨 EMAIL NOT CONFIGURED - Cannot send real emails');
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       console.log('📧 To:', options.email);
       console.log('📋 Subject:', options.subject);
       console.log('🔗 Reset URL:', options.resetUrl || 'N/A');
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.log('👉 USE THIS URL:', options.resetUrl || 'N/A');
+      console.log('');
+      console.log('💡 TO SEND REAL EMAILS TO GMAIL:');
+      console.log('   1. See backend/EMAIL_SETUP.md for 5-minute setup');
+      console.log('   2. Create .env file with Gmail app password');
+      console.log('   3. Restart server');
+      console.log('');
+      console.log('👉 FOR NOW, USE THIS RESET URL:');
+      console.log('   ' + (options.resetUrl || 'N/A'));
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       
       return {
         success: true,
-        messageId: 'fallback-' + Date.now(),
-        note: 'Email sending failed - using fallback simulation'
+        messageId: 'no-email-config-' + Date.now(),
+        note: 'Email not configured - see EMAIL_SETUP.md'
       };
     }
 
