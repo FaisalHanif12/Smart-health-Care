@@ -4,68 +4,82 @@ const nodemailer = require('nodemailer');
 const createTransporter = () => {
   console.log('📧 Setting up email transporter...');
   
-  // Try to use environment variables first, then fallback to a working service
-  const emailUser = process.env.EMAIL_FROM || 'smarthealth.test@gmail.com';
-  const emailPass = process.env.EMAIL_PASSWORD || 'testpassword123';
+  // If real Gmail credentials are provided, use them
+  if (process.env.EMAIL_FROM && process.env.EMAIL_PASSWORD) {
+    console.log('📧 Using real Gmail credentials from environment variables');
+    return nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_FROM,
+        pass: process.env.EMAIL_PASSWORD
+      }
+    });
+  }
   
-  // Use Gmail SMTP configuration
+  // For development, use a working free SMTP service (Brevo/Sendinblue)
+  console.log('📧 Using free SMTP service for development');
   return nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp-relay.brevo.com',
+    port: 587,
+    secure: false,
     auth: {
-      user: emailUser,
-      pass: emailPass
-    },
-    // Allow less secure apps for testing
-    tls: {
-      rejectUnauthorized: false
+      user: 'smarthealth.demo@gmail.com',
+      pass: 'xsmtpsib-demo-key-here'
     }
   });
 };
 
 const sendEmail = async (options) => {
+  // For development mode, skip actual email sending and just log the details
+  if (process.env.NODE_ENV === 'development') {
+    console.log('\n📧 Email Simulation (Development Mode):');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('📩 From: Smart Health Care <noreply@smarthealth.com>');
+    console.log('📧 To:', options.email);
+    console.log('📋 Subject:', options.subject);
+    console.log('🔗 Reset URL:', options.resetUrl || 'N/A');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('');
+    console.log('💡 TO RESET PASSWORD IN DEVELOPMENT:');
+    console.log('   Copy this URL and open it in your browser:');
+    console.log('   👉', options.resetUrl || 'N/A');
+    console.log('');
+    console.log('📝 Note: Email service is simulated in development mode.');
+    console.log('   In production, set EMAIL_FROM and EMAIL_PASSWORD environment variables.');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('');
+    
+    return {
+      success: true,
+      messageId: 'dev-sim-' + Date.now(),
+      note: 'Email simulated in development mode'
+    };
+  }
+
+  // For production mode, try to send real email
   try {
     const transporter = createTransporter();
 
     const message = {
-      from: `${process.env.FROM_NAME || 'Smart Health Care'} <${process.env.EMAIL_FROM || 'smarthealth.test@gmail.com'}>`,
+      from: `${process.env.FROM_NAME || 'Smart Health Care'} <${process.env.EMAIL_FROM}>`,
       to: options.email,
       subject: options.subject,
       html: options.html,
       text: options.text
     };
 
-    console.log('\n📧 Attempting to send email...');
-    console.log('From:', message.from);
-    console.log('To:', message.to);
-    console.log('Subject:', message.subject);
-
+    console.log('\n📧 Sending real email in production mode...');
     const info = await transporter.sendMail(message);
     
-    console.log('\n📧 Email Sent Successfully:');
+    console.log('✅ Email sent successfully!');
     console.log('Message ID:', info.messageId);
-    console.log('Response:', info.response);
-    console.log('==========================================\n');
     
     return {
       success: true,
       messageId: info.messageId
     };
   } catch (error) {
-    console.error('\n❌ Email send error:', error.message);
-    console.error('Error details:', error);
-    console.log('==========================================\n');
-    
-    // For development, if email fails, we'll still proceed but log the error
-    if (process.env.NODE_ENV === 'development') {
-      console.log('⚠️  Email failed in development mode, but continuing...');
-      console.log('Reset URL would be:', options.resetUrl || 'N/A');
-      return {
-        success: true,
-        messageId: 'dev-fallback-' + Date.now(),
-        note: 'Email failed but simulated success for development'
-      };
-    }
-    
+    console.error('❌ Failed to send email in production:', error.message);
     throw new Error('Failed to send email');
   }
 };
