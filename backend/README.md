@@ -297,6 +297,35 @@ Common HTTP status codes:
 
 This project is licensed under the MIT License.
 
+## 📧 Email Configuration (Optional)
+
+### For Real Email Sending
+
+To send actual emails to user inboxes, set up Gmail SMTP:
+
+1. **Create App Password for Gmail:**
+   - Go to Google Account Settings
+   - Security → 2-Factor Authentication
+   - App Passwords → Generate new password
+   - Copy the 16-character app password
+
+2. **Create `.env` file in backend folder:**
+   ```bash
+   EMAIL_FROM=your-email@gmail.com
+   EMAIL_PASSWORD=your-16-character-app-password
+   FROM_NAME=Smart Health Care
+   ```
+
+3. **Restart the server** - emails will now be sent to real inboxes!
+
+### Development Mode (Default)
+
+Without email configuration, the system:
+- Creates test email accounts automatically
+- Shows email preview URLs in console
+- Provides reset URLs for direct testing
+- Works perfectly for development and testing
+
 ---
 
 **Smart Health Care Backend API** - Built with ❤️ for better health management 

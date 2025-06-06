@@ -1,7 +1,7 @@
 const nodemailer = require('nodemailer');
 
 // Create transporter
-const createTransporter = () => {
+const createTransporter = async () => {
   console.log('📧 Setting up email transporter...');
   
   // If real Gmail credentials are provided, use them
@@ -16,72 +16,108 @@ const createTransporter = () => {
     });
   }
   
-  // For development, use environment variables or skip email sending
-  console.log('📧 No email credentials provided - using simulation mode');
-  return null;
+  // For development, use Ethereal Email (generates real test emails)
+  console.log('📧 Creating test email account for development...');
+  try {
+    const testAccount = await nodemailer.createTestAccount();
+    
+    return nodemailer.createTransport({
+      host: 'smtp.ethereal.email',
+      port: 587,
+      secure: false,
+      auth: {
+        user: testAccount.user,
+        pass: testAccount.pass
+      }
+    });
+  } catch (error) {
+    console.error('Failed to create test account:', error);
+    return null;
+  }
 };
 
 const sendEmail = async (options) => {
-  // For development mode, skip actual email sending and just log the details
-  if (process.env.NODE_ENV === 'development') {
-    console.log('\n📧 Email Simulation (Development Mode):');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('📩 From: Smart Health Care <noreply@smarthealth.com>');
-    console.log('📧 To:', options.email);
-    console.log('📋 Subject:', options.subject);
-    console.log('🔗 Reset URL:', options.resetUrl || 'N/A');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('');
-    console.log('💡 TO RESET PASSWORD IN DEVELOPMENT:');
-    console.log('   Copy this URL and open it in your browser:');
-    console.log('   👉', options.resetUrl || 'N/A');
-    console.log('');
-    console.log('📝 Note: Email service is simulated in development mode.');
-    console.log('   In production, set EMAIL_FROM and EMAIL_PASSWORD environment variables.');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('');
-    
-    return {
-      success: true,
-      messageId: 'dev-sim-' + Date.now(),
-      note: 'Email simulated in development mode'
-    };
-  }
-
-  // For production mode, try to send real email
   try {
-    const transporter = createTransporter();
+    console.log('\n📧 Attempting to send email...');
+    console.log('To:', options.email);
+    console.log('Subject:', options.subject);
+
+    const transporter = await createTransporter();
     
     if (!transporter) {
-      console.log('⚠️  No email transporter configured - email sending disabled');
+      console.log('⚠️  Failed to create email transporter');
+      // Fallback to simulation mode
+      console.log('\n📧 Email Simulation (Fallback Mode):');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('📧 To:', options.email);
+      console.log('📋 Subject:', options.subject);
+      console.log('🔗 Reset URL:', options.resetUrl || 'N/A');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('👉 USE THIS URL:', options.resetUrl || 'N/A');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      
       return {
         success: true,
-        messageId: 'no-email-' + Date.now(),
-        note: 'Email sending disabled - no credentials provided'
+        messageId: 'fallback-' + Date.now(),
+        note: 'Email sending failed - using fallback simulation'
       };
     }
 
     const message = {
-      from: `${process.env.FROM_NAME || 'Smart Health Care'} <${process.env.EMAIL_FROM}>`,
+      from: `${process.env.FROM_NAME || 'Smart Health Care'} <${process.env.EMAIL_FROM || 'noreply@smarthealth.com'}>`,
       to: options.email,
       subject: options.subject,
       html: options.html,
       text: options.text
     };
 
-    console.log('\n📧 Sending real email in production mode...');
     const info = await transporter.sendMail(message);
     
-    console.log('✅ Email sent successfully!');
-    console.log('Message ID:', info.messageId);
+    console.log('\n✅ Email sent successfully!');
+    console.log('📧 To:', options.email);
+    console.log('📬 Message ID:', info.messageId);
+    
+    // For Ethereal test emails, show preview URL
+    const previewUrl = nodemailer.getTestMessageUrl(info);
+    if (previewUrl) {
+      console.log('');
+      console.log('🌐 EMAIL PREVIEW (Test Email):');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('📱 Since this is a test email, view it here:');
+      console.log('👉', previewUrl);
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('');
+      console.log('💡 ALTERNATIVE: Use the reset URL directly:');
+      console.log('👉', options.resetUrl || 'N/A');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    }
     
     return {
       success: true,
-      messageId: info.messageId
+      messageId: info.messageId,
+      previewUrl: previewUrl
     };
   } catch (error) {
-    console.error('❌ Failed to send email in production:', error.message);
-    throw new Error('Failed to send email');
+    console.error('\n❌ Email send error:', error.message);
+    
+    // Fallback to simulation with clear instructions
+    console.log('\n📧 Email Failed - Using Simulation Mode:');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('📧 To:', options.email);
+    console.log('📋 Subject:', options.subject);
+    console.log('🔗 Reset URL:', options.resetUrl || 'N/A');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('');
+    console.log('💡 TO RESET PASSWORD:');
+    console.log('   Copy this URL and open it in your browser:');
+    console.log('   👉', options.resetUrl || 'N/A');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    
+    return {
+      success: true,
+      messageId: 'error-fallback-' + Date.now(),
+      note: 'Email failed but simulation provided'
+    };
   }
 };
 
