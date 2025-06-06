@@ -245,15 +245,16 @@ const forgotPassword = asyncHandler(async (req, res, next) => {
   await user.save({ validateBeforeSave: false });
 
   try {
-    // Always try to send email (both development and production)
-    await sendPasswordResetEmail(user, resetToken, req);
+    // Try to send email
+    const emailResult = await sendPasswordResetEmail(user, resetToken, req);
 
     // Log for development debugging
     if (process.env.NODE_ENV === 'development') {
-      console.log('\n🔐 Password Reset Email Sent:');
+      console.log('\n🔐 Password Reset Process:');
       console.log('User:', user.email);
       console.log('Reset URL:', `http://localhost:5173/reset-password/${resetToken}`);
       console.log('Token expires in 10 minutes');
+      console.log('Email Status:', emailResult?.note || 'Sent successfully');
       console.log('==========================================\n');
     }
 
@@ -263,12 +264,32 @@ const forgotPassword = asyncHandler(async (req, res, next) => {
       resetInfo: {
         email: user.email,
         expiresIn: '10 minutes'
-      }
+      },
+      ...(process.env.NODE_ENV === 'development' && emailResult?.note && {
+        devNote: 'Email service may not be configured. In production, please set up proper email credentials.'
+      })
     });
   } catch (error) {
     console.error('Password reset email error:', error);
     
-    // Reset the token fields if email failed
+    // In development mode, don't fail completely if email doesn't work
+    if (process.env.NODE_ENV === 'development') {
+      console.log('⚠️  Email failed in development, but allowing password reset to continue...');
+      console.log('Reset URL for testing:', `http://localhost:5173/reset-password/${resetToken}`);
+      
+      res.status(200).json({
+        success: true,
+        message: 'Password reset token generated. In development mode, email sending failed but you can use the reset URL from the server logs.',
+        resetInfo: {
+          email: user.email,
+          expiresIn: '10 minutes'
+        },
+        devNote: 'Email service not configured for development. Check server logs for reset URL.'
+      });
+      return;
+    }
+    
+    // Reset the token fields if email failed in production
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
     await user.save({ validateBeforeSave: false });
