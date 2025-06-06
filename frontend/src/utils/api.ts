@@ -6,12 +6,6 @@ export interface ApiResponse<T = any> {
   message: string;
   data?: T;
   token?: string;
-  dev_info?: {
-    resetToken?: string;
-    resetUrl?: string;
-    expiresIn?: string;
-    note?: string;
-  };
   resetInfo?: {
     email?: string;
     expiresIn?: string;

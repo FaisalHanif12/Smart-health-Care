@@ -245,33 +245,21 @@ const forgotPassword = asyncHandler(async (req, res, next) => {
   await user.save({ validateBeforeSave: false });
 
   try {
-    // In development mode, just return the reset token for testing
+    // Always try to send email (both development and production)
+    await sendPasswordResetEmail(user, resetToken, req);
+
+    // Log for development debugging
     if (process.env.NODE_ENV === 'development') {
-      console.log('\n🔐 Password Reset Token Generated:');
+      console.log('\n🔐 Password Reset Email Sent:');
       console.log('User:', user.email);
-      console.log('Reset Token:', resetToken);
       console.log('Reset URL:', `http://localhost:5173/reset-password/${resetToken}`);
       console.log('Token expires in 10 minutes');
       console.log('==========================================\n');
-
-      return res.status(200).json({
-        success: true,
-        message: 'Password reset token generated successfully. In development mode, check the console for the reset link.',
-        dev_info: {
-          resetToken: resetToken,
-          resetUrl: `http://localhost:5173/reset-password/${resetToken}`,
-          expiresIn: '10 minutes',
-          note: 'In development mode - Use the resetUrl above to reset your password'
-        }
-      });
     }
-
-    // In production, send email
-    await sendPasswordResetEmail(user, resetToken, req);
 
     res.status(200).json({
       success: true,
-      message: 'Password reset email sent successfully. Please check your inbox and follow the instructions.',
+      message: 'Password reset link has been sent to your email address. Please check your inbox and follow the instructions to reset your password.',
       resetInfo: {
         email: user.email,
         expiresIn: '10 minutes'
@@ -285,7 +273,7 @@ const forgotPassword = asyncHandler(async (req, res, next) => {
     user.passwordResetExpires = undefined;
     await user.save({ validateBeforeSave: false });
 
-    return next(new ErrorResponse('Failed to process password reset request. Please try again later.', 500));
+    return next(new ErrorResponse('Failed to send password reset email. Please check your email address and try again later.', 500));
   }
 });
 

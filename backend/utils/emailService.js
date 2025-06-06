@@ -1,21 +1,38 @@
 const nodemailer = require('nodemailer');
 
 // Create transporter
-const createTransporter = () => {
-  // For development, use Gmail SMTP
-  // In production, you would use a proper email service like SendGrid, Mailgun, etc.
+const createTransporter = async () => {
+  // For development, create a test account
+  if (process.env.NODE_ENV === 'development' && (!process.env.EMAIL_FROM || !process.env.EMAIL_PASSWORD)) {
+    console.log('📧 Creating test email account for development...');
+    
+    // Generate test SMTP service account from ethereal.email
+    const testAccount = await nodemailer.createTestAccount();
+    
+    return nodemailer.createTransporter({
+      host: 'smtp.ethereal.email',
+      port: 587,
+      secure: false,
+      auth: {
+        user: testAccount.user,
+        pass: testAccount.pass
+      }
+    });
+  }
+  
+  // For production or when real email credentials are provided
   return nodemailer.createTransporter({
     service: 'gmail',
     auth: {
-      user: process.env.EMAIL_FROM || 'your-email@gmail.com',
-      pass: process.env.EMAIL_PASSWORD || 'your-app-password'
+      user: process.env.EMAIL_FROM,
+      pass: process.env.EMAIL_PASSWORD
     }
   });
 };
 
 const sendEmail = async (options) => {
   try {
-    const transporter = createTransporter();
+    const transporter = await createTransporter();
 
     const message = {
       from: `${process.env.FROM_NAME || 'Smart Health Care'} <${process.env.EMAIL_FROM || 'noreply@smarthealth.com'}>`,
@@ -25,28 +42,29 @@ const sendEmail = async (options) => {
       text: options.text
     };
 
-    // In development, log the email instead of sending
+    // Always try to send the email (both development and production)
+    const info = await transporter.sendMail(message);
+    
+    // Log email details in development for debugging
     if (process.env.NODE_ENV === 'development') {
-      console.log('\n📧 Email would be sent in production:');
+      console.log('\n📧 Email Sent Successfully:');
       console.log('From:', message.from);
       console.log('To:', message.to);
       console.log('Subject:', message.subject);
-      console.log('Content:', options.text || 'HTML content');
-      console.log('Reset URL:', options.resetUrl);
-      console.log('==========================================\n');
+      console.log('Message ID:', info.messageId);
       
-      return {
-        success: true,
-        messageId: 'dev-mode-' + Date.now()
-      };
+      // For test accounts, show preview URL
+      if (nodemailer.getTestMessageUrl(info)) {
+        console.log('📧 Preview URL:', nodemailer.getTestMessageUrl(info));
+      }
+      
+      console.log('==========================================\n');
     }
-
-    // In production, actually send the email
-    const info = await transporter.sendMail(message);
     
     return {
       success: true,
-      messageId: info.messageId
+      messageId: info.messageId,
+      previewUrl: nodemailer.getTestMessageUrl(info) // Will be null for real emails
     };
   } catch (error) {
     console.error('Email send error:', error);
