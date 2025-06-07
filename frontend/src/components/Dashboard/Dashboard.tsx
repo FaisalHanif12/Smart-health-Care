@@ -51,7 +51,7 @@ export default function Dashboard() {
       </div>
       
       {/* Side Navigation */}
-      <nav className={`w-64 bg-gray-900 min-h-screen p-4 ${isMobileMenuOpen ? 'block' : 'hidden'} md:block fixed md:relative z-50`}>
+      <nav className={`w-64 bg-gray-900 h-screen p-4 ${isMobileMenuOpen ? 'block' : 'hidden'} md:block fixed md:relative z-50 overflow-y-auto`}>
         <div className="flex items-center mb-8">
           <h1 className="text-xl font-bold text-yellow-400">HEALTH TRACKER</h1>
         </div>
@@ -127,8 +127,8 @@ export default function Dashboard() {
       </nav>
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-auto">
-        <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+      <div className="flex-1 overflow-y-auto h-screen">
+        <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 pb-20">
           {/* Header */}
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-semibold text-gray-800">Dashboard</h1>
