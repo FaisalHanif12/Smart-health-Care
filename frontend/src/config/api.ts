@@ -1,8 +1,9 @@
 // API Configuration
 export const API_CONFIG = {
-  // OpenAI API Key - In production, this should be stored securely on the backend
-  // For development, you can set this directly or use environment variables
-  OPENAI_API_KEY: '',
+  // OpenAI API Key - Loaded from environment variables
+  // Set VITE_OPENAI_API_KEY in your .env file
+  // In production, this should be moved to backend for security
+  OPENAI_API_KEY: import.meta.env.VITE_OPENAI_API_KEY || '',
   
   // Backend API URL
   BACKEND_URL: 'http://localhost:5000',
