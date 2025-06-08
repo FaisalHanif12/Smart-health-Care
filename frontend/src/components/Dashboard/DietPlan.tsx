@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import OpenAIService from '../../services/openaiService';
 import type { DietPlan as AIDietPlan } from '../../services/openaiService';
-import { getOpenAIKey } from '../../config/api';
+import { getOpenAIKey, isValidOpenAIKey } from '../../config/api';
 
 interface Meal {
   name: string;
@@ -100,7 +100,12 @@ Format the response as a structured daily plan that can be easily followed. Cons
 
     const apiKey = getOpenAIKey();
     if (!apiKey) {
-      setAiError('OpenAI API key not configured. Please check your environment variables.');
+      setAiError('OpenAI API key not configured. Please create a .env file in the frontend folder with VITE_OPENAI_API_KEY=your_key_here');
+      return;
+    }
+
+    if (!isValidOpenAIKey(apiKey)) {
+      setAiError('Invalid OpenAI API key format. Please check that your key starts with "sk-" and is complete.');
       return;
     }
 

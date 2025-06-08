@@ -3,18 +3,23 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import OpenAIService from '../../services/openaiService';
 import type { WorkoutPlan as AIWorkoutPlan } from '../../services/openaiService';
-import { getOpenAIKey } from '../../config/api';
+import { getOpenAIKey, isValidOpenAIKey } from '../../config/api';
 
 interface Exercise {
   name: string;
   sets: number;
   reps: number;
   completed: boolean;
+  restTime?: string;
+  equipment?: string;
 }
 
 interface WorkoutDay {
   day: string;
   exercises: Exercise[];
+  duration?: string;
+  warmup?: string[];
+  cooldown?: string[];
 }
 
 export default function WorkoutPlan() {
@@ -96,7 +101,12 @@ Focus on exercises that support their goal of ${user.profile.fitnessGoal || 'Gen
 
     const apiKey = getOpenAIKey();
     if (!apiKey) {
-      setAiError('OpenAI API key not configured. Please check your environment variables.');
+      setAiError('OpenAI API key not configured. Please create a .env file in the frontend folder with VITE_OPENAI_API_KEY=your_key_here');
+      return;
+    }
+
+    if (!isValidOpenAIKey(apiKey)) {
+      setAiError('Invalid OpenAI API key format. Please check that your key starts with "sk-" and is complete.');
       return;
     }
 
@@ -113,18 +123,23 @@ Focus on exercises that support their goal of ${user.profile.fitnessGoal || 'Gen
       const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
       
       days.forEach(day => {
-        if (aiWorkoutPlan[day]) {
+        if (aiWorkoutPlan[day] && aiWorkoutPlan[day].exercises) {
           const dayPlan = aiWorkoutPlan[day];
           const exercises: Exercise[] = dayPlan.exercises.map(exercise => ({
-            name: `${exercise.name} (${exercise.sets}x${exercise.reps})`,
+            name: exercise.name,
             sets: exercise.sets,
             reps: exercise.reps,
             completed: false,
+            restTime: exercise.restTime,
+            equipment: exercise.equipment,
           }));
           
           newWorkoutPlan.push({
             day,
             exercises,
+            duration: dayPlan.duration,
+            warmup: dayPlan.warmup,
+            cooldown: dayPlan.cooldown,
           });
         }
       });
@@ -344,26 +359,53 @@ Focus on exercises that support their goal of ${user.profile.fitnessGoal || 'Gen
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {workoutPlan.map((day, dayIndex) => (
                     <div key={day.day} className="bg-gray-50 rounded-lg p-4">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">{day.day}</h3>
-                      <div className="space-y-4">
+                      <div className="mb-4">
+                        <h3 className="text-lg font-semibold text-gray-900">{day.day}</h3>
+                        {day.duration && (
+                          <p className="text-sm text-blue-600 font-medium">Duration: {day.duration}</p>
+                        )}
+                      </div>
+
+                      {/* Warmup Section */}
+                      {day.warmup && day.warmup.length > 0 && (
+                        <div className="mb-4 p-3 bg-yellow-50 rounded-lg">
+                          <h4 className="text-sm font-semibold text-yellow-800 mb-2">🔥 Warm-up</h4>
+                          <ul className="text-xs text-yellow-700 space-y-1">
+                            {day.warmup.map((item, index) => (
+                              <li key={index}>• {item}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Exercises */}
+                      <div className="space-y-3 mb-4">
                         {day.exercises.map((exercise, exerciseIndex) => (
                           <div
                             key={exercise.name}
-                            className={`p-4 rounded-lg ${exercise.completed ? 'bg-green-50' : 'bg-white'} shadow-sm`}
+                            className={`p-3 rounded-lg ${exercise.completed ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'} border shadow-sm`}
                           >
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <h4 className="font-medium text-gray-900">{exercise.name}</h4>
-                                <p className="text-sm text-gray-500">
-                                  {exercise.sets} sets × {exercise.reps} reps
-                                </p>
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <h4 className="font-medium text-gray-900 text-sm">{exercise.name}</h4>
+                                <div className="mt-1 space-y-1">
+                                  <p className="text-xs text-gray-600">
+                                    {exercise.sets} sets × {exercise.reps} reps
+                                  </p>
+                                  {exercise.restTime && (
+                                    <p className="text-xs text-blue-600">Rest: {exercise.restTime}</p>
+                                  )}
+                                  {exercise.equipment && exercise.equipment !== 'None' && (
+                                    <p className="text-xs text-purple-600">Equipment: {exercise.equipment}</p>
+                                  )}
+                                </div>
                               </div>
                               <button
                                 onClick={() => toggleExerciseCompletion(dayIndex, exerciseIndex)}
-                                className={`${exercise.completed ? 'bg-green-500' : 'bg-gray-200'} p-2 rounded-full focus:outline-none`}
+                                className={`ml-2 ${exercise.completed ? 'bg-green-500' : 'bg-gray-200'} p-2 rounded-full focus:outline-none transition-colors`}
                               >
                                 <svg
-                                  className={`h-5 w-5 ${exercise.completed ? 'text-white' : 'text-gray-500'}`}
+                                  className={`h-4 w-4 ${exercise.completed ? 'text-white' : 'text-gray-500'}`}
                                   xmlns="http://www.w3.org/2000/svg"
                                   viewBox="0 0 20 20"
                                   fill="currentColor"
@@ -379,6 +421,18 @@ Focus on exercises that support their goal of ${user.profile.fitnessGoal || 'Gen
                           </div>
                         ))}
                       </div>
+
+                      {/* Cooldown Section */}
+                      {day.cooldown && day.cooldown.length > 0 && (
+                        <div className="p-3 bg-blue-50 rounded-lg">
+                          <h4 className="text-sm font-semibold text-blue-800 mb-2">❄️ Cool-down</h4>
+                          <ul className="text-xs text-blue-700 space-y-1">
+                            {day.cooldown.map((item, index) => (
+                              <li key={index}>• {item}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
