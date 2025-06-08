@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import OpenAIService from '../../services/openaiService';
 import type { DietPlan as AIDietPlan } from '../../services/openaiService';
 import { getOpenAIKey, isValidOpenAIKey } from '../../config/api';
+import ApiKeySetup from '../ApiKeySetup';
 
 interface Meal {
   name: string;
@@ -28,6 +29,7 @@ export default function DietPlan() {
   const [aiError, setAiError] = useState('');
   const [isEditingPrompt, setIsEditingPrompt] = useState(false);
   const [customPrompt, setCustomPrompt] = useState('');
+  const [showApiKeySetup, setShowApiKeySetup] = useState(false);
   const [meals, setMeals] = useState<DailyMeals[]>([]);
 
   const toggleMealCompletion = (index: number) => {
@@ -100,12 +102,14 @@ Format the response as a structured daily plan that can be easily followed. Cons
 
     const apiKey = getOpenAIKey();
     if (!apiKey) {
-      setAiError('OpenAI API key not configured. Please create a .env file in the frontend folder with VITE_OPENAI_API_KEY=your_key_here');
+      setShowApiKeySetup(true);
+      setAiError('');
       return;
     }
 
     if (!isValidOpenAIKey(apiKey)) {
-      setAiError('Invalid OpenAI API key format. Please check that your key starts with "sk-" and is complete.');
+      setShowApiKeySetup(true);
+      setAiError('');
       return;
     }
 
@@ -449,6 +453,28 @@ Format the response as a structured daily plan that can be easily followed. Cons
           </div>
         </main>
       </div>
+
+      {/* API Key Setup Modal */}
+      {showApiKeySetup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">Setup Required</h3>
+              <button
+                onClick={() => setShowApiKeySetup(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-4">
+              <ApiKeySetup onKeySet={() => setShowApiKeySetup(false)} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
