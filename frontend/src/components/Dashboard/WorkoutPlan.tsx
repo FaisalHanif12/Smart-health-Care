@@ -1,6 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import OpenAIService from '../../services/openaiService';
+import type { WorkoutPlan as AIWorkoutPlan } from '../../services/openaiService';
+import { getOpenAIKey } from '../../config/api';
 
 interface Exercise {
   name: string;
@@ -18,57 +21,12 @@ export default function WorkoutPlan() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { logout } = useAuth();
-  const [workoutPlan, setWorkoutPlan] = useState<WorkoutDay[]>([
-    {
-      day: 'Monday',
-      exercises: [
-        { name: 'Push-ups', sets: 3, reps: 15, completed: false },
-        { name: 'Squats', sets: 4, reps: 12, completed: false },
-        { name: 'Plank', sets: 3, reps: 30, completed: false },
-      ],
-    },
-    {
-      day: 'Tuesday',
-      exercises: [
-        { name: 'Burpees', sets: 3, reps: 10, completed: false },
-        { name: 'Bicycle Crunches', sets: 3, reps: 20, completed: false },
-        { name: 'Wall Sit', sets: 3, reps: 45, completed: false },
-      ],
-    },
-    {
-      day: 'Wednesday',
-      exercises: [
-        { name: 'Pull-ups', sets: 3, reps: 8, completed: false },
-        { name: 'Lunges', sets: 3, reps: 12, completed: false },
-        { name: 'Crunches', sets: 3, reps: 20, completed: false },
-      ],
-    },
-    {
-      day: 'Thursday',
-      exercises: [
-        { name: 'Jumping Jacks', sets: 3, reps: 25, completed: false },
-        { name: 'Russian Twists', sets: 3, reps: 20, completed: false },
-        { name: 'High Knees', sets: 3, reps: 30, completed: false },
-      ],
-    },
-    {
-      day: 'Friday',
-      exercises: [
-        { name: 'Dumbbell Rows', sets: 3, reps: 12, completed: false },
-        { name: 'Deadlifts', sets: 4, reps: 10, completed: false },
-        { name: 'Mountain Climbers', sets: 3, reps: 20, completed: false },
-      ],
-    },
-    {
-      day: 'Saturday',
-      exercises: [
-        { name: 'Tricep Dips', sets: 3, reps: 12, completed: false },
-        { name: 'Leg Raises', sets: 3, reps: 15, completed: false },
-        { name: 'Side Plank', sets: 2, reps: 30, completed: false },
-      ],
-    },
-  ]);
+  const { user, logout } = useAuth();
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [aiError, setAiError] = useState('');
+  const [isEditingPrompt, setIsEditingPrompt] = useState(false);
+  const [customPrompt, setCustomPrompt] = useState('');
+  const [workoutPlan, setWorkoutPlan] = useState<WorkoutDay[]>([]);
 
   const toggleExerciseCompletion = (dayIndex: number, exerciseIndex: number) => {
     const newWorkoutPlan = [...workoutPlan];
@@ -89,6 +47,118 @@ export default function WorkoutPlan() {
       console.error('Error logging out:', error);
     }
   };
+
+  // Generate personalized prompt based on user profile
+  const generatePersonalizedPrompt = () => {
+    if (!user?.profile) {
+      return 'Please complete your profile first to generate a personalized workout plan prompt.';
+    }
+
+    const height = user.profile.height || 170;
+    const weight = user.profile.weight || 70;
+    const heightInM = height / 100;
+    const bmi = (weight / (heightInM * heightInM)).toFixed(1);
+    
+    const healthConditionsText = user.profile.healthConditions && user.profile.healthConditions.length > 0 && !user.profile.healthConditions.includes('None') 
+      ? user.profile.healthConditions.join(', ') 
+      : 'no specific health conditions';
+
+    return `Create a detailed weekly workout plan for a ${user.profile.age || 25}-year-old ${user.profile.gender || 'person'} who is ${height}cm tall and weighs ${weight}kg (BMI: ${bmi}).
+
+Their primary fitness goal is: ${user.profile.fitnessGoal || 'General Fitness'}
+Health considerations: ${healthConditionsText}
+
+Please provide a structured 6-day weekly workout schedule:
+1. Monday - Specific exercises with sets, reps, and rest periods
+2. Tuesday - Specific exercises with sets, reps, and rest periods
+3. Wednesday - Specific exercises with sets, reps, and rest periods
+4. Thursday - Specific exercises with sets, reps, and rest periods
+5. Friday - Specific exercises with sets, reps, and rest periods
+6. Saturday - Specific exercises with sets, reps, and rest periods
+7. Sunday - Rest day with light activity suggestions
+
+For each day, include:
+- Warm-up routine (5-10 minutes)
+- Main workout with specific exercises, sets, reps
+- Cool-down and stretching routine
+- Estimated workout duration
+- Equipment needed (if any)
+- Modifications for their fitness level and health conditions
+
+Focus on exercises that support their goal of ${user.profile.fitnessGoal || 'General Fitness'} while considering their health conditions.`;
+  };
+
+  const generateAIWorkoutPlan = async () => {
+    if (!user?.profile) {
+      setAiError('Please complete your profile first to generate an AI workout plan.');
+      return;
+    }
+
+    const apiKey = getOpenAIKey();
+    if (!apiKey) {
+      setAiError('OpenAI API key not configured. Please check your environment variables.');
+      return;
+    }
+
+    setIsGeneratingAI(true);
+    setAiError('');
+
+    try {
+      const prompt = customPrompt || generatePersonalizedPrompt();
+      const openaiService = new OpenAIService(apiKey);
+      const aiWorkoutPlan = await openaiService.generateWorkoutPlan(prompt);
+      
+      // Convert AI workout plan to our format
+      const newWorkoutPlan: WorkoutDay[] = [];
+      const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      
+      days.forEach(day => {
+        if (aiWorkoutPlan[day]) {
+          const dayPlan = aiWorkoutPlan[day];
+          const exercises: Exercise[] = dayPlan.exercises.map(exercise => ({
+            name: `${exercise.name} (${exercise.sets}x${exercise.reps})`,
+            sets: exercise.sets,
+            reps: exercise.reps,
+            completed: false,
+          }));
+          
+          newWorkoutPlan.push({
+            day,
+            exercises,
+          });
+        }
+      });
+
+      setWorkoutPlan(newWorkoutPlan);
+    } catch (error) {
+      console.error('Error generating AI workout plan:', error);
+      setAiError('Failed to generate AI workout plan. Please try again.');
+    } finally {
+      setIsGeneratingAI(false);
+    }
+  };
+
+  const handleEditPrompt = () => {
+    if (!isEditingPrompt) {
+      setCustomPrompt(generatePersonalizedPrompt());
+    }
+    setIsEditingPrompt(!isEditingPrompt);
+  };
+
+  const handleSavePrompt = () => {
+    setIsEditingPrompt(false);
+  };
+
+  // Auto-update prompt when user profile changes
+  useEffect(() => {
+    if (!isEditingPrompt && !customPrompt) {
+      // Only auto-update if user hasn't customized the prompt
+      const newPrompt = generatePersonalizedPrompt();
+      if (newPrompt !== customPrompt) {
+        setCustomPrompt(''); // Reset to trigger auto-generation
+      }
+    }
+  }, [user?.profile, isEditingPrompt]);
 
   return (
     <div className="min-h-screen bg-white flex flex-col md:flex-row">
@@ -182,49 +252,138 @@ export default function WorkoutPlan() {
       <div className="flex-1 overflow-auto">
         <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
           <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Your Workout Plan</h2>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {workoutPlan.map((day, dayIndex) => (
-          <div key={day.day} className="bg-gray-50 rounded-lg p-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">{day.day}</h3>
-            <div className="space-y-4">
-              {day.exercises.map((exercise, exerciseIndex) => (
-                <div
-                  key={exercise.name}
-                  className={`p-4 rounded-lg ${exercise.completed ? 'bg-green-50' : 'bg-white'} shadow-sm`}
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">AI Workout Plan Generator</h2>
+              <div className="flex space-x-3">
+                <button
+                  onClick={handleEditPrompt}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors flex items-center space-x-2"
                 >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium text-gray-900">{exercise.name}</h4>
-                      <p className="text-sm text-gray-500">
-                        {exercise.sets} sets × {exercise.reps} reps
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => toggleExerciseCompletion(dayIndex, exerciseIndex)}
-                      className={`${exercise.completed ? 'bg-green-500' : 'bg-gray-200'} p-2 rounded-full focus:outline-none`}
-                    >
-                      <svg
-                        className={`h-5 w-5 ${exercise.completed ? 'text-white' : 'text-gray-500'}`}
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  <span>{isEditingPrompt ? 'Cancel Edit' : 'Edit Prompt'}</span>
+                </button>
+                <button
+                  onClick={generateAIWorkoutPlan}
+                  disabled={isGeneratingAI}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                >
+                  {isGeneratingAI ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
+                      <span>Generating...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                      <span>Generate AI Workout Plan</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {aiError && (
+              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-red-600 text-sm">{aiError}</p>
+              </div>
+            )}
+
+            {/* Personalized Prompt Section */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                Your Personalized Workout Plan Prompt
+                <span className="text-sm font-normal text-gray-500 ml-2">
+                  (Auto-updates based on your profile)
+                </span>
+              </h3>
+              
+              {isEditingPrompt ? (
+                <div className="space-y-4">
+                  <textarea
+                    value={customPrompt}
+                    onChange={(e) => setCustomPrompt(e.target.value)}
+                    className="w-full h-64 p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-mono"
+                    placeholder="Customize your workout plan prompt..."
+                  />
+                  <div className="flex justify-end space-x-3">
+                    <button
+                      onClick={() => setIsEditingPrompt(false)}
+                      className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleSavePrompt}
+                      className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    >
+                      Save Changes
                     </button>
                   </div>
                 </div>
-              ))}
+              ) : (
+                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                  <pre className="whitespace-pre-wrap text-sm text-gray-700 font-mono">
+                    {customPrompt || generatePersonalizedPrompt()}
+                  </pre>
+                </div>
+              )}
             </div>
-          </div>
-        ))}
-      </div>
+
+            {/* Generated Results Section */}
+            {workoutPlan.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Generated Workout Plan</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {workoutPlan.map((day, dayIndex) => (
+                    <div key={day.day} className="bg-gray-50 rounded-lg p-4">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">{day.day}</h3>
+                      <div className="space-y-4">
+                        {day.exercises.map((exercise, exerciseIndex) => (
+                          <div
+                            key={exercise.name}
+                            className={`p-4 rounded-lg ${exercise.completed ? 'bg-green-50' : 'bg-white'} shadow-sm`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <h4 className="font-medium text-gray-900">{exercise.name}</h4>
+                                <p className="text-sm text-gray-500">
+                                  {exercise.sets} sets × {exercise.reps} reps
+                                </p>
+                              </div>
+                              <button
+                                onClick={() => toggleExerciseCompletion(dayIndex, exerciseIndex)}
+                                className={`${exercise.completed ? 'bg-green-500' : 'bg-gray-200'} p-2 rounded-full focus:outline-none`}
+                              >
+                                <svg
+                                  className={`h-5 w-5 ${exercise.completed ? 'text-white' : 'text-gray-500'}`}
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 20 20"
+                                  fill="currentColor"
+                                >
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </main>
       </div>
