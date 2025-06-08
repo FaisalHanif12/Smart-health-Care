@@ -29,6 +29,14 @@ export default function WorkoutPlan() {
       ],
     },
     {
+      day: 'Tuesday',
+      exercises: [
+        { name: 'Burpees', sets: 3, reps: 10, completed: false },
+        { name: 'Bicycle Crunches', sets: 3, reps: 20, completed: false },
+        { name: 'Wall Sit', sets: 3, reps: 45, completed: false },
+      ],
+    },
+    {
       day: 'Wednesday',
       exercises: [
         { name: 'Pull-ups', sets: 3, reps: 8, completed: false },
@@ -37,11 +45,27 @@ export default function WorkoutPlan() {
       ],
     },
     {
+      day: 'Thursday',
+      exercises: [
+        { name: 'Jumping Jacks', sets: 3, reps: 25, completed: false },
+        { name: 'Russian Twists', sets: 3, reps: 20, completed: false },
+        { name: 'High Knees', sets: 3, reps: 30, completed: false },
+      ],
+    },
+    {
       day: 'Friday',
       exercises: [
         { name: 'Dumbbell Rows', sets: 3, reps: 12, completed: false },
         { name: 'Deadlifts', sets: 4, reps: 10, completed: false },
         { name: 'Mountain Climbers', sets: 3, reps: 20, completed: false },
+      ],
+    },
+    {
+      day: 'Saturday',
+      exercises: [
+        { name: 'Tricep Dips', sets: 3, reps: 12, completed: false },
+        { name: 'Leg Raises', sets: 3, reps: 15, completed: false },
+        { name: 'Side Plank', sets: 2, reps: 30, completed: false },
       ],
     },
   ]);
@@ -160,7 +184,7 @@ export default function WorkoutPlan() {
           <div className="bg-white shadow rounded-lg p-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Your Workout Plan</h2>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {workoutPlan.map((day, dayIndex) => (
           <div key={day.day} className="bg-gray-50 rounded-lg p-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">{day.day}</h3>
