@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { getOpenAIKey, setOpenAIKey } from '../../config/api';
+
 
 interface UserProfile {
   username: string;
@@ -38,8 +38,7 @@ export default function Profile() {
   const [showPrompt, setShowPrompt] = useState(false);
   const [generatedPrompt, setGeneratedPrompt] = useState('');
   const [promptType, setPromptType] = useState<'diet' | 'workout' | 'general'>('general');
-  const [apiKey, setApiKey] = useState(getOpenAIKey());
-  const [showApiKeyInput, setShowApiKeyInput] = useState(false);
+
 
   useEffect(() => {
     if (user) {
@@ -230,11 +229,7 @@ Make the plan practical, achievable, and tailored to their specific profile and 
     }
   };
 
-  const saveApiKey = () => {
-    setOpenAIKey(apiKey);
-    setShowApiKeyInput(false);
-    alert('OpenAI API Key saved successfully!');
-  };
+
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
@@ -371,13 +366,8 @@ Make the plan practical, achievable, and tailored to their specific profile and 
               </div>
               <div className="flex flex-wrap gap-2">
                 <button
-                  onClick={() => apiKey ? generatePersonalizedPrompt('diet') : alert('Please configure your OpenAI API key first')}
-                  className={`px-3 py-2 rounded-lg transition-colors flex items-center space-x-2 text-sm ${
-                    apiKey 
-                      ? 'bg-green-500 bg-opacity-90 hover:bg-opacity-100' 
-                      : 'bg-gray-400 cursor-not-allowed'
-                  }`}
-                  disabled={!apiKey}
+                  onClick={() => generatePersonalizedPrompt('diet')}
+                  className="px-3 py-2 rounded-lg transition-colors flex items-center space-x-2 text-sm bg-green-500 bg-opacity-90 hover:bg-opacity-100"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
@@ -385,13 +375,8 @@ Make the plan practical, achievable, and tailored to their specific profile and 
                   <span>Diet Plan</span>
                 </button>
                 <button
-                  onClick={() => apiKey ? generatePersonalizedPrompt('workout') : alert('Please configure your OpenAI API key first')}
-                  className={`px-3 py-2 rounded-lg transition-colors flex items-center space-x-2 text-sm ${
-                    apiKey 
-                      ? 'bg-blue-500 bg-opacity-90 hover:bg-opacity-100' 
-                      : 'bg-gray-400 cursor-not-allowed'
-                  }`}
-                  disabled={!apiKey}
+                  onClick={() => generatePersonalizedPrompt('workout')}
+                  className="px-3 py-2 rounded-lg transition-colors flex items-center space-x-2 text-sm bg-blue-500 bg-opacity-90 hover:bg-opacity-100"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -399,13 +384,8 @@ Make the plan practical, achievable, and tailored to their specific profile and 
                   <span>Workout Plan</span>
                 </button>
                 <button
-                  onClick={() => apiKey ? generatePersonalizedPrompt('general') : alert('Please configure your OpenAI API key first')}
-                  className={`px-3 py-2 rounded-lg transition-colors flex items-center space-x-2 text-sm ${
-                    apiKey 
-                      ? 'bg-purple-500 bg-opacity-90 hover:bg-opacity-100' 
-                      : 'bg-gray-400 cursor-not-allowed'
-                  }`}
-                  disabled={!apiKey}
+                  onClick={() => generatePersonalizedPrompt('general')}
+                  className="px-3 py-2 rounded-lg transition-colors flex items-center space-x-2 text-sm bg-purple-500 bg-opacity-90 hover:bg-opacity-100"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -482,55 +462,7 @@ Make the plan practical, achievable, and tailored to their specific profile and 
             </div>
           </div>
 
-          {/* API Configuration */}
-          <div className="bg-white shadow rounded-lg p-6 mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-900">AI Configuration</h2>
-              <button
-                onClick={() => setShowApiKeyInput(!showApiKeyInput)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-              >
-                {apiKey ? 'Update API Key' : 'Add API Key'}
-              </button>
-            </div>
-            
-            {showApiKeyInput && (
-              <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                <label htmlFor="apiKey" className="block text-sm font-medium text-gray-700 mb-2">
-                  OpenAI API Key
-                </label>
-                <div className="flex space-x-3">
-                  <input
-                    type="password"
-                    id="apiKey"
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                    placeholder="sk-..."
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                  <button
-                    onClick={saveApiKey}
-                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-                  >
-                    Save
-                  </button>
-                </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  Your API key is stored locally and used to generate personalized plans. Get your key from{' '}
-                  <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                    OpenAI Platform
-                  </a>
-                </p>
-              </div>
-            )}
-            
-            <div className="flex items-center space-x-2 text-sm">
-              <div className={`w-3 h-3 rounded-full ${apiKey ? 'bg-green-500' : 'bg-red-500'}`}></div>
-              <span className={apiKey ? 'text-green-700' : 'text-red-700'}>
-                {apiKey ? 'API Key Configured' : 'API Key Required for AI Features'}
-              </span>
-            </div>
-          </div>
+
 
           {/* Profile Details */}
           <div className="bg-white shadow rounded-lg p-6">
