@@ -28,63 +28,7 @@ export default function DietPlan() {
   const [aiError, setAiError] = useState('');
   const [isEditingPrompt, setIsEditingPrompt] = useState(false);
   const [customPrompt, setCustomPrompt] = useState('');
-  const [meals, setMeals] = useState<DailyMeals[]>([
-    {
-      time: '8:00 AM',
-      meal: {
-        name: 'Oatmeal with Fruits',
-        calories: 350,
-        protein: 12,
-        carbs: 55,
-        fats: 8,
-        completed: false,
-      },
-    },
-    {
-      time: '11:00 AM',
-      meal: {
-        name: 'Greek Yogurt with Nuts',
-        calories: 250,
-        protein: 15,
-        carbs: 20,
-        fats: 12,
-        completed: false,
-      },
-    },
-    {
-      time: '2:00 PM',
-      meal: {
-        name: 'Grilled Chicken Salad',
-        calories: 400,
-        protein: 35,
-        carbs: 25,
-        fats: 15,
-        completed: false,
-      },
-    },
-    {
-      time: '5:00 PM',
-      meal: {
-        name: 'Protein Shake',
-        calories: 200,
-        protein: 25,
-        carbs: 15,
-        fats: 5,
-        completed: false,
-      },
-    },
-    {
-      time: '8:00 PM',
-      meal: {
-        name: 'Salmon with Quinoa',
-        calories: 450,
-        protein: 40,
-        carbs: 35,
-        fats: 20,
-        completed: false,
-      },
-    },
-  ]);
+  const [meals, setMeals] = useState<DailyMeals[]>([]);
 
   const toggleMealCompletion = (index: number) => {
     const newMeals = [...meals];
