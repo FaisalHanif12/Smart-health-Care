@@ -34,6 +34,8 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPrompt, setShowPrompt] = useState(false);
+  const [generatedPrompt, setGeneratedPrompt] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -143,6 +145,40 @@ export default function Profile() {
 
   const bmi = calculateBMI();
   const bmiInfo = getBMICategory(bmi);
+
+  const generatePersonalizedPrompt = () => {
+    const healthConditionsText = profile.healthConditions.length > 0 && !profile.healthConditions.includes('None') 
+      ? profile.healthConditions.join(', ') 
+      : 'no specific health conditions';
+    
+    const prompt = `Create a personalized fitness and nutrition plan for a ${profile.age}-year-old ${profile.gender} who is ${profile.height}cm tall and weighs ${profile.weight}kg (BMI: ${bmi} - ${bmiInfo.category}). 
+
+Their primary fitness goal is: ${profile.fitnessGoal}
+Health considerations: ${healthConditionsText}
+
+Please provide:
+1. A detailed weekly workout schedule with specific exercises, sets, and reps
+2. Daily nutrition recommendations with calorie targets and macro breakdowns
+3. Specific dietary suggestions considering their health conditions
+4. Progress tracking milestones and realistic timeline expectations
+5. Safety precautions and modifications based on their current fitness level
+
+Make the plan practical, achievable, and tailored to their specific profile and goals.`;
+
+    setGeneratedPrompt(prompt);
+    setShowPrompt(true);
+  };
+
+  const copyPromptToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(generatedPrompt);
+      // You could add a toast notification here
+      alert('Prompt copied to clipboard!');
+    } catch (err) {
+      console.error('Failed to copy prompt:', err);
+      alert('Failed to copy prompt. Please copy manually.');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
@@ -277,12 +313,23 @@ export default function Profile() {
                   <p className="text-blue-100">Health Tracker Member</p>
                 </div>
               </div>
-              <button
-                onClick={() => setIsEditing(!isEditing)}
-                className="px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg transition-colors"
-              >
-                {isEditing ? 'Cancel' : 'Edit Profile'}
-              </button>
+              <div className="flex space-x-3">
+                <button
+                  onClick={generatePersonalizedPrompt}
+                  className="px-4 py-2 bg-green-500 bg-opacity-90 hover:bg-opacity-100 rounded-lg transition-colors flex items-center space-x-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span>Collect Prompt</span>
+                </button>
+                <button
+                  onClick={() => setIsEditing(!isEditing)}
+                  className="px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg transition-colors"
+                >
+                  {isEditing ? 'Cancel' : 'Edit Profile'}
+                </button>
+              </div>
             </div>
           </div>
 
@@ -499,6 +546,63 @@ export default function Profile() {
               )}
             </form>
           </div>
+
+          {/* Prompt Modal */}
+          {showPrompt && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+              <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+                <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                  <h3 className="text-lg font-semibold text-gray-900">Your Personalized Fitness Prompt</h3>
+                  <button
+                    onClick={() => setShowPrompt(false)}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                
+                <div className="p-6 overflow-y-auto max-h-[60vh]">
+                  <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                    <p className="text-sm text-gray-600 mb-2">
+                      This prompt is generated based on your profile information. You can copy it and use it with AI assistants like ChatGPT, Claude, or other fitness AI tools.
+                    </p>
+                  </div>
+                  
+                  <textarea
+                    value={generatedPrompt}
+                    readOnly
+                    className="w-full h-64 p-4 border border-gray-300 rounded-lg bg-white text-sm font-mono resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="Your personalized prompt will appear here..."
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between p-6 border-t border-gray-200 bg-gray-50">
+                  <div className="text-sm text-gray-500">
+                    Prompt generated based on your current profile data
+                  </div>
+                  <div className="flex space-x-3">
+                    <button
+                      onClick={() => setShowPrompt(false)}
+                      className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                    >
+                      Close
+                    </button>
+                    <button
+                      onClick={copyPromptToClipboard}
+                      className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors flex items-center space-x-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                      <span>Copy Prompt</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </main>
       </div>
     </div>
