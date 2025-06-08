@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { getOpenAIKey, setOpenAIKey } from '../../config/api';
 
 interface UserProfile {
   username: string;
@@ -36,6 +37,9 @@ export default function Profile() {
   const [error, setError] = useState('');
   const [showPrompt, setShowPrompt] = useState(false);
   const [generatedPrompt, setGeneratedPrompt] = useState('');
+  const [promptType, setPromptType] = useState<'diet' | 'workout' | 'general'>('general');
+  const [apiKey, setApiKey] = useState(getOpenAIKey());
+  const [showApiKeyInput, setShowApiKeyInput] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -146,12 +150,56 @@ export default function Profile() {
   const bmi = calculateBMI();
   const bmiInfo = getBMICategory(bmi);
 
-  const generatePersonalizedPrompt = () => {
+  const generatePersonalizedPrompt = (type: 'diet' | 'workout' | 'general') => {
     const healthConditionsText = profile.healthConditions.length > 0 && !profile.healthConditions.includes('None') 
       ? profile.healthConditions.join(', ') 
       : 'no specific health conditions';
     
-    const prompt = `Create a personalized fitness and nutrition plan for a ${profile.age}-year-old ${profile.gender} who is ${profile.height}cm tall and weighs ${profile.weight}kg (BMI: ${bmi} - ${bmiInfo.category}). 
+    let prompt = '';
+    
+    if (type === 'diet') {
+      prompt = `Create a detailed daily diet plan for a ${profile.age}-year-old ${profile.gender} who is ${profile.height}cm tall and weighs ${profile.weight}kg (BMI: ${bmi} - ${bmiInfo.category}).
+
+Their primary fitness goal is: ${profile.fitnessGoal}
+Health considerations: ${healthConditionsText}
+
+Please provide a structured daily meal plan with:
+1. Breakfast (8:00 AM) - Include specific foods, portions, and calories
+2. Lunch (12:00 PM) - Include specific foods, portions, and calories  
+3. Dinner (6:00 PM) - Include specific foods, portions, and calories
+4. 2 healthy snacks between meals
+5. Daily water intake recommendations
+6. Total daily calorie target and macro breakdown (protein, carbs, fats)
+7. Special dietary considerations for their health conditions
+8. Weekly meal prep suggestions
+
+Format the response as a structured daily plan that can be easily followed. Consider their fitness goal of ${profile.fitnessGoal} when calculating nutritional needs.`;
+    } else if (type === 'workout') {
+      prompt = `Create a detailed weekly workout plan for a ${profile.age}-year-old ${profile.gender} who is ${profile.height}cm tall and weighs ${profile.weight}kg (BMI: ${bmi} - ${bmiInfo.category}).
+
+Their primary fitness goal is: ${profile.fitnessGoal}
+Health considerations: ${healthConditionsText}
+
+Please provide a structured 6-day weekly workout schedule:
+1. Monday - Specific exercises with sets, reps, and rest periods
+2. Tuesday - Specific exercises with sets, reps, and rest periods
+3. Wednesday - Specific exercises with sets, reps, and rest periods
+4. Thursday - Specific exercises with sets, reps, and rest periods
+5. Friday - Specific exercises with sets, reps, and rest periods
+6. Saturday - Specific exercises with sets, reps, and rest periods
+7. Sunday - Rest day with light activity suggestions
+
+For each day, include:
+- Warm-up routine (5-10 minutes)
+- Main workout with specific exercises, sets, reps
+- Cool-down and stretching routine
+- Estimated workout duration
+- Equipment needed (if any)
+- Modifications for their fitness level and health conditions
+
+Focus on exercises that support their goal of ${profile.fitnessGoal} while considering their health conditions.`;
+    } else {
+      prompt = `Create a comprehensive fitness and nutrition plan for a ${profile.age}-year-old ${profile.gender} who is ${profile.height}cm tall and weighs ${profile.weight}kg (BMI: ${bmi} - ${bmiInfo.category}). 
 
 Their primary fitness goal is: ${profile.fitnessGoal}
 Health considerations: ${healthConditionsText}
@@ -164,8 +212,10 @@ Please provide:
 5. Safety precautions and modifications based on their current fitness level
 
 Make the plan practical, achievable, and tailored to their specific profile and goals.`;
+    }
 
     setGeneratedPrompt(prompt);
+    setPromptType(type);
     setShowPrompt(true);
   };
 
@@ -178,6 +228,12 @@ Make the plan practical, achievable, and tailored to their specific profile and 
       console.error('Failed to copy prompt:', err);
       alert('Failed to copy prompt. Please copy manually.');
     }
+  };
+
+  const saveApiKey = () => {
+    setOpenAIKey(apiKey);
+    setShowApiKeyInput(false);
+    alert('OpenAI API Key saved successfully!');
   };
 
   return (
@@ -313,15 +369,48 @@ Make the plan practical, achievable, and tailored to their specific profile and 
                   <p className="text-blue-100">Health Tracker Member</p>
                 </div>
               </div>
-              <div className="flex space-x-3">
+              <div className="flex flex-wrap gap-2">
                 <button
-                  onClick={generatePersonalizedPrompt}
-                  className="px-4 py-2 bg-green-500 bg-opacity-90 hover:bg-opacity-100 rounded-lg transition-colors flex items-center space-x-2"
+                  onClick={() => apiKey ? generatePersonalizedPrompt('diet') : alert('Please configure your OpenAI API key first')}
+                  className={`px-3 py-2 rounded-lg transition-colors flex items-center space-x-2 text-sm ${
+                    apiKey 
+                      ? 'bg-green-500 bg-opacity-90 hover:bg-opacity-100' 
+                      : 'bg-gray-400 cursor-not-allowed'
+                  }`}
+                  disabled={!apiKey}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
+                  </svg>
+                  <span>Diet Plan</span>
+                </button>
+                <button
+                  onClick={() => apiKey ? generatePersonalizedPrompt('workout') : alert('Please configure your OpenAI API key first')}
+                  className={`px-3 py-2 rounded-lg transition-colors flex items-center space-x-2 text-sm ${
+                    apiKey 
+                      ? 'bg-blue-500 bg-opacity-90 hover:bg-opacity-100' 
+                      : 'bg-gray-400 cursor-not-allowed'
+                  }`}
+                  disabled={!apiKey}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  <span>Workout Plan</span>
+                </button>
+                <button
+                  onClick={() => apiKey ? generatePersonalizedPrompt('general') : alert('Please configure your OpenAI API key first')}
+                  className={`px-3 py-2 rounded-lg transition-colors flex items-center space-x-2 text-sm ${
+                    apiKey 
+                      ? 'bg-purple-500 bg-opacity-90 hover:bg-opacity-100' 
+                      : 'bg-gray-400 cursor-not-allowed'
+                  }`}
+                  disabled={!apiKey}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
-                  <span>Collect Prompt</span>
+                  <span>Full Plan</span>
                 </button>
                 <button
                   onClick={() => setIsEditing(!isEditing)}
@@ -390,6 +479,56 @@ Make the plan practical, achievable, and tailored to their specific profile and 
                   <p className={`text-xs ${bmiInfo.color}`}>{bmiInfo.category}</p>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* API Configuration */}
+          <div className="bg-white shadow rounded-lg p-6 mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-900">AI Configuration</h2>
+              <button
+                onClick={() => setShowApiKeyInput(!showApiKeyInput)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+              >
+                {apiKey ? 'Update API Key' : 'Add API Key'}
+              </button>
+            </div>
+            
+            {showApiKeyInput && (
+              <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                <label htmlFor="apiKey" className="block text-sm font-medium text-gray-700 mb-2">
+                  OpenAI API Key
+                </label>
+                <div className="flex space-x-3">
+                  <input
+                    type="password"
+                    id="apiKey"
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    placeholder="sk-..."
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  <button
+                    onClick={saveApiKey}
+                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                  >
+                    Save
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Your API key is stored locally and used to generate personalized plans. Get your key from{' '}
+                  <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                    OpenAI Platform
+                  </a>
+                </p>
+              </div>
+            )}
+            
+            <div className="flex items-center space-x-2 text-sm">
+              <div className={`w-3 h-3 rounded-full ${apiKey ? 'bg-green-500' : 'bg-red-500'}`}></div>
+              <span className={apiKey ? 'text-green-700' : 'text-red-700'}>
+                {apiKey ? 'API Key Configured' : 'API Key Required for AI Features'}
+              </span>
             </div>
           </div>
 
@@ -552,7 +691,9 @@ Make the plan practical, achievable, and tailored to their specific profile and 
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
               <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
                 <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                  <h3 className="text-lg font-semibold text-gray-900">Your Personalized Fitness Prompt</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Your Personalized {promptType === 'diet' ? 'Diet Plan' : promptType === 'workout' ? 'Workout Plan' : 'Fitness'} Prompt
+                  </h3>
                   <button
                     onClick={() => setShowPrompt(false)}
                     className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -582,7 +723,7 @@ Make the plan practical, achievable, and tailored to their specific profile and 
                   <div className="text-sm text-gray-500">
                     Prompt generated based on your current profile data
                   </div>
-                  <div className="flex space-x-3">
+                  <div className="flex flex-wrap gap-3">
                     <button
                       onClick={() => setShowPrompt(false)}
                       className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
@@ -598,6 +739,25 @@ Make the plan practical, achievable, and tailored to their specific profile and 
                       </svg>
                       <span>Copy Prompt</span>
                     </button>
+                    {(promptType === 'diet' || promptType === 'workout') && (
+                      <button
+                        onClick={() => {
+                          // Navigate to the respective page and trigger AI generation
+                          if (promptType === 'diet') {
+                            navigate('/dashboard/diet', { state: { generateAI: true, prompt: generatedPrompt } });
+                          } else {
+                            navigate('/dashboard/workout', { state: { generateAI: true, prompt: generatedPrompt } });
+                          }
+                          setShowPrompt(false);
+                        }}
+                        className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors flex items-center space-x-2"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        <span>Generate AI {promptType === 'diet' ? 'Diet' : 'Workout'} Plan</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
