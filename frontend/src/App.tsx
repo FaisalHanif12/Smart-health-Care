@@ -23,7 +23,7 @@ function App() {
         <Route path="/forgot-password" element={<AuthRoute><ForgotPassword /></AuthRoute>} />
         <Route path="/reset-password/:token" element={<AuthRoute><ResetPassword /></AuthRoute>} />
         
-        {/* Protected routes - require authentication */}
+        {/* Protected rou tes - require authentication */}
         <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
         <Route path="/dashboard/*" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
       </Routes>

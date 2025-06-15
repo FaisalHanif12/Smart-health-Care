@@ -32,11 +32,39 @@ export default function WorkoutPlan() {
   const [customPrompt, setCustomPrompt] = useState('');
   const [workoutPlan, setWorkoutPlan] = useState<WorkoutDay[]>([]);
 
+  // Load workout plan from localStorage on component mount
+  useEffect(() => {
+    if (user?._id) {
+      const savedWorkoutPlan = localStorage.getItem(`workoutPlan_${user._id}`);
+      if (savedWorkoutPlan) {
+        try {
+          setWorkoutPlan(JSON.parse(savedWorkoutPlan));
+        } catch (error) {
+          console.error('Error parsing saved workout plan:', error);
+        }
+      }
+    }
+  }, [user?._id]);
+
+  // Save workout plan to localStorage whenever it changes
+  useEffect(() => {
+    if (user?._id && workoutPlan.length > 0) {
+      localStorage.setItem(`workoutPlan_${user._id}`, JSON.stringify(workoutPlan));
+    }
+  }, [workoutPlan, user?._id]);
+
   const toggleExerciseCompletion = (dayIndex: number, exerciseIndex: number) => {
     const newWorkoutPlan = [...workoutPlan];
     newWorkoutPlan[dayIndex].exercises[exerciseIndex].completed = 
       !newWorkoutPlan[dayIndex].exercises[exerciseIndex].completed;
     setWorkoutPlan(newWorkoutPlan);
+  };
+
+  const clearWorkoutPlan = () => {
+    setWorkoutPlan([]);
+    if (user?._id) {
+      localStorage.removeItem(`workoutPlan_${user._id}`);
+    }
   };
 
   const toggleMobileMenu = () => {
@@ -274,15 +302,28 @@ Focus on exercises that support their goal of ${user.profile.fitnessGoal || 'Gen
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-gray-900">AI Workout Plan Generator</h2>
               <div className="flex space-x-3">
-                <button
-                  onClick={handleEditPrompt}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors flex items-center space-x-2"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                  <span>{isEditingPrompt ? 'Cancel Edit' : 'Edit Prompt'}</span>
-                </button>
+                {workoutPlan.length === 0 && (
+                  <button
+                    onClick={handleEditPrompt}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors flex items-center space-x-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    <span>{isEditingPrompt ? 'Cancel Edit' : 'Edit Prompt'}</span>
+                  </button>
+                )}
+                {workoutPlan.length > 0 && (
+                  <button
+                    onClick={clearWorkoutPlan}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors flex items-center space-x-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1H8a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    <span>Clear Plan</span>
+                  </button>
+                )}
                 <button
                   onClick={generateAIWorkoutPlan}
                   disabled={isGeneratingAI}
@@ -301,7 +342,7 @@ Focus on exercises that support their goal of ${user.profile.fitnessGoal || 'Gen
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
-                      <span>Generate AI Workout Plan</span>
+                      <span>{workoutPlan.length > 0 ? 'Generate New Plan' : 'Generate AI Workout Plan'}</span>
                     </>
                   )}
                 </button>
@@ -314,46 +355,48 @@ Focus on exercises that support their goal of ${user.profile.fitnessGoal || 'Gen
               </div>
             )}
 
-            {/* Personalized Prompt Section */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                Your Personalized Workout Plan Prompt
-                <span className="text-sm font-normal text-gray-500 ml-2">
-                  (Auto-updates based on your profile)
-                </span>
-              </h3>
-              
-              {isEditingPrompt ? (
-                <div className="space-y-4">
-                  <textarea
-                    value={customPrompt}
-                    onChange={(e) => setCustomPrompt(e.target.value)}
-                    className="w-full h-64 p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-mono"
-                    placeholder="Customize your workout plan prompt..."
-                  />
-                  <div className="flex justify-end space-x-3">
-                    <button
-                      onClick={() => setIsEditingPrompt(false)}
-                      className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleSavePrompt}
-                      className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    >
-                      Save Changes
-                    </button>
+            {/* Personalized Prompt Section - Only show when no workout plan exists */}
+            {workoutPlan.length === 0 && (
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  Your Personalized Workout Plan Prompt
+                  <span className="text-sm font-normal text-gray-500 ml-2">
+                    (Auto-updates based on your profile)
+                  </span>
+                </h3>
+                
+                {isEditingPrompt ? (
+                  <div className="space-y-4">
+                    <textarea
+                      value={customPrompt}
+                      onChange={(e) => setCustomPrompt(e.target.value)}
+                      className="w-full h-64 p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-mono"
+                      placeholder="Customize your workout plan prompt..."
+                    />
+                    <div className="flex justify-end space-x-3">
+                      <button
+                        onClick={() => setIsEditingPrompt(false)}
+                        className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSavePrompt}
+                        className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        Save Changes
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                  <pre className="whitespace-pre-wrap text-sm text-gray-700 font-mono">
-                    {customPrompt || generatePersonalizedPrompt()}
-                  </pre>
-                </div>
-              )}
-            </div>
+                ) : (
+                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                    <pre className="whitespace-pre-wrap text-sm text-gray-700 font-mono">
+                      {customPrompt || generatePersonalizedPrompt()}
+                    </pre>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Generated Results Section */}
             {workoutPlan.length > 0 && (
