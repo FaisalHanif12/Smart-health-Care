@@ -32,6 +32,7 @@ export default function WorkoutPlan() {
   const [customPrompt, setCustomPrompt] = useState('');
   const [workoutPlan, setWorkoutPlan] = useState<WorkoutDay[]>([]);
   const [isLoadingFromStorage, setIsLoadingFromStorage] = useState(true);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   // Load workout plan from localStorage on component mount
   useEffect(() => {
@@ -64,17 +65,19 @@ export default function WorkoutPlan() {
   };
 
   const clearWorkoutPlan = () => {
-    // Custom confirmation dialog
-    const confirmClear = window.confirm(
-      "Are you sure you want to delete your workout plan?\n\nThis action cannot be undone and you will lose all your current workout data."
-    );
-    
-    if (confirmClear) {
-      setWorkoutPlan([]);
-      if (user?._id) {
-        localStorage.removeItem(`workoutPlan_${user._id}`);
-      }
+    setShowConfirmDialog(true);
+  };
+
+  const handleConfirmClear = () => {
+    setWorkoutPlan([]);
+    if (user?._id) {
+      localStorage.removeItem(`workoutPlan_${user._id}`);
     }
+    setShowConfirmDialog(false);
+  };
+
+  const handleCancelClear = () => {
+    setShowConfirmDialog(false);
   };
 
   const toggleMobileMenu = () => {
@@ -508,6 +511,44 @@ Focus on exercises that support their goal of ${user.profile.fitnessGoal || 'Gen
           </div>
         </main>
       </div>
+
+      {/* Custom Confirmation Modal */}
+      {showConfirmDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <div className="flex items-center mb-4">
+              <div className="flex-shrink-0">
+                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-lg font-medium text-gray-900">Delete Workout Plan</h3>
+              </div>
+            </div>
+            <div className="mb-6">
+              <p className="text-sm text-gray-500">
+                Are you sure you want to delete your workout plan? This action cannot be undone and you will lose all your current workout data.
+              </p>
+            </div>
+            <div className="flex space-x-3 justify-end">
+              <button
+                onClick={handleCancelClear}
+                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmClear}
+                className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+              >
+                Delete Plan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
