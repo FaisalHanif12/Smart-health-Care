@@ -5,8 +5,8 @@ export const API_CONFIG = {
   // In production, this should be moved to backend for security
   OPENAI_API_KEY: import.meta.env.VITE_OPENAI_API_KEY || '',
   
-  // Backend API URL
-  BACKEND_URL: 'http://localhost:5000',
+  // Backend API URL - Use relative path to leverage Vite proxy
+  BACKEND_URL: '',
   
   // OpenAI API settings
   OPENAI: {

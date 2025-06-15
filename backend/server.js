@@ -32,6 +32,7 @@ console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'Set' : 'Not Set');
 console.log('EMAIL_FROM:', process.env.EMAIL_FROM ? 'Set (' + process.env.EMAIL_FROM + ')' : 'Not Set');
 console.log('EMAIL_PASSWORD:', process.env.EMAIL_PASSWORD ? 'Set (****)' : 'Not Set');
 console.log('FROM_NAME:', process.env.FROM_NAME || 'Not Set');
+console.log('OPENAI_API_KEY:', process.env.OPENAI_API_KEY ? 'Set (****)' : 'Not Set');
 console.log('PORT:', process.env.PORT);
 
 const connectDB = require('./config/database');
@@ -39,6 +40,7 @@ const { errorHandler } = require('./middleware/errorHandler');
 
 // Import routes
 const authRoutes = require('./routes/authRoutes');
+const aiRoutes = require('./routes/aiRoutes');
 
 const app = express();
 
@@ -69,6 +71,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // API routes
 app.use('/api/auth', authRoutes);
+app.use('/api/ai', aiRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

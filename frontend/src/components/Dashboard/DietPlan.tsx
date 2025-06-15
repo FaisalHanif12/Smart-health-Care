@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import OpenAIService from '../../services/openaiService';
-import type { DietPlan as AIDietPlan } from '../../services/openaiService';
-import { getOpenAIKey, isValidOpenAIKey } from '../../config/api';
-import ApiKeySetup from '../ApiKeySetup';
+import BackendAIService from '../../services/backendAIService';
+import type { DietPlan as AIDietPlan } from '../../services/backendAIService';
 
 interface Meal {
   name: string;
@@ -29,7 +27,6 @@ export default function DietPlan() {
   const [aiError, setAiError] = useState('');
   const [isEditingPrompt, setIsEditingPrompt] = useState(false);
   const [customPrompt, setCustomPrompt] = useState('');
-  const [showApiKeySetup, setShowApiKeySetup] = useState(false);
   const [meals, setMeals] = useState<DailyMeals[]>([]);
 
   const toggleMealCompletion = (index: number) => {
@@ -100,26 +97,16 @@ Format the response as a structured daily plan that can be easily followed. Cons
       return;
     }
 
-    const apiKey = getOpenAIKey();
-    if (!apiKey) {
-      setShowApiKeySetup(true);
-      setAiError('');
-      return;
-    }
-
-    if (!isValidOpenAIKey(apiKey)) {
-      setShowApiKeySetup(true);
-      setAiError('');
-      return;
-    }
-
     setIsGeneratingAI(true);
     setAiError('');
 
     try {
       const prompt = customPrompt || generatePersonalizedPrompt();
-      const openaiService = new OpenAIService(apiKey);
-      const aiDietPlan = await openaiService.generateDietPlan(prompt);
+      console.log('Generated prompt length:', prompt.length);
+      console.log('User token exists:', !!localStorage.getItem('token'));
+      
+      const backendAIService = new BackendAIService();
+      const aiDietPlan = await backendAIService.generateDietPlan(prompt);
       
       // Convert AI diet plan to our meal format
       const newMeals: DailyMeals[] = [
@@ -160,7 +147,7 @@ Format the response as a structured daily plan that can be easily followed. Cons
 
       // Add snacks if provided
       if (aiDietPlan.snacks && aiDietPlan.snacks.length > 0) {
-        aiDietPlan.snacks.forEach((snack, index) => {
+        aiDietPlan.snacks.forEach((snack: string, index: number) => {
           newMeals.push({
             time: index === 0 ? '10:00 AM' : '3:00 PM',
             meal: {
@@ -176,9 +163,26 @@ Format the response as a structured daily plan that can be easily followed. Cons
       }
 
       setMeals(newMeals);
+      console.log('Successfully generated diet plan with', newMeals.length, 'meals');
     } catch (error) {
       console.error('Error generating AI diet plan:', error);
-      setAiError('Failed to generate AI diet plan. Please try again.');
+      
+      if (error instanceof Error) {
+        // Check for specific error types
+        if (error.message.includes('Authentication required')) {
+          setAiError('Please log in again. Your session may have expired.');
+        } else if (error.message.includes('Unable to connect to server')) {
+          setAiError('Unable to connect to server. Please ensure the backend is running on port 5000.');
+        } else if (error.message.includes('Prompt must be at least 50 characters')) {
+          setAiError('Please complete your profile to generate a detailed prompt.');
+        } else if (error.message.includes('OpenAI API key not configured')) {
+          setAiError('OpenAI API key is not configured on the server. Please contact the administrator.');
+        } else {
+          setAiError(`Error: ${error.message}`);
+        }
+      } else {
+        setAiError('An unexpected error occurred. Please try again.');
+      }
     } finally {
       setIsGeneratingAI(false);
     }
@@ -454,27 +458,7 @@ Format the response as a structured daily plan that can be easily followed. Cons
         </main>
       </div>
 
-      {/* API Key Setup Modal */}
-      {showApiKeySetup && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
-            <div className="flex items-center justify-between p-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Setup Required</h3>
-              <button
-                onClick={() => setShowApiKeySetup(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <div className="p-4">
-              <ApiKeySetup onKeySet={() => setShowApiKeySetup(false)} />
-            </div>
-          </div>
-        </div>
-      )}
+
     </div>
   );
 }
