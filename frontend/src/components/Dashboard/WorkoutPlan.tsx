@@ -104,9 +104,6 @@ Focus on exercises that support their goal of ${user.profile.fitnessGoal || 'Gen
 
     try {
       const prompt = customPrompt || generatePersonalizedPrompt();
-      console.log('Generated prompt length:', prompt.length);
-      console.log('User token exists:', !!localStorage.getItem('token'));
-      
       const backendAIService = new BackendAIService();
       const aiWorkoutPlan = await backendAIService.generateWorkoutPlan(prompt);
       
@@ -137,7 +134,6 @@ Focus on exercises that support their goal of ${user.profile.fitnessGoal || 'Gen
       });
 
       setWorkoutPlan(newWorkoutPlan);
-      console.log('Successfully generated workout plan with', newWorkoutPlan.length, 'days');
     } catch (error) {
       console.error('Error generating AI workout plan:', error);
       

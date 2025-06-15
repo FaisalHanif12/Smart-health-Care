@@ -102,9 +102,6 @@ Format the response as a structured daily plan that can be easily followed. Cons
 
     try {
       const prompt = customPrompt || generatePersonalizedPrompt();
-      console.log('Generated prompt length:', prompt.length);
-      console.log('User token exists:', !!localStorage.getItem('token'));
-      
       const backendAIService = new BackendAIService();
       const aiDietPlan = await backendAIService.generateDietPlan(prompt);
       
@@ -163,7 +160,6 @@ Format the response as a structured daily plan that can be easily followed. Cons
       }
 
       setMeals(newMeals);
-      console.log('Successfully generated diet plan with', newMeals.length, 'meals');
     } catch (error) {
       console.error('Error generating AI diet plan:', error);
       

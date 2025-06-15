@@ -65,8 +65,6 @@ class BackendAIService {
 
     // Use relative URL to leverage Vite proxy
     const url = `/api/ai${endpoint}`;
-    console.log('Making request to:', url);
-    console.log('Request data:', data);
 
     try {
       const response = await fetch(url, {

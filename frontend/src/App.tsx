@@ -11,17 +11,8 @@ import ResetPassword from './components/ResetPassword';
 import Onboarding from './components/Onboarding';
 import DashboardPage from './pages/DashboardPage';
 import LoadingSpinner from './components/LoadingSpinner';
-import { addTestButton } from './utils/testBackendConnection';
-import { useEffect } from 'react';
 
 function App() {
-  // Add test button in development mode
-  useEffect(() => {
-    if (import.meta.env.DEV) {
-      addTestButton();
-    }
-  }, []);
-
   return (
     <AuthProvider>
       <Routes>
