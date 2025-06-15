@@ -18,16 +18,30 @@ class OpenAIService {
         messages: [
           {
             role: 'system',
-            content: `You are a professional fitness trainer and exercise physiologist. Create safe, effective, and personalized workout plans.
-            Always respond with ONLY a valid JSON object that matches the exact structure requested.
-            Do not include any explanatory text, markdown formatting, or code blocks - just pure JSON.
-            Ensure exercises are appropriate for the user's fitness level and goals.`
+            content: `You are a professional fitness trainer and exercise physiologist with expertise in goal-specific training and medical considerations.
+            
+            CRITICAL REQUIREMENTS:
+            1. ALWAYS align exercises with the user's fitness goal:
+               - Fat Burning: High-intensity cardio, circuit training, HIIT, compound movements
+               - Muscle Gain: Heavy weight training, progressive overload, isolation exercises
+               - Weight Loss: Cardio + strength training, high rep ranges, metabolic workouts
+               - General Fitness: Balanced mix of cardio, strength, and flexibility
+            
+            2. NEVER recommend exercises that conflict with health conditions:
+               - Heart Disease: Avoid high-intensity exercises, monitor heart rate
+               - Joint Problems: Avoid high-impact exercises, use low-impact alternatives
+               - Back Issues: Avoid heavy spinal loading, focus on core strengthening
+               - High Blood Pressure: Avoid breath-holding exercises, isometric holds
+            
+            3. Adjust intensity and volume based on fitness goals and health status.
+            
+            Always respond with ONLY a valid JSON object. No explanatory text, markdown, or code blocks.`
           },
           {
             role: 'user',
             content: `${prompt}
 
-            IMPORTANT: Respond with ONLY a JSON object in this EXACT format (no additional text):
+            IMPORTANT: Analyze the user's fitness goal and health conditions carefully, then respond with ONLY a JSON object in this EXACT format:
             {
               "Monday": {
                 "exercises": [
@@ -63,11 +77,15 @@ class OpenAIService {
               "Saturday": { "exercises": [], "duration": "", "warmup": [], "cooldown": [] }
             }
             
-            Provide complete workout plans for all 6 days. Include specific exercise names, proper rep ranges, and realistic rest times.`
+            ENSURE:
+            - Exercises match the fitness goal (fat burning = HIIT, cardio, circuit training)
+            - No exercises that conflict with health conditions
+            - Appropriate intensity and volume for the user's profile
+            - Complete workout plans for all 6 days with specific names and realistic parameters`
           }
         ],
         max_tokens: 2500,
-        temperature: 0.7
+        temperature: 0.3
       });
 
       let content = completion.choices[0].message.content.trim();
@@ -106,47 +124,72 @@ class OpenAIService {
         messages: [
           {
             role: 'system',
-            content: `You are a professional nutritionist and dietitian. Create safe, effective, and personalized diet plans.
-            Always respond with ONLY a valid JSON object that matches the exact structure requested.
-            Do not include any explanatory text, markdown formatting, or code blocks - just pure JSON.
-            Ensure meals are appropriate for the user's health conditions and dietary goals.`
+            content: `You are a professional nutritionist and dietitian with expertise in sports nutrition and medical dietary requirements.
+            
+            CRITICAL REQUIREMENTS:
+            1. ALWAYS align macronutrients with the user's fitness goal:
+               - Fat Burning: Higher protein (30-35%), Lower carbs (30-35%), Lower fats (25-30%)
+               - Muscle Gain: High protein (25-30%), Moderate carbs (40-45%), Moderate fats (20-25%)
+               - Weight Loss: High protein (35-40%), Low carbs (25-30%), Low fats (20-25%)
+               - General Fitness: Balanced - protein (25%), carbs (45%), fats (30%)
+            
+            2. NEVER recommend foods that conflict with health conditions:
+               - Diabetes: Avoid high sugar, refined carbs, sugary fruits
+               - Heart Disease: Avoid high sodium, saturated fats, processed foods
+               - High Blood Pressure: Avoid high sodium foods, excessive caffeine
+               - Kidney Disease: Limit protein, potassium, phosphorus
+               - Digestive Issues: Avoid dairy, gluten, spicy foods as appropriate
+            
+            3. Calculate calories appropriately for goals:
+               - Fat Burning/Weight Loss: Create moderate deficit (15-20% below maintenance)
+               - Muscle Gain: Small surplus (10-15% above maintenance)
+            
+            Always respond with ONLY a valid JSON object. No explanatory text, markdown, or code blocks.`
           },
           {
             role: 'user',
             content: `${prompt}
 
-            IMPORTANT: Respond with ONLY a JSON object in this EXACT format (no additional text):
+            IMPORTANT: Analyze the user's fitness goal and health conditions carefully, then respond with ONLY a JSON object in this EXACT format:
             {
               "breakfast": {
                 "time": "8:00 AM",
-                "foods": ["Food item 1", "Food item 2"],
-                "calories": 400
+                "foods": ["Specific food with portion size", "Another food with portion"],
+                "calories": 350
               },
               "lunch": {
-                "time": "1:00 PM", 
-                "foods": ["Food item 1", "Food item 2"],
-                "calories": 500
-              },
-              "dinner": {
-                "time": "7:00 PM",
-                "foods": ["Food item 1", "Food item 2"],
+                "time": "12:00 PM", 
+                "foods": ["Specific food with portion size", "Another food with portion"],
                 "calories": 450
               },
-              "snacks": ["Healthy snack 1", "Healthy snack 2"],
+              "dinner": {
+                "time": "6:00 PM",
+                "foods": ["Specific food with portion size", "Another food with portion"],
+                "calories": 400
+              },
+              "snacks": ["Healthy snack with portion", "Another healthy snack with portion"],
               "macros": {
                 "protein": 120,
-                "carbs": 200,
-                "fats": 60
+                "carbs": 150,
+                "fats": 45
               },
-              "dailyCalories": 1500,
-              "tips": ["Nutrition tip 1", "Nutrition tip 2"]
+              "dailyCalories": 1400,
+              "tips": [
+                "Drink 3-4 liters of water daily for fat burning",
+                "Eat protein within 30 minutes post-workout",
+                "Avoid processed foods and added sugars"
+              ]
             }
             
-            Provide complete meal plans with appropriate calories and macronutrients based on the user's profile.`
+            ENSURE:
+            - Macros match the fitness goal (fat burning = high protein, low carbs, low fats)
+            - No foods that conflict with health conditions
+            - Realistic portion sizes and calorie counts
+            - Total daily calories support the fitness goal`
           }
         ],
         max_tokens: 2000,
-        temperature: 0.7
+        temperature: 0.3
       });
 
       let content = completion.choices[0].message.content.trim();
