@@ -30,17 +30,66 @@ export default function DietPlan() {
   const [meals, setMeals] = useState<DailyMeals[]>([]);
   const [isLoadingFromStorage, setIsLoadingFromStorage] = useState(true);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [lastResetDate, setLastResetDate] = useState<string>('');
+
+  // Check if we need to reset daily progress
+  const checkDailyReset = () => {
+    if (!user?._id) return;
+    
+    const today = new Date().toDateString();
+    const savedResetDate = localStorage.getItem(`lastResetDate_${user._id}`);
+    
+    if (savedResetDate !== today) {
+      // Reset all meal completion status
+      const resetMeals = meals.map(mealTime => ({
+        ...mealTime,
+        meal: {
+          ...mealTime.meal,
+          completed: false
+        }
+      }));
+      setMeals(resetMeals);
+      setLastResetDate(today);
+      localStorage.setItem(`lastResetDate_${user._id}`, today);
+      if (resetMeals.length > 0) {
+        localStorage.setItem(`dietPlan_${user._id}`, JSON.stringify(resetMeals));
+      }
+    }
+  };
 
   // Load diet plan from localStorage on component mount
   useEffect(() => {
     if (user?._id) {
       const savedDietPlan = localStorage.getItem(`dietPlan_${user._id}`);
+      const savedResetDate = localStorage.getItem(`lastResetDate_${user._id}`);
+      
       if (savedDietPlan) {
         try {
-          setMeals(JSON.parse(savedDietPlan));
+          const parsedMeals = JSON.parse(savedDietPlan);
+          setMeals(parsedMeals);
+          
+          // Check if we need to reset for today
+          const today = new Date().toDateString();
+          if (savedResetDate !== today) {
+            // Reset completion status for new day
+            const resetMeals = parsedMeals.map((mealTime: DailyMeals) => ({
+              ...mealTime,
+              meal: {
+                ...mealTime.meal,
+                completed: false
+              }
+            }));
+            setMeals(resetMeals);
+            localStorage.setItem(`dietPlan_${user._id}`, JSON.stringify(resetMeals));
+            localStorage.setItem(`lastResetDate_${user._id}`, today);
+          }
         } catch (error) {
           console.error('Error parsing saved diet plan:', error);
         }
+      }
+      
+      if (savedResetDate) {
+        setLastResetDate(savedResetDate);
       }
     }
     // Always set loading to false after checking localStorage
@@ -53,6 +102,24 @@ export default function DietPlan() {
       localStorage.setItem(`dietPlan_${user._id}`, JSON.stringify(meals));
     }
   }, [meals, user?._id]);
+
+  // Check for daily reset every time the component mounts or user changes
+  useEffect(() => {
+    if (user?._id && meals.length > 0) {
+      checkDailyReset();
+    }
+  }, [user?._id]);
+
+  // Check for daily reset every 5 minutes when component is active
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (user?._id && meals.length > 0) {
+        checkDailyReset();
+      }
+    }, 5 * 60 * 1000); // 5 minutes
+
+    return () => clearInterval(interval);
+  }, [user?._id, meals]);
 
   const toggleMealCompletion = (index: number) => {
     const newMeals = [...meals];
@@ -76,13 +143,19 @@ export default function DietPlan() {
     setShowConfirmDialog(false);
   };
 
+  // Calculate total nutrients only from completed meals
   const totalNutrients = meals.reduce(
-    (acc, { meal }) => ({
-      calories: acc.calories + meal.calories,
-      protein: acc.protein + meal.protein,
-      carbs: acc.carbs + meal.carbs,
-      fats: acc.fats + meal.fats,
-    }),
+    (acc, { meal }) => {
+      if (meal.completed) {
+        return {
+          calories: acc.calories + meal.calories,
+          protein: acc.protein + meal.protein,
+          carbs: acc.carbs + meal.carbs,
+          fats: acc.fats + meal.fats,
+        };
+      }
+      return acc;
+    },
     { calories: 0, protein: 0, carbs: 0, fats: 0 }
   );
 
@@ -121,13 +194,15 @@ Health considerations: ${healthConditionsText}
 
 Please provide a structured daily meal plan with:
 1. Breakfast (8:00 AM) - Include specific foods, portions, and calories
-2. Lunch (12:00 PM) - Include specific foods, portions, and calories  
-3. Dinner (6:00 PM) - Include specific foods, portions, and calories
-4. 2 healthy snacks between meals
-5. Daily water intake recommendations
-6. Total daily calorie target and macro breakdown (protein, carbs, fats)
-7. Special dietary considerations for their health conditions
-8. Weekly meal prep suggestions
+2. Morning Snack (10:00 AM) - Light healthy snack
+3. Lunch (1:00 PM) - Include specific foods, portions, and calories  
+4. Afternoon Snack (3:00 PM) - Light healthy snack
+5. Dinner (7:00 PM) - Include specific foods, portions, and calories
+6. Evening Snack (10:00 PM) - Light, sleep-friendly snack
+7. Daily water intake recommendations
+8. Total daily calorie target and macro breakdown (protein, carbs, fats)
+9. Special dietary considerations for their health conditions
+10. Weekly meal prep suggestions
 
 Format the response as a structured daily plan that can be easily followed. Consider their fitness goal of ${user.profile.fitnessGoal || 'General Fitness'} when calculating nutritional needs.`;
   };
@@ -146,59 +221,75 @@ Format the response as a structured daily plan that can be easily followed. Cons
       const backendAIService = new BackendAIService();
       const aiDietPlan = await backendAIService.generateDietPlan(prompt);
       
-      // Convert AI diet plan to our meal format
+      // Convert AI diet plan to our meal format with 6 meals including 10 PM
       const newMeals: DailyMeals[] = [
         {
-          time: aiDietPlan.breakfast.time,
+          time: '8:00 AM',
           meal: {
-            name: aiDietPlan.breakfast.foods.join(', '),
-            calories: aiDietPlan.breakfast.calories,
-            protein: Math.round(aiDietPlan.macros.protein * 0.3),
-            carbs: Math.round(aiDietPlan.macros.carbs * 0.3),
-            fats: Math.round(aiDietPlan.macros.fats * 0.3),
+            name: aiDietPlan.breakfast?.foods?.join(', ') || 'Breakfast meal',
+            calories: aiDietPlan.breakfast?.calories || 400,
+            protein: Math.round((aiDietPlan.macros?.protein || 120) * 0.25),
+            carbs: Math.round((aiDietPlan.macros?.carbs || 150) * 0.25),
+            fats: Math.round((aiDietPlan.macros?.fats || 60) * 0.25),
             completed: false,
           },
         },
         {
-          time: aiDietPlan.lunch.time,
+          time: '10:00 AM',
           meal: {
-            name: aiDietPlan.lunch.foods.join(', '),
-            calories: aiDietPlan.lunch.calories,
-            protein: Math.round(aiDietPlan.macros.protein * 0.4),
-            carbs: Math.round(aiDietPlan.macros.carbs * 0.4),
-            fats: Math.round(aiDietPlan.macros.fats * 0.4),
+            name: 'Morning Snack (Apple with almonds)',
+            calories: 150,
+            protein: 5,
+            carbs: 20,
+            fats: 8,
             completed: false,
           },
         },
         {
-          time: aiDietPlan.dinner.time,
+          time: '1:00 PM',
           meal: {
-            name: aiDietPlan.dinner.foods.join(', '),
-            calories: aiDietPlan.dinner.calories,
-            protein: Math.round(aiDietPlan.macros.protein * 0.3),
-            carbs: Math.round(aiDietPlan.macros.carbs * 0.3),
-            fats: Math.round(aiDietPlan.macros.fats * 0.3),
+            name: aiDietPlan.lunch?.foods?.join(', ') || 'Lunch meal',
+            calories: aiDietPlan.lunch?.calories || 500,
+            protein: Math.round((aiDietPlan.macros?.protein || 120) * 0.35),
+            carbs: Math.round((aiDietPlan.macros?.carbs || 150) * 0.35),
+            fats: Math.round((aiDietPlan.macros?.fats || 60) * 0.35),
+            completed: false,
+          },
+        },
+        {
+          time: '3:00 PM',
+          meal: {
+            name: 'Afternoon Snack (Greek yogurt with berries)',
+            calories: 120,
+            protein: 10,
+            carbs: 15,
+            fats: 3,
+            completed: false,
+          },
+        },
+        {
+          time: '7:00 PM',
+          meal: {
+            name: aiDietPlan.dinner?.foods?.join(', ') || 'Dinner meal',
+            calories: aiDietPlan.dinner?.calories || 450,
+            protein: Math.round((aiDietPlan.macros?.protein || 120) * 0.3),
+            carbs: Math.round((aiDietPlan.macros?.carbs || 150) * 0.3),
+            fats: Math.round((aiDietPlan.macros?.fats || 60) * 0.3),
+            completed: false,
+          },
+        },
+        {
+          time: '10:00 PM',
+          meal: {
+            name: 'Evening Snack (Herbal tea with 10 almonds)',
+            calories: 100,
+            protein: 4,
+            carbs: 5,
+            fats: 9,
             completed: false,
           },
         },
       ];
-
-      // Add snacks if provided
-      if (aiDietPlan.snacks && aiDietPlan.snacks.length > 0) {
-        aiDietPlan.snacks.forEach((snack: string, index: number) => {
-          newMeals.push({
-            time: index === 0 ? '10:00 AM' : '3:00 PM',
-            meal: {
-              name: snack,
-              calories: Math.round(100 + Math.random() * 100),
-              protein: 5,
-              carbs: 15,
-              fats: 3,
-              completed: false,
-            },
-          });
-        });
-      }
 
       setMeals(newMeals);
     } catch (error) {
