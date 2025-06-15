@@ -31,6 +31,7 @@ export default function WorkoutPlan() {
   const [isEditingPrompt, setIsEditingPrompt] = useState(false);
   const [customPrompt, setCustomPrompt] = useState('');
   const [workoutPlan, setWorkoutPlan] = useState<WorkoutDay[]>([]);
+  const [isLoadingFromStorage, setIsLoadingFromStorage] = useState(true);
 
   // Load workout plan from localStorage on component mount
   useEffect(() => {
@@ -44,6 +45,8 @@ export default function WorkoutPlan() {
         }
       }
     }
+    // Always set loading to false after checking localStorage
+    setIsLoadingFromStorage(false);
   }, [user?._id]);
 
   // Save workout plan to localStorage whenever it changes
@@ -61,9 +64,16 @@ export default function WorkoutPlan() {
   };
 
   const clearWorkoutPlan = () => {
-    setWorkoutPlan([]);
-    if (user?._id) {
-      localStorage.removeItem(`workoutPlan_${user._id}`);
+    // Custom confirmation dialog
+    const confirmClear = window.confirm(
+      "Are you sure you want to delete your workout plan?\n\nThis action cannot be undone and you will lose all your current workout data."
+    );
+    
+    if (confirmClear) {
+      setWorkoutPlan([]);
+      if (user?._id) {
+        localStorage.removeItem(`workoutPlan_${user._id}`);
+      }
     }
   };
 
@@ -302,7 +312,7 @@ Focus on exercises that support their goal of ${user.profile.fitnessGoal || 'Gen
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-gray-900">AI Workout Plan Generator</h2>
               <div className="flex space-x-3">
-                {workoutPlan.length === 0 && (
+                {!isLoadingFromStorage && workoutPlan.length === 0 && (
                   <button
                     onClick={handleEditPrompt}
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors flex items-center space-x-2"
@@ -313,7 +323,7 @@ Focus on exercises that support their goal of ${user.profile.fitnessGoal || 'Gen
                     <span>{isEditingPrompt ? 'Cancel Edit' : 'Edit Prompt'}</span>
                   </button>
                 )}
-                {workoutPlan.length > 0 && (
+                {!isLoadingFromStorage && workoutPlan.length > 0 && (
                   <button
                     onClick={clearWorkoutPlan}
                     className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors flex items-center space-x-2"
@@ -324,28 +334,30 @@ Focus on exercises that support their goal of ${user.profile.fitnessGoal || 'Gen
                     <span>Clear Plan</span>
                   </button>
                 )}
-                <button
-                  onClick={generateAIWorkoutPlan}
-                  disabled={isGeneratingAI}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
-                >
-                  {isGeneratingAI ? (
-                    <>
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 718-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 714 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      <span>Generating...</span>
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
-                      <span>{workoutPlan.length > 0 ? 'Generate New Plan' : 'Generate AI Workout Plan'}</span>
-                    </>
-                  )}
-                </button>
+                {!isLoadingFromStorage && workoutPlan.length === 0 && (
+                  <button
+                    onClick={generateAIWorkoutPlan}
+                    disabled={isGeneratingAI}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                  >
+                    {isGeneratingAI ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 718-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 714 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>Generating...</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        <span>Generate AI Workout Plan</span>
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
             </div>
 
@@ -355,8 +367,16 @@ Focus on exercises that support their goal of ${user.profile.fitnessGoal || 'Gen
               </div>
             )}
 
-            {/* Personalized Prompt Section - Only show when no workout plan exists */}
-            {workoutPlan.length === 0 && (
+            {/* Loading State */}
+            {isLoadingFromStorage && (
+              <div className="flex justify-center items-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <span className="ml-3 text-gray-600">Loading your workout plan...</span>
+              </div>
+            )}
+
+            {/* Personalized Prompt Section - Only show when no workout plan exists and not loading */}
+            {!isLoadingFromStorage && workoutPlan.length === 0 && (
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">
                   Your Personalized Workout Plan Prompt
@@ -399,7 +419,7 @@ Focus on exercises that support their goal of ${user.profile.fitnessGoal || 'Gen
             )}
 
             {/* Generated Results Section */}
-            {workoutPlan.length > 0 && (
+            {!isLoadingFromStorage && workoutPlan.length > 0 && (
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Generated Workout Plan</h3>
                 
