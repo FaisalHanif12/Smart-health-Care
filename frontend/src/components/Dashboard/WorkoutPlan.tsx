@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import BackendAIService from '../../services/backendAIService';
 import type { WorkoutPlan as AIWorkoutPlan } from '../../services/backendAIService';
-import { testBackendConnection, testAIStatus } from '../../services/testBackend';
 
 interface Exercise {
   name: string;
@@ -169,19 +168,6 @@ Focus on exercises that support their goal of ${user.profile.fitnessGoal || 'Gen
     setIsEditingPrompt(false);
   };
 
-  const testConnection = async () => {
-    try {
-      console.log('Testing backend connection...');
-      await testBackendConnection();
-      console.log('Testing AI status...');
-      await testAIStatus();
-      alert('Backend connection successful! Check console for details.');
-    } catch (error) {
-      console.error('Connection test failed:', error);
-      alert(`Connection test failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
-  };
-
   // Auto-update prompt when user profile changes
   useEffect(() => {
     if (!isEditingPrompt && !customPrompt) {
@@ -298,15 +284,6 @@ Focus on exercises that support their goal of ${user.profile.fitnessGoal || 'Gen
                   <span>{isEditingPrompt ? 'Cancel Edit' : 'Edit Prompt'}</span>
                 </button>
                 <button
-                  onClick={testConnection}
-                  className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition-colors flex items-center space-x-2"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span>Test Connection</span>
-                </button>
-                <button
                   onClick={generateAIWorkoutPlan}
                   disabled={isGeneratingAI}
                   className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
@@ -315,7 +292,7 @@ Focus on exercises that support their goal of ${user.profile.fitnessGoal || 'Gen
                     <>
                       <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 718-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 718-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 714 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
                       <span>Generating...</span>
                     </>
@@ -468,8 +445,6 @@ Focus on exercises that support their goal of ${user.profile.fitnessGoal || 'Gen
           </div>
         </main>
       </div>
-
-
     </div>
   );
 }
