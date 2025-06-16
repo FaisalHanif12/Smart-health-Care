@@ -195,10 +195,14 @@ Health considerations: ${healthConditionsText}
 Please provide a structured daily meal plan with:
 1. Breakfast (8:00 AM) - Include specific foods, portions, and calories
 2. Morning Snack (10:00 AM) - Light healthy snack
-3. Lunch (1:00 PM) - Include specific foods, portions, and calories  
+3. Lunch (12:00 PM) - Include specific foods, portions, and calories  
 4. Afternoon Snack (3:00 PM) - Light healthy snack
-5. Dinner (7:00 PM) - Include specific foods, portions, and calories
-6. Evening Snack (10:00 PM) - Light, sleep-friendly snack
+5. Dinner (6:00 PM) - Include specific foods, portions, and calories
+6. Evening Snack (10:00 PM) - Light, sleep-friendly snack (80-150 calories max)
+   - Focus on foods that promote good sleep quality
+   - Avoid caffeine, high sugar, heavy proteins, or large portions
+   - Good options: herbal tea with nuts, Greek yogurt with berries, small banana, cottage cheese, or almonds
+   - Foods with tryptophan, magnesium, or natural melatonin precursors are preferred
 7. Daily water intake recommendations
 8. Total daily calorie target and macro breakdown (protein, carbs, fats)
 9. Special dietary considerations for their health conditions
@@ -224,7 +228,7 @@ Format the response as a structured daily plan that can be easily followed. Cons
       // Convert AI diet plan to our meal format with 6 meals including 10 PM
       const newMeals: DailyMeals[] = [
         {
-          time: '8:00 AM',
+          time: aiDietPlan.breakfast?.time || '8:00 AM',
           meal: {
             name: aiDietPlan.breakfast?.foods?.join(', ') || 'Breakfast meal',
             calories: aiDietPlan.breakfast?.calories || 400,
@@ -235,18 +239,18 @@ Format the response as a structured daily plan that can be easily followed. Cons
           },
         },
         {
-          time: '10:00 AM',
+          time: aiDietPlan.morningSnack?.time || '10:00 AM',
           meal: {
-            name: 'Morning Snack (Apple with almonds)',
-            calories: 150,
-            protein: 5,
-            carbs: 20,
-            fats: 8,
+            name: aiDietPlan.morningSnack?.foods?.join(', ') || 'Morning Snack (Apple with almonds)',
+            calories: aiDietPlan.morningSnack?.calories || 150,
+            protein: Math.round((aiDietPlan.macros?.protein || 120) * 0.08),
+            carbs: Math.round((aiDietPlan.macros?.carbs || 150) * 0.12),
+            fats: Math.round((aiDietPlan.macros?.fats || 60) * 0.12),
             completed: false,
           },
         },
         {
-          time: '1:00 PM',
+          time: aiDietPlan.lunch?.time || '12:00 PM',
           meal: {
             name: aiDietPlan.lunch?.foods?.join(', ') || 'Lunch meal',
             calories: aiDietPlan.lunch?.calories || 500,
@@ -257,35 +261,35 @@ Format the response as a structured daily plan that can be easily followed. Cons
           },
         },
         {
-          time: '3:00 PM',
+          time: aiDietPlan.afternoonSnack?.time || '3:00 PM',
           meal: {
-            name: 'Afternoon Snack (Greek yogurt with berries)',
-            calories: 120,
-            protein: 10,
-            carbs: 15,
-            fats: 3,
+            name: aiDietPlan.afternoonSnack?.foods?.join(', ') || 'Afternoon Snack (Greek yogurt with berries)',
+            calories: aiDietPlan.afternoonSnack?.calories || 120,
+            protein: Math.round((aiDietPlan.macros?.protein || 120) * 0.1),
+            carbs: Math.round((aiDietPlan.macros?.carbs || 150) * 0.1),
+            fats: Math.round((aiDietPlan.macros?.fats || 60) * 0.08),
             completed: false,
           },
         },
         {
-          time: '7:00 PM',
+          time: aiDietPlan.dinner?.time || '6:00 PM',
           meal: {
             name: aiDietPlan.dinner?.foods?.join(', ') || 'Dinner meal',
             calories: aiDietPlan.dinner?.calories || 450,
-            protein: Math.round((aiDietPlan.macros?.protein || 120) * 0.3),
-            carbs: Math.round((aiDietPlan.macros?.carbs || 150) * 0.3),
-            fats: Math.round((aiDietPlan.macros?.fats || 60) * 0.3),
+            protein: Math.round((aiDietPlan.macros?.protein || 120) * 0.32),
+            carbs: Math.round((aiDietPlan.macros?.carbs || 150) * 0.28),
+            fats: Math.round((aiDietPlan.macros?.fats || 60) * 0.32),
             completed: false,
           },
         },
         {
-          time: '10:00 PM',
+          time: aiDietPlan.eveningSnack?.time || '10:00 PM',
           meal: {
-            name: 'Evening Snack (Herbal tea with 10 almonds)',
-            calories: 100,
-            protein: 4,
-            carbs: 5,
-            fats: 9,
+            name: aiDietPlan.eveningSnack?.foods?.join(', ') || 'Evening Snack (Herbal tea with 10 almonds)',
+            calories: aiDietPlan.eveningSnack?.calories || 100,
+            protein: Math.round((aiDietPlan.macros?.protein || 120) * 0.05),
+            carbs: Math.round((aiDietPlan.macros?.carbs || 150) * 0.05),
+            fats: Math.round((aiDietPlan.macros?.fats || 60) * 0.13),
             completed: false,
           },
         },

@@ -29,7 +29,17 @@ interface DietPlan {
     foods: string[];
     calories: number;
   };
+  morningSnack: {
+    time: string;
+    foods: string[];
+    calories: number;
+  };
   lunch: {
+    time: string;
+    foods: string[];
+    calories: number;
+  };
+  afternoonSnack: {
     time: string;
     foods: string[];
     calories: number;
@@ -39,7 +49,11 @@ interface DietPlan {
     foods: string[];
     calories: number;
   };
-  snacks: string[];
+  eveningSnack: {
+    time: string;
+    foods: string[];
+    calories: number;
+  };
   macros: {
     protein: number;
     carbs: number;

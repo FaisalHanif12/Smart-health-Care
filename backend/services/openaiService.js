@@ -215,6 +215,14 @@ class OpenAIService {
             
             3. Provide goal-specific nutrition tips and meal timing recommendations.
             
+            4. EVENING SNACK GUIDELINES (10:00 PM):
+               - Keep calories low (80-150 calories max)
+               - Choose easy-to-digest foods that promote sleep
+               - Avoid caffeine, high sugar, heavy proteins, or large portions
+               - Good options: Herbal tea with a small portion of nuts, Greek yogurt with berries, chamomile tea with a small banana, cottage cheese, or a small handful of almonds
+               - Focus on foods with tryptophan, magnesium, or natural melatonin precursors
+               - Avoid anything that might disrupt sleep quality
+            
             Always respond with ONLY a valid JSON object. No explanatory text, markdown, or code blocks.`
           },
           {
@@ -228,26 +236,41 @@ class OpenAIService {
                 "foods": ["Specific food with portion size", "Another food with portion"],
                 "calories": 350
               },
+              "morningSnack": {
+                "time": "10:00 AM",
+                "foods": ["Light snack with portion size"],
+                "calories": 150
+              },
               "lunch": {
                 "time": "12:00 PM", 
                 "foods": ["Specific food with portion size", "Another food with portion"],
                 "calories": 450
+              },
+              "afternoonSnack": {
+                "time": "3:00 PM",
+                "foods": ["Healthy snack with portion size"],
+                "calories": 120
               },
               "dinner": {
                 "time": "6:00 PM",
                 "foods": ["Specific food with portion size", "Another food with portion"],
                 "calories": 400
               },
-              "snacks": ["Healthy snack with portion", "Another healthy snack with portion"],
+              "eveningSnack": {
+                "time": "10:00 PM",
+                "foods": ["Light, easy-to-digest snack with portion size"],
+                "calories": 100
+              },
               "macros": {
                 "protein": 120,
                 "carbs": 150,
                 "fats": 45
               },
-              "dailyCalories": 1400,
+              "dailyCalories": 1570,
               "tips": [
                 "Drink 3-4 liters of water daily for fat burning",
                 "Eat protein within 30 minutes post-workout",
+                "Keep evening snack light to avoid sleep disruption",
                 "Avoid processed foods and added sugars"
               ]
             }
