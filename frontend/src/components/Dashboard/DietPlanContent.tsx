@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useProgress } from '../../contexts/ProgressContext';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import BackendAIService from '../../services/backendAIService';
 
 interface Meal {
@@ -21,14 +21,8 @@ interface DailyMeals {
 export default function DietPlanContent() {
   const { user } = useAuth();
   const { updateDietProgress } = useProgress();
-  const location = useLocation();
-  console.log('DietPlanContent render - location:', location.pathname);
   
-  // Only render if we're actually on the diet route
-  if (!location.pathname.includes('/diet')) {
-    console.log('DietPlanContent: Not on diet route, not rendering');
-    return null;
-  }
+  console.log('DietPlanContent rendering');
   
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [aiError, setAiError] = useState('');
@@ -37,12 +31,6 @@ export default function DietPlanContent() {
   const [meals, setMeals] = useState<DailyMeals[]>([]);
   const [isLoadingFromStorage, setIsLoadingFromStorage] = useState(true);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-
-  // Close modals when location changes (navigation occurs)
-  useEffect(() => {
-    setShowConfirmDialog(false);
-    setIsEditingPrompt(false);
-  }, [location.pathname]);
 
   // Load diet plan from localStorage on component mount
   useEffect(() => {
