@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useProgress } from '../../contexts/ProgressContext';
 import BackendAIService from '../../services/backendAIService';
-import type { WorkoutPlan as AIWorkoutPlan } from '../../services/backendAIService';
+
 
 interface Exercise {
   name: string;
@@ -26,6 +27,7 @@ export default function WorkoutPlan() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { updateWorkoutProgress } = useProgress();
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [aiError, setAiError] = useState('');
   const [isEditingPrompt, setIsEditingPrompt] = useState(false);
@@ -50,18 +52,22 @@ export default function WorkoutPlan() {
     setIsLoadingFromStorage(false);
   }, [user?._id]);
 
-  // Save workout plan to localStorage whenever it changes
+  // Save workout plan to localStorage whenever it changes and update progress
   useEffect(() => {
     if (user?._id && workoutPlan.length > 0) {
       localStorage.setItem(`workoutPlan_${user._id}`, JSON.stringify(workoutPlan));
+      updateWorkoutProgress(workoutPlan);
     }
-  }, [workoutPlan, user?._id]);
+  }, [workoutPlan, user?._id, updateWorkoutProgress]);
 
   const toggleExerciseCompletion = (dayIndex: number, exerciseIndex: number) => {
     const newWorkoutPlan = [...workoutPlan];
     newWorkoutPlan[dayIndex].exercises[exerciseIndex].completed = 
       !newWorkoutPlan[dayIndex].exercises[exerciseIndex].completed;
     setWorkoutPlan(newWorkoutPlan);
+    
+    // Update progress context
+    updateWorkoutProgress(newWorkoutPlan);
   };
 
   const clearWorkoutPlan = () => {

@@ -36,8 +36,8 @@ export default function Profile() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPrompt, setShowPrompt] = useState(false);
-  const [generatedPrompt, setGeneratedPrompt] = useState('');
-  const [promptType, setPromptType] = useState<'diet' | 'workout' | 'general'>('general');
+  const [generatedPrompt] = useState('');
+  const [promptType] = useState<'diet' | 'workout' | 'general'>('general');
 
 
   useEffect(() => {
@@ -149,74 +149,7 @@ export default function Profile() {
   const bmi = calculateBMI();
   const bmiInfo = getBMICategory(bmi);
 
-  const generatePersonalizedPrompt = (type: 'diet' | 'workout' | 'general') => {
-    const healthConditionsText = profile.healthConditions.length > 0 && !profile.healthConditions.includes('None') 
-      ? profile.healthConditions.join(', ') 
-      : 'no specific health conditions';
-    
-    let prompt = '';
-    
-    if (type === 'diet') {
-      prompt = `Create a detailed daily diet plan for a ${profile.age}-year-old ${profile.gender} who is ${profile.height}cm tall and weighs ${profile.weight}kg (BMI: ${bmi} - ${bmiInfo.category}).
 
-Their primary fitness goal is: ${profile.fitnessGoal}
-Health considerations: ${healthConditionsText}
-
-Please provide a structured daily meal plan with:
-1. Breakfast (8:00 AM) - Include specific foods, portions, and calories
-2. Lunch (12:00 PM) - Include specific foods, portions, and calories  
-3. Dinner (6:00 PM) - Include specific foods, portions, and calories
-4. 2 healthy snacks between meals
-5. Daily water intake recommendations
-6. Total daily calorie target and macro breakdown (protein, carbs, fats)
-7. Special dietary considerations for their health conditions
-8. Weekly meal prep suggestions
-
-Format the response as a structured daily plan that can be easily followed. Consider their fitness goal of ${profile.fitnessGoal} when calculating nutritional needs.`;
-    } else if (type === 'workout') {
-      prompt = `Create a detailed weekly workout plan for a ${profile.age}-year-old ${profile.gender} who is ${profile.height}cm tall and weighs ${profile.weight}kg (BMI: ${bmi} - ${bmiInfo.category}).
-
-Their primary fitness goal is: ${profile.fitnessGoal}
-Health considerations: ${healthConditionsText}
-
-Please provide a structured 6-day weekly workout schedule:
-1. Monday - Specific exercises with sets, reps, and rest periods
-2. Tuesday - Specific exercises with sets, reps, and rest periods
-3. Wednesday - Specific exercises with sets, reps, and rest periods
-4. Thursday - Specific exercises with sets, reps, and rest periods
-5. Friday - Specific exercises with sets, reps, and rest periods
-6. Saturday - Specific exercises with sets, reps, and rest periods
-7. Sunday - Rest day with light activity suggestions
-
-For each day, include:
-- Warm-up routine (5-10 minutes)
-- Main workout with specific exercises, sets, reps
-- Cool-down and stretching routine
-- Estimated workout duration
-- Equipment needed (if any)
-- Modifications for their fitness level and health conditions
-
-Focus on exercises that support their goal of ${profile.fitnessGoal} while considering their health conditions.`;
-    } else {
-      prompt = `Create a comprehensive fitness and nutrition plan for a ${profile.age}-year-old ${profile.gender} who is ${profile.height}cm tall and weighs ${profile.weight}kg (BMI: ${bmi} - ${bmiInfo.category}). 
-
-Their primary fitness goal is: ${profile.fitnessGoal}
-Health considerations: ${healthConditionsText}
-
-Please provide:
-1. A detailed weekly workout schedule with specific exercises, sets, and reps
-2. Daily nutrition recommendations with calorie targets and macro breakdowns
-3. Specific dietary suggestions considering their health conditions
-4. Progress tracking milestones and realistic timeline expectations
-5. Safety precautions and modifications based on their current fitness level
-
-Make the plan practical, achievable, and tailored to their specific profile and goals.`;
-    }
-
-    setGeneratedPrompt(prompt);
-    setPromptType(type);
-    setShowPrompt(true);
-  };
 
   const copyPromptToClipboard = async () => {
     try {

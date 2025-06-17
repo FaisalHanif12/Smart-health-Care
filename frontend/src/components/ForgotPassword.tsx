@@ -35,7 +35,7 @@ export default function ForgotPassword() {
 
     try {
       setStatusMessage('Checking if account exists...');
-      const response = await authAPI.forgotPassword(email);
+      await authAPI.forgotPassword(email);
       setSuccess(true);
       setStatusMessage('Password reset link sent successfully!');
     } catch (error: any) {

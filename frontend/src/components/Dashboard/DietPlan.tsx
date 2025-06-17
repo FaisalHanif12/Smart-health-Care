@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useProgress } from '../../contexts/ProgressContext';
 import BackendAIService from '../../services/backendAIService';
-import type { DietPlan as AIDietPlan } from '../../services/backendAIService';
+
 
 interface Meal {
   name: string;
@@ -23,6 +24,7 @@ export default function DietPlan() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { updateDietProgress } = useProgress();
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [aiError, setAiError] = useState('');
   const [isEditingPrompt, setIsEditingPrompt] = useState(false);
@@ -30,7 +32,7 @@ export default function DietPlan() {
   const [meals, setMeals] = useState<DailyMeals[]>([]);
   const [isLoadingFromStorage, setIsLoadingFromStorage] = useState(true);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [lastResetDate, setLastResetDate] = useState<string>('');
+
 
   // Check if we need to reset daily progress
   const checkDailyReset = () => {
@@ -49,7 +51,7 @@ export default function DietPlan() {
         }
       }));
       setMeals(resetMeals);
-      setLastResetDate(today);
+
       localStorage.setItem(`lastResetDate_${user._id}`, today);
       if (resetMeals.length > 0) {
         localStorage.setItem(`dietPlan_${user._id}`, JSON.stringify(resetMeals));
@@ -88,20 +90,19 @@ export default function DietPlan() {
         }
       }
       
-      if (savedResetDate) {
-        setLastResetDate(savedResetDate);
-      }
+
     }
     // Always set loading to false after checking localStorage
     setIsLoadingFromStorage(false);
   }, [user?._id]);
 
-  // Save diet plan to localStorage whenever it changes
+  // Save diet plan to localStorage whenever it changes and update progress
   useEffect(() => {
     if (user?._id && meals.length > 0) {
       localStorage.setItem(`dietPlan_${user._id}`, JSON.stringify(meals));
+      updateDietProgress(meals);
     }
-  }, [meals, user?._id]);
+  }, [meals, user?._id, updateDietProgress]);
 
   // Check for daily reset every time the component mounts or user changes
   useEffect(() => {
@@ -125,6 +126,9 @@ export default function DietPlan() {
     const newMeals = [...meals];
     newMeals[index].meal.completed = !newMeals[index].meal.completed;
     setMeals(newMeals);
+    
+    // Update progress context
+    updateDietProgress(newMeals);
   };
 
   const clearDietPlan = () => {

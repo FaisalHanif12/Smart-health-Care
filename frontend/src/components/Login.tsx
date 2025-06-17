@@ -10,7 +10,7 @@ export default function Login() {
   const [shouldShowRegisterLink, setShouldShowRegisterLink] = useState(false);
 
   const navigate = useNavigate();
-  const { login, user } = useAuth();
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

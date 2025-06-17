@@ -1,11 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import Profile from './Profile';
+
 import { useAuth } from '../../contexts/AuthContext';
-
-interface DashboardProps {}
-
-type NavItem = 'dashboard' | 'workout' | 'diet' | 'profile' | 'store';
+import { useProgress } from '../../contexts/ProgressContext';
 
 interface ProgressData {
   value: number;
@@ -14,16 +11,20 @@ interface ProgressData {
 }
 
 export default function Dashboard() {
-  const [calories, setCalories] = useState(2000); // Example daily calorie goal
-  const [caloriesBurned, setCaloriesBurned] = useState(450);
-  const [caloriesConsumed, setCaloriesConsumed] = useState(1200);
-  const [workoutProgress, setWorkoutProgress] = useState<ProgressData>({ value: 3, max: 5, percentage: 60 });
-  const [waterIntake, setWaterIntake] = useState<ProgressData>({ value: 5, max: 8, percentage: 62.5 });
+  const [waterIntake] = useState<ProgressData>({ value: 5, max: 8, percentage: 62.5 });
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
+  const { 
+    getTodaysDietProgress, 
+    getWeeklyWorkoutProgress, 
+    getCaloriesConsumed, 
+    getCompletedWorkoutsThisWeek,
+    dietProgress,
+    workoutProgress 
+  } = useProgress();
   
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -152,7 +153,7 @@ export default function Dashboard() {
             <div className="bg-white overflow-hidden shadow-lg rounded-xl border border-gray-100 transform transition-all duration-300 hover:shadow-xl">
               <div className="px-4 py-5 sm:p-6">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-medium text-gray-500">Total Calories</h3>
+                  <h3 className="text-sm font-medium text-gray-500">Daily Calorie Goal</h3>
                   <div className="bg-green-100 rounded-full p-1.5">
                     <svg className="h-4 w-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -161,10 +162,11 @@ export default function Dashboard() {
                 </div>
                 <div className="flex items-end justify-between">
                   <div>
-                    <p className="text-2xl font-bold text-gray-900">{calories}</p>
+                    <p className="text-2xl font-bold text-gray-900">{dietProgress.targetCalories}</p>
+                    <p className="text-xs text-gray-500">Target</p>
                   </div>
                   <div className="text-sm text-green-500 font-medium">
-                    +3.67%
+                    {getTodaysDietProgress()}%
                   </div>
                 </div>
               </div>
@@ -174,7 +176,7 @@ export default function Dashboard() {
             <div className="bg-white overflow-hidden shadow-lg rounded-xl border border-gray-100 transform transition-all duration-300 hover:shadow-xl">
               <div className="px-4 py-5 sm:p-6">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-medium text-gray-500">Calories Burned</h3>
+                  <h3 className="text-sm font-medium text-gray-500">Calories Consumed</h3>
                   <div className="bg-red-100 rounded-full p-1.5">
                     <svg className="h-4 w-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clipRule="evenodd" />
@@ -183,10 +185,11 @@ export default function Dashboard() {
                 </div>
                 <div className="flex items-end justify-between">
                   <div>
-                    <p className="text-2xl font-bold text-gray-900">{caloriesBurned}</p>
+                    <p className="text-2xl font-bold text-gray-900">{getCaloriesConsumed()}</p>
+                    <p className="text-xs text-gray-500">Consumed</p>
                   </div>
-                  <div className="text-sm text-red-500 font-medium">
-                    -2.67%
+                  <div className="text-sm text-blue-500 font-medium">
+                    {dietProgress.completedMeals}/{dietProgress.totalMeals}
                   </div>
                 </div>
               </div>
@@ -205,10 +208,11 @@ export default function Dashboard() {
                 </div>
                 <div className="flex items-end justify-between">
                   <div>
-                    <p className="text-2xl font-bold text-gray-900">{workoutProgress.value}</p>
+                    <p className="text-2xl font-bold text-gray-900">{getCompletedWorkoutsThisWeek()}</p>
+                    <p className="text-xs text-gray-500">This Week</p>
                   </div>
                   <div className="text-sm text-green-500 font-medium">
-                    +2.54%
+                    {getWeeklyWorkoutProgress()}%
                   </div>
                 </div>
               </div>
@@ -237,50 +241,165 @@ export default function Dashboard() {
             </div>
           </div>
           
+          {/* Progress Overview Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            {/* Diet Progress */}
+            <div className="bg-white p-6 rounded-xl shadow-lg">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium text-gray-900">Today's Diet Progress</h3>
+                <Link to="/dashboard/diet" className="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full hover:bg-blue-200">
+                  View Diet Plan
+                </Link>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>Meals Completed</span>
+                    <span>{dietProgress.completedMeals}/{dietProgress.totalMeals}</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-green-600 h-2 rounded-full transition-all duration-300" 
+                      style={{ width: `${getTodaysDietProgress()}%` }}
+                    ></div>
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>Calories Progress</span>
+                    <span>{getCaloriesConsumed()}/{dietProgress.targetCalories} kcal</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                      style={{ width: `${Math.min(100, (getCaloriesConsumed() / dietProgress.targetCalories) * 100)}%` }}
+                    ></div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-4 text-center text-sm">
+                  <div>
+                    <p className="font-medium text-gray-900">{dietProgress.proteinConsumed}g</p>
+                    <p className="text-gray-500">Protein</p>
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">{dietProgress.carbsConsumed}g</p>
+                    <p className="text-gray-500">Carbs</p>
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">{dietProgress.fatsConsumed}g</p>
+                    <p className="text-gray-500">Fats</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Workout Progress */}
+            <div className="bg-white p-6 rounded-xl shadow-lg">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium text-gray-900">Weekly Workout Progress</h3>
+                <Link to="/dashboard/workout" className="text-sm bg-purple-100 text-purple-800 px-3 py-1 rounded-full hover:bg-purple-200">
+                  View Workout Plan
+                </Link>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>Workouts Completed</span>
+                    <span>{workoutProgress.completedWorkouts}/{workoutProgress.totalWorkouts}</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-purple-600 h-2 rounded-full transition-all duration-300" 
+                      style={{ width: `${getWeeklyWorkoutProgress()}%` }}
+                    ></div>
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>Exercises Completed</span>
+                    <span>{workoutProgress.completedExercises}/{workoutProgress.totalExercises}</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-indigo-600 h-2 rounded-full transition-all duration-300" 
+                      style={{ width: `${workoutProgress.totalExercises > 0 ? Math.round((workoutProgress.completedExercises / workoutProgress.totalExercises) * 100) : 0}%` }}
+                    ></div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-7 gap-1 text-center text-xs">
+                  {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => {
+                    const dayData = workoutProgress.workoutDays[day];
+                    const isCompleted = dayData?.completed || false;
+                    return (
+                      <div key={day} className="flex flex-col items-center">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-1 ${
+                          isCompleted ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-500'
+                        }`}>
+                          {isCompleted ? '✓' : day.charAt(0)}
+                        </div>
+                        <span className="text-gray-500">{day}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Current Reservations Section */}
           <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium text-gray-900">Current Workout Schedule</h3>
+              <h3 className="text-lg font-medium text-gray-900">Quick Actions</h3>
               <button className="text-sm bg-gray-100 text-gray-800 px-3 py-1 rounded-full hover:bg-gray-200">View All</button>
             </div>
-            <div className="overflow-x-auto">
-              <table className="min-w-full">
-                <tbody>
-                  {[
-                    { name: 'Morning Run', time: '06:30', duration: '30 mins', status: 'Completed' },
-                    { name: 'Chest Workout', time: '17:40', duration: '45 mins', status: 'Scheduled' },
-                    { name: 'Evening Yoga', time: '19:00', duration: '30 mins', status: 'Scheduled' }
-                  ].map((workout, index) => (
-                    <tr key={index} className="border-b border-gray-100 last:border-0">
-                      <td className="py-3">
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center mr-3">
-                            <span className="text-sm font-medium text-indigo-600">{workout.name.charAt(0)}</span>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-900">{workout.name}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-3 text-sm text-gray-500">{workout.time}</td>
-                      <td className="py-3 text-sm text-gray-500">{workout.duration}</td>
-                      <td className="py-3">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${workout.status === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
-                          {workout.status}
-                        </span>
-                      </td>
-                      <td className="py-3 text-right">
-                        <button className="text-sm text-gray-500 hover:text-indigo-600">
-                          <svg className="w-4 h-4 inline" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                          </svg>
-                          Edit
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Link to="/dashboard/diet" className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-3">
+                  <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-900">Update Diet Plan</p>
+                  <p className="text-xs text-gray-500">Mark meals as completed</p>
+                </div>
+              </Link>
+              
+              <Link to="/dashboard/workout" className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mr-3">
+                  <svg className="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-900">Track Workouts</p>
+                  <p className="text-xs text-gray-500">Complete exercises</p>
+                </div>
+              </Link>
+              
+              <Link to="/dashboard/profile" className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                  <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-900">Update Profile</p>
+                  <p className="text-xs text-gray-500">Adjust goals & settings</p>
+                </div>
+              </Link>
+              
+              <Link to="/dashboard/store" className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                <div className="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center mr-3">
+                  <svg className="w-5 h-5 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-900">Browse Store</p>
+                  <p className="text-xs text-gray-500">Fitness supplements</p>
+                </div>
+              </Link>
             </div>
           </div>
 
@@ -297,15 +416,27 @@ export default function Dashboard() {
               </div>
               <div className="h-64">
                 <div className="flex h-48 items-end space-x-2">
-                  {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => {
-                    const height = Math.max(20, Math.min(100, 30 + Math.random() * 70));
+                  {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => {
+                    const dayData = workoutProgress.workoutDays[day];
+                    const completionPercentage = dayData ? 
+                      (dayData.totalExercises > 0 ? (dayData.completedExercises / dayData.totalExercises) * 100 : 0) : 0;
+                    const height = Math.max(10, completionPercentage);
+                    const isCompleted = dayData?.completed || false;
+                    
                     return (
                       <div key={day} className="flex-1 flex flex-col items-center">
                         <div 
-                          className="w-full bg-teal-600 rounded-t-md" 
+                          className={`w-full rounded-t-md transition-all duration-300 ${
+                            isCompleted ? 'bg-green-600' : completionPercentage > 0 ? 'bg-yellow-500' : 'bg-gray-300'
+                          }`}
                           style={{ height: `${height}%` }}
                         ></div>
                         <div className="text-xs text-gray-500 mt-2">{day}</div>
+                        {dayData && (
+                          <div className="text-xs text-gray-400 mt-1">
+                            {dayData.completedExercises}/{dayData.totalExercises}
+                          </div>
+                        )}
                       </div>
                     );
                   })}

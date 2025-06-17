@@ -1,4 +1,4 @@
-import { API_CONFIG } from '../config/api';
+
 
 // Backend AI Service Interface
 interface BackendAIResponse<T> {
@@ -64,10 +64,8 @@ interface DietPlan {
 }
 
 class BackendAIService {
-  private baseURL: string;
-
   constructor() {
-    this.baseURL = API_CONFIG.BACKEND_URL;
+    // Using relative URLs with Vite proxy
   }
 
   private async makeRequest<T>(endpoint: string, data: any): Promise<T> {
