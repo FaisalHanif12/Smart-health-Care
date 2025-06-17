@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate, Routes, Route } from 'react-router-dom';
+import DashboardLayout from '../components/Dashboard/DashboardLayout';
 import Dashboard from '../components/Dashboard/Dashboard';
 import WorkoutPlan from '../components/Dashboard/WorkoutPlan';
 import DietPlan from '../components/Dashboard/DietPlan';
@@ -21,15 +22,17 @@ export default function DashboardPage() {
   }, [navigate]);
 
   return (
-    <Routes>
-      <Route path="" element={<Dashboard />} />
-      <Route path="workout" element={<WorkoutPlan />} />
-      <Route path="diet" element={<DietPlan />} />
-      <Route path="profile" element={<Profile />} />
-      <Route path="store" element={<Store />} />
-      <Route path="cart" element={<Cart />} />
-      <Route path="payment" element={<Payment />} />
-      <Route path="payment-success" element={<PaymentSuccess />} />
-    </Routes>
+    <DashboardLayout>
+      <Routes>
+        <Route path="" element={<Dashboard />} />
+        <Route path="workout" element={<WorkoutPlan />} />
+        <Route path="diet" element={<DietPlan />} />
+        <Route path="profile" element={<Profile />} />
+        <Route path="store" element={<Store />} />
+        <Route path="cart" element={<Cart />} />
+        <Route path="payment" element={<Payment />} />
+        <Route path="payment-success" element={<PaymentSuccess />} />
+      </Routes>
+    </DashboardLayout>
   );
 }
