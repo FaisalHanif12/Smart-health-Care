@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import { useAuth } from './AuthContext';
 
@@ -245,7 +245,7 @@ export const ProgressProvider: React.FC<ProgressProviderProps> = ({ children }) 
     }
   };
 
-  const value: ProgressContextType = {
+  const value: ProgressContextType = useMemo(() => ({
     dietProgress,
     workoutProgress,
     updateDietProgress,
@@ -255,7 +255,7 @@ export const ProgressProvider: React.FC<ProgressProviderProps> = ({ children }) 
     getCaloriesConsumed,
     getCompletedWorkoutsThisWeek,
     resetDailyProgress,
-  };
+  }), [dietProgress, workoutProgress]);
 
   return (
     <ProgressContext.Provider value={value}>
