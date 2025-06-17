@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useProgress } from '../../contexts/ProgressContext';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import BackendAIService from '../../services/backendAIService';
 
 interface Exercise {
@@ -22,6 +22,7 @@ interface WorkoutDay {
 export default function WorkoutPlanContent() {
   const { user } = useAuth();
   const { updateWorkoutProgress } = useProgress();
+  const location = useLocation();
   const [workoutPlan, setWorkoutPlan] = useState<WorkoutDay[]>([]);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [aiError, setAiError] = useState('');
@@ -30,6 +31,11 @@ export default function WorkoutPlanContent() {
   const [isLoadingFromStorage, setIsLoadingFromStorage] = useState(true);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
+  // Close modals when location changes (navigation occurs)
+  useEffect(() => {
+    setShowConfirmDialog(false);
+    setIsEditingPrompt(false);
+  }, [location.pathname]);
 
   // Load workout plan from localStorage on component mount
   useEffect(() => {
