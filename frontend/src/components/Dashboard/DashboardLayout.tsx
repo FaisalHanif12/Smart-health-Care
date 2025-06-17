@@ -45,7 +45,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
         
         {/* Navigation Links Container */}
-        <div className="flex flex-col flex-1 overflow-hidden">
+        <div className="flex flex-col flex-1">
           {/* Main Navigation Links */}
           <div className="space-y-2 flex-grow-0">
             <Link
