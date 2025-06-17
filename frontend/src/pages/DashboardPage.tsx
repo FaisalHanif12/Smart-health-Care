@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useNavigate, Routes, Route } from 'react-router-dom';
+import { useNavigate, useLocation, Routes, Route } from 'react-router-dom';
 import DashboardLayout from '../components/Dashboard/DashboardLayout';
 import Dashboard from '../components/Dashboard/Dashboard';
 import WorkoutPlan from '../components/Dashboard/WorkoutPlan';
@@ -12,6 +12,7 @@ import PaymentSuccess from '../components/Dashboard/PaymentSuccess';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Simulating profile check - in real implementation, this would check the backend
   useEffect(() => {
@@ -21,17 +22,20 @@ export default function DashboardPage() {
     }
   }, [navigate]);
 
+  // Get current path for unique keys
+  const currentPath = location.pathname.split('/').pop() || 'dashboard';
+
   return (
     <DashboardLayout>
       <Routes>
-        <Route index element={<Dashboard />} />
-        <Route path="workout" element={<WorkoutPlan />} />
-        <Route path="diet" element={<DietPlan />} />
-        <Route path="profile" element={<Profile />} />
-        <Route path="store" element={<Store />} />
-        <Route path="cart" element={<Cart />} />
-        <Route path="payment" element={<Payment />} />
-        <Route path="payment-success" element={<PaymentSuccess />} />
+        <Route index element={<Dashboard key={`dashboard-${currentPath}`} />} />
+        <Route path="workout" element={<WorkoutPlan key={`workout-${currentPath}`} />} />
+        <Route path="diet" element={<DietPlan key={`diet-${currentPath}`} />} />
+        <Route path="profile" element={<Profile key={`profile-${currentPath}`} />} />
+        <Route path="store" element={<Store key={`store-${currentPath}`} />} />
+        <Route path="cart" element={<Cart key={`cart-${currentPath}`} />} />
+        <Route path="payment" element={<Payment key={`payment-${currentPath}`} />} />
+        <Route path="payment-success" element={<PaymentSuccess key={`payment-success-${currentPath}`} />} />
       </Routes>
     </DashboardLayout>
   );

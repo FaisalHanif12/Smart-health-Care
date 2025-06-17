@@ -30,6 +30,16 @@ export default function DietPlanContent() {
   const [isLoadingFromStorage, setIsLoadingFromStorage] = useState(true);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
+  // Cleanup on unmount to prevent state persistence
+  useEffect(() => {
+    return () => {
+      // Reset any modal states on unmount
+      setShowConfirmDialog(false);
+      setIsEditingPrompt(false);
+      setIsGeneratingAI(false);
+    };
+  }, []);
+
   // Load diet plan from localStorage on component mount
   useEffect(() => {
     if (user?._id) {
