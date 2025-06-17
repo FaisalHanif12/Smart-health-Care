@@ -24,14 +24,14 @@ export default function DashboardPage() {
   return (
     <DashboardLayout>
       <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/workout" element={<WorkoutPlan />} />
-        <Route path="/diet" element={<DietPlan />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/store" element={<Store />} />
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/payment" element={<Payment />} />
-        <Route path="/payment-success" element={<PaymentSuccess />} />
+        <Route index element={<Dashboard />} />
+        <Route path="workout" element={<WorkoutPlan />} />
+        <Route path="diet" element={<DietPlan />} />
+        <Route path="profile" element={<Profile />} />
+        <Route path="store" element={<Store />} />
+        <Route path="cart" element={<Cart />} />
+        <Route path="payment" element={<Payment />} />
+        <Route path="payment-success" element={<PaymentSuccess />} />
       </Routes>
     </DashboardLayout>
   );
