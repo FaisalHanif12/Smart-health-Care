@@ -137,7 +137,8 @@ Please provide a structured weekly workout plan with specific exercises, sets, r
     try {
       const prompt = customPrompt || generatePersonalizedPrompt();
       const backendAIService = new BackendAIService();
-      const aiWorkoutPlan = await backendAIService.generateWorkoutPlan(prompt);
+      // const aiWorkoutPlan = await backendAIService.generateWorkoutPlan(prompt);
+      await backendAIService.generateWorkoutPlan(prompt);
       
       // Convert AI workout plan to our format
       const newWorkoutPlan: WorkoutDay[] = [

@@ -158,38 +158,13 @@ export default function PaymentSuccessContent() {
           <div className="mt-8 text-center">
             <p className="text-gray-600">
               Questions about your order? Contact our support team at{' '}
-              <a href="mailto:support@healthtracker.com" className="text-green-600 hover:text-green-500">
+              <a href="mailto:support@healthtacker.com" className="text-green-600 hover:text-green-500">
                 support@healthtacker.com
               </a>
             </p>
           </div>
         </div>
       </main>
-
-      <style jsx>{`
-        .confetti-container {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          overflow: hidden;
-        }
-        
-        .confetti {
-          position: absolute;
-          width: 10px;
-          height: 10px;
-          background: #f0f;
-          animation: confetti-fall 3s linear infinite;
-        }
-        
-        @keyframes confetti-fall {
-          to {
-            transform: translateY(100vh) rotate(360deg);
-          }
-        }
-      `}</style>
     </div>
   );
 } 
