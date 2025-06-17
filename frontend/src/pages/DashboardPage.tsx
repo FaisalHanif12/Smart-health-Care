@@ -24,18 +24,34 @@ export default function DashboardPage() {
 
   console.log('DashboardPage render - current path:', location.pathname);
 
+  // Simple conditional rendering based on path
+  const renderContent = () => {
+    const path = location.pathname;
+    
+    if (path === '/dashboard' || path === '/dashboard/') {
+      return <Dashboard />;
+    } else if (path === '/dashboard/workout') {
+      return <WorkoutPlan />;
+    } else if (path === '/dashboard/diet') {
+      return <DietPlan />;
+    } else if (path === '/dashboard/profile') {
+      return <Profile />;
+    } else if (path === '/dashboard/store') {
+      return <Store />;
+    } else if (path === '/dashboard/cart') {
+      return <Cart />;
+    } else if (path === '/dashboard/payment') {
+      return <Payment />;
+    } else if (path === '/dashboard/payment-success') {
+      return <PaymentSuccess />;
+    } else {
+      return <Dashboard />; // fallback
+    }
+  };
+
   return (
     <DashboardLayout>
-      <Routes key={location.pathname}>
-        <Route path="" element={<Dashboard key="dashboard" />} />
-        <Route path="workout" element={<WorkoutPlan key="workout" />} />
-        <Route path="diet" element={<DietPlan key="diet" />} />
-        <Route path="profile" element={<Profile key="profile" />} />
-        <Route path="store" element={<Store key="store" />} />
-        <Route path="cart" element={<Cart key="cart" />} />
-        <Route path="payment" element={<Payment key="payment" />} />
-        <Route path="payment-success" element={<PaymentSuccess key="payment-success" />} />
-      </Routes>
+      {renderContent()}
     </DashboardLayout>
   );
 }

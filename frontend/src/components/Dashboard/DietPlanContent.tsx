@@ -23,6 +23,13 @@ export default function DietPlanContent() {
   const { updateDietProgress } = useProgress();
   const location = useLocation();
   console.log('DietPlanContent render - location:', location.pathname);
+  
+  // Only render if we're actually on the diet route
+  if (!location.pathname.includes('/diet')) {
+    console.log('DietPlanContent: Not on diet route, not rendering');
+    return null;
+  }
+  
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [aiError, setAiError] = useState('');
   const [isEditingPrompt, setIsEditingPrompt] = useState(false);
