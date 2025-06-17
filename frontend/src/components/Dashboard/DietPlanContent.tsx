@@ -19,7 +19,6 @@ interface DailyMeals {
 }
 
 export default function DietPlanContent() {
-  console.log('DietPlanContent component is rendering');
   const { user } = useAuth();
   const { updateDietProgress } = useProgress();
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);

@@ -1,5 +1,7 @@
+import { useLocation } from 'react-router-dom';
 import StoreContent from './StoreContent';
 
 export default function Store() {
-  return <StoreContent />;
+  const location = useLocation();
+  return <StoreContent key={`store-${location.pathname}`} />;
 }

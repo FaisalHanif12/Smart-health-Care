@@ -20,7 +20,6 @@ interface WorkoutDay {
 }
 
 export default function WorkoutPlanContent() {
-  console.log('WorkoutPlanContent component is rendering');
   const { user } = useAuth();
   const { updateWorkoutProgress } = useProgress();
   const [workoutPlan, setWorkoutPlan] = useState<WorkoutDay[]>([]);

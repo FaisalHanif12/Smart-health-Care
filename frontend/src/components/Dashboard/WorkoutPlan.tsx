@@ -1,6 +1,7 @@
+import { useLocation } from 'react-router-dom';
 import WorkoutPlanContent from './WorkoutPlanContent';
 
 export default function WorkoutPlan() {
-  console.log('WorkoutPlan wrapper component rendering');
-  return <WorkoutPlanContent />;
+  const location = useLocation();
+  return <WorkoutPlanContent key={`workout-${location.pathname}`} />;
 } 
