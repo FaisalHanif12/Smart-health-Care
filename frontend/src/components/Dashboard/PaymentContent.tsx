@@ -52,14 +52,37 @@ export default function PaymentContent() {
   const [cartTotal, setCartTotal] = useState(0);
 
   useEffect(() => {
-    // Load cart data
+    // Load cart data and calculate actual total
     const savedCart = localStorage.getItem('cart');
     if (savedCart) {
       const cart = JSON.parse(savedCart);
-      // In a real app, you'd fetch product details from an API
-      // For now, we'll calculate a simple total
-      setCartItems(cart);
-      setCartTotal(cart.length * 10); // Simplified calculation
+      
+      // Product data - same as in CartContent.tsx
+      const productsList = [
+        { id: 1, name: 'Organic Eggs', price: 5.99, calories: 70, protein: 6, image: '🥚', category: 'Protein' },
+        { id: 2, name: 'Greek Yogurt', price: 4.99, calories: 120, protein: 15, image: '🥛', category: 'Dairy' },
+        { id: 3, name: 'Quinoa', price: 7.99, calories: 120, protein: 4, image: '🌾', category: 'Grains' },
+        { id: 4, name: 'Almonds', price: 8.99, calories: 160, protein: 6, image: '🥜', category: 'Nuts' },
+        { id: 5, name: 'Chicken Breast', price: 12.99, calories: 165, protein: 31, image: '🍗', category: 'Protein' },
+        { id: 6, name: 'Avocado', price: 2.99, calories: 160, protein: 2, image: '🥑', category: 'Fruits' },
+        { id: 7, name: 'Salmon Fillet', price: 15.99, calories: 208, protein: 22, image: '🐟', category: 'Protein' },
+        { id: 8, name: 'Sweet Potato', price: 1.99, calories: 103, protein: 2, image: '🍠', category: 'Vegetables' },
+        { id: 9, name: 'Blueberries', price: 6.99, calories: 84, protein: 1, image: '🫐', category: 'Fruits' },
+        { id: 10, name: 'Spinach', price: 3.49, calories: 23, protein: 3, image: '🥬', category: 'Vegetables' },
+        { id: 11, name: 'Brown Rice', price: 4.99, calories: 111, protein: 3, image: '🍚', category: 'Grains' },
+        { id: 12, name: 'Protein Powder', price: 24.99, calories: 120, protein: 25, image: '🥤', category: 'Supplements' },
+        { id: 13, name: 'Chia Seeds', price: 9.99, calories: 137, protein: 4, image: '🌱', category: 'Seeds' },
+        { id: 14, name: 'Kale', price: 2.99, calories: 33, protein: 3, image: '🥬', category: 'Vegetables' },
+        { id: 15, name: 'Turkey Breast', price: 11.99, calories: 135, protein: 30, image: '🦃', category: 'Protein' },
+        { id: 16, name: 'Coconut Oil', price: 13.99, calories: 121, protein: 0, image: '🥥', category: 'Oils' },
+      ];
+      
+      // Calculate actual total based on product prices
+      const cartProducts = productsList.filter(product => cart.includes(product.id));
+      const actualTotal = cartProducts.reduce((total, product) => total + product.price, 0);
+      
+      setCartItems(cartProducts);
+      setCartTotal(actualTotal);
     }
   }, []);
 
