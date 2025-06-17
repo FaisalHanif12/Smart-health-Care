@@ -11,6 +11,7 @@ import Payment from '../components/Dashboard/Payment';
 import PaymentSuccess from '../components/Dashboard/PaymentSuccess';
 
 export default function DashboardPage() {
+  console.log('DashboardPage rendering');
   const navigate = useNavigate();
 
   // Simulating profile check - in real implementation, this would check the backend
