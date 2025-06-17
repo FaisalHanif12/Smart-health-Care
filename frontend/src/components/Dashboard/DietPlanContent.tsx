@@ -22,6 +22,7 @@ export default function DietPlanContent() {
   const { user } = useAuth();
   const { updateDietProgress } = useProgress();
   const location = useLocation();
+  console.log('DietPlanContent render - location:', location.pathname);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [aiError, setAiError] = useState('');
   const [isEditingPrompt, setIsEditingPrompt] = useState(false);

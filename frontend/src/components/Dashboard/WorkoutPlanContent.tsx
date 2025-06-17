@@ -23,6 +23,7 @@ export default function WorkoutPlanContent() {
   const { user } = useAuth();
   const { updateWorkoutProgress } = useProgress();
   const location = useLocation();
+  console.log('WorkoutPlanContent render - location:', location.pathname);
   const [workoutPlan, setWorkoutPlan] = useState<WorkoutDay[]>([]);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [aiError, setAiError] = useState('');
