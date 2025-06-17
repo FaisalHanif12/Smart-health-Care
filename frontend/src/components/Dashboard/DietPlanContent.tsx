@@ -22,8 +22,6 @@ export default function DietPlanContent() {
   const { user } = useAuth();
   const { updateDietProgress } = useProgress();
   
-  console.log('DietPlanContent rendering');
-  
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [aiError, setAiError] = useState('');
   const [isEditingPrompt, setIsEditingPrompt] = useState(false);
