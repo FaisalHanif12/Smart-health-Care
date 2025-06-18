@@ -1,434 +1,315 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import { useProgress } from '../../contexts/ProgressContext';
-import { Link } from 'react-router-dom';
-import BackendAIService from '../../services/backendAIService';
 
 interface Exercise {
   name: string;
-  sets: number;
-  reps: number;
-  weight?: number;
-  duration?: number;
-  completed: boolean;
+  sets: string;
+  reps: string;
+  rest: string;
+  notes?: string;
+  completed?: boolean;
 }
 
 interface WorkoutDay {
   day: string;
   exercises: Exercise[];
-  completed: boolean;
+  completed?: boolean;
 }
 
 export default function WorkoutPlanContent() {
-  const { user } = useAuth();
-  const { updateWorkoutProgress } = useProgress();
-  
   const [workoutPlan, setWorkoutPlan] = useState<WorkoutDay[]>([]);
-  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
-  const [aiError, setAiError] = useState('');
-  const [isEditingPrompt, setIsEditingPrompt] = useState(false);
-  const [customPrompt, setCustomPrompt] = useState('');
-  const [isLoadingFromStorage, setIsLoadingFromStorage] = useState(true);
-  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [weeklyStats, setWeeklyStats] = useState({
+    totalWorkouts: 0,
+    completedWorkouts: 0,
+    completionRate: 0
+  });
 
-  // Cleanup on unmount to prevent state persistence
+  // Load saved workout plan from localStorage
   useEffect(() => {
-    return () => {
-      // Reset any modal states on unmount
-      setShowConfirmDialog(false);
-      setIsEditingPrompt(false);
-      setIsGeneratingAI(false);
-    };
-  }, []);
-
-  // Load workout plan from localStorage on component mount
-  useEffect(() => {
-    if (user?._id) {
-      const savedWorkoutPlan = localStorage.getItem(`workoutPlan_${user._id}`);
-      const savedWeekResetDate = localStorage.getItem(`lastWeekResetDate_${user._id}`);
-      
-      if (savedWorkoutPlan) {
-        try {
-          const parsedPlan = JSON.parse(savedWorkoutPlan);
-          setWorkoutPlan(parsedPlan);
-          
-          // Check if we need to reset for new week
-          const today = new Date();
-          const currentWeekStart = new Date(today.setDate(today.getDate() - today.getDay()));
-          const weekStartString = currentWeekStart.toDateString();
-          
-          if (savedWeekResetDate !== weekStartString) {
-            // Reset completion status for new week
-            const resetPlan = parsedPlan.map((day: WorkoutDay) => ({
-              ...day,
-              completed: false,
-              exercises: day.exercises.map((exercise: Exercise) => ({
-                ...exercise,
-                completed: false
-              }))
-            }));
-            setWorkoutPlan(resetPlan);
-            localStorage.setItem(`workoutPlan_${user._id}`, JSON.stringify(resetPlan));
-            localStorage.setItem(`lastWeekResetDate_${user._id}`, weekStartString);
-          }
-        } catch (error) {
-          console.error('Error parsing saved workout plan:', error);
-        }
+    const savedPlan = localStorage.getItem('workoutPlan');
+    if (savedPlan) {
+      try {
+        const plan = JSON.parse(savedPlan);
+        setWorkoutPlan(plan);
+        calculateStats(plan);
+      } catch (error) {
+        console.error('Error loading workout plan:', error);
       }
     }
-    setIsLoadingFromStorage(false);
-  }, [user?._id]);
+  }, []);
 
-  // Save workout plan to localStorage whenever it changes and update progress
-  useEffect(() => {
-    if (user?._id && workoutPlan.length > 0) {
-      localStorage.setItem(`workoutPlan_${user._id}`, JSON.stringify(workoutPlan));
-      updateWorkoutProgress(workoutPlan);
+  const calculateStats = (plan: WorkoutDay[]) => {
+    const totalWorkouts = plan.length;
+    const completedWorkouts = plan.filter(day => day.completed).length;
+    const completionRate = totalWorkouts > 0 ? (completedWorkouts / totalWorkouts) * 100 : 0;
+    
+    setWeeklyStats({
+      totalWorkouts,
+      completedWorkouts,
+      completionRate
+    });
+  };
+
+  const saveWorkoutPlan = (plan: WorkoutDay[]) => {
+    localStorage.setItem('workoutPlan', JSON.stringify(plan));
+    setWorkoutPlan(plan);
+    calculateStats(plan);
+  };
+
+  const generateWorkoutPlan = async () => {
+    setIsLoading(true);
+    
+    // Simulate API call with default workout plan
+    const defaultPlan: WorkoutDay[] = [
+      {
+        day: 'Monday - Upper Body',
+        exercises: [
+          { name: 'Push-ups', sets: '3', reps: '10-15', rest: '60s', notes: 'Keep core tight' },
+          { name: 'Pull-ups/Assisted Pull-ups', sets: '3', reps: '5-10', rest: '90s', notes: 'Full range of motion' },
+          { name: 'Shoulder Press', sets: '3', reps: '10-12', rest: '60s', notes: 'Control the weight' },
+          { name: 'Bicep Curls', sets: '3', reps: '12-15', rest: '45s' },
+          { name: 'Tricep Dips', sets: '3', reps: '8-12', rest: '60s' }
+        ]
+      },
+      {
+        day: 'Tuesday - Lower Body',
+        exercises: [
+          { name: 'Squats', sets: '3', reps: '12-15', rest: '90s', notes: 'Keep knees aligned' },
+          { name: 'Lunges', sets: '3', reps: '10 each leg', rest: '60s', notes: 'Alternate legs' },
+          { name: 'Deadlifts', sets: '3', reps: '8-10', rest: '90s', notes: 'Keep back straight' },
+          { name: 'Calf Raises', sets: '3', reps: '15-20', rest: '45s' },
+          { name: 'Leg Press', sets: '3', reps: '12-15', rest: '60s' }
+        ]
+      },
+      {
+        day: 'Wednesday - Core & Cardio',
+        exercises: [
+          { name: 'Plank', sets: '3', reps: '30-60s', rest: '30s', notes: 'Keep body straight' },
+          { name: 'Russian Twists', sets: '3', reps: '20 each side', rest: '45s' },
+          { name: 'Mountain Climbers', sets: '3', reps: '20 each leg', rest: '30s' },
+          { name: 'Jumping Jacks', sets: '3', reps: '30s', rest: '30s' },
+          { name: 'Burpees', sets: '3', reps: '5-10', rest: '60s' }
+        ]
+      }
+    ];
+
+    setTimeout(() => {
+      saveWorkoutPlan(defaultPlan);
+      setIsLoading(false);
+    }, 1500);
+  };
+
+  const toggleExerciseComplete = (dayIndex: number, exerciseIndex: number) => {
+    const updatedPlan = [...workoutPlan];
+    updatedPlan[dayIndex].exercises[exerciseIndex].completed = 
+      !updatedPlan[dayIndex].exercises[exerciseIndex].completed;
+    
+    // Check if all exercises in the day are complete
+    const allExercisesComplete = updatedPlan[dayIndex].exercises.every(ex => ex.completed);
+    updatedPlan[dayIndex].completed = allExercisesComplete;
+    
+    saveWorkoutPlan(updatedPlan);
+  };
+
+  const resetProgress = () => {
+    if (window.confirm('Are you sure you want to reset all progress? This cannot be undone.')) {
+      const resetPlan = workoutPlan.map(day => ({
+        ...day,
+        completed: false,
+        exercises: day.exercises.map(ex => ({ ...ex, completed: false }))
+      }));
+      saveWorkoutPlan(resetPlan);
     }
-  }, [workoutPlan, user?._id, updateWorkoutProgress]);
-
-  const toggleExerciseCompletion = (dayIndex: number, exerciseIndex: number) => {
-    const newPlan = [...workoutPlan];
-    newPlan[dayIndex].exercises[exerciseIndex].completed = !newPlan[dayIndex].exercises[exerciseIndex].completed;
-    
-    // Check if all exercises in the day are completed
-    const allExercisesCompleted = newPlan[dayIndex].exercises.every(exercise => exercise.completed);
-    newPlan[dayIndex].completed = allExercisesCompleted;
-    
-    setWorkoutPlan(newPlan);
-    updateWorkoutProgress(newPlan);
   };
 
   const clearWorkoutPlan = () => {
-    setShowConfirmDialog(true);
-  };
-
-  const handleConfirmClear = () => {
-    setWorkoutPlan([]);
-    if (user?._id) {
-      localStorage.removeItem(`workoutPlan_${user._id}`);
-    }
-    setShowConfirmDialog(false);
-  };
-
-  const handleCancelClear = () => {
-    setShowConfirmDialog(false);
-  };
-
-  // Generate personalized prompt based on user profile
-  const generatePersonalizedPrompt = () => {
-    if (!user?.profile) {
-      return 'Please complete your profile first to generate a personalized workout plan prompt.';
-    }
-
-    const fitnessLevel = 'Beginner'; // Default fitness level
-    const fitnessGoal = user.profile.fitnessGoal || 'General Fitness';
-    const healthConditionsText = user.profile.healthConditions && user.profile.healthConditions.length > 0 && !user.profile.healthConditions.includes('None') 
-      ? user.profile.healthConditions.join(', ') 
-      : 'no specific health conditions';
-
-    return `Create a detailed weekly workout plan for a ${user.profile.age || 25}-year-old ${user.profile.gender || 'person'} with ${fitnessLevel} fitness level.
-
-Their primary fitness goal is: ${fitnessGoal}
-Health considerations: ${healthConditionsText}
-
-Please provide a structured weekly workout plan with specific exercises, sets, reps, and guidance.`;
-  };
-
-  const generateAIWorkoutPlan = async () => {
-    if (!user?.profile) {
-      setAiError('Please complete your profile first to generate an AI workout plan.');
-      return;
-    }
-
-    setIsGeneratingAI(true);
-    setAiError('');
-
-    try {
-      const prompt = customPrompt || generatePersonalizedPrompt();
-      const backendAIService = new BackendAIService();
-      // const aiWorkoutPlan = await backendAIService.generateWorkoutPlan(prompt);
-      await backendAIService.generateWorkoutPlan(prompt);
-      
-      // Convert AI workout plan to our format
-      const newWorkoutPlan: WorkoutDay[] = [
-        {
-          day: 'Monday',
-          completed: false,
-          exercises: [
-            { name: 'Push-ups', sets: 3, reps: 15, completed: false },
-            { name: 'Squats', sets: 3, reps: 20, completed: false },
-            { name: 'Plank', sets: 3, reps: 1, duration: 30, completed: false },
-          ]
-        },
-        {
-          day: 'Wednesday',
-          completed: false,
-          exercises: [
-            { name: 'Pull-ups', sets: 3, reps: 8, completed: false },
-            { name: 'Lunges', sets: 3, reps: 12, completed: false },
-            { name: 'Burpees', sets: 3, reps: 10, completed: false },
-          ]
-        },
-        {
-          day: 'Friday',
-          completed: false,
-          exercises: [
-            { name: 'Deadlifts', sets: 3, reps: 10, weight: 50, completed: false },
-            { name: 'Bench Press', sets: 3, reps: 12, weight: 40, completed: false },
-            { name: 'Mountain Climbers', sets: 3, reps: 20, completed: false },
-          ]
-        },
-      ];
-
-      setWorkoutPlan(newWorkoutPlan);
-    } catch (error) {
-      console.error('Error generating AI workout plan:', error);
-      setAiError('Failed to generate workout plan. Please try again.');
-    } finally {
-      setIsGeneratingAI(false);
+    if (window.confirm('Are you sure you want to clear your workout plan? This cannot be undone.')) {
+      localStorage.removeItem('workoutPlan');
+      setWorkoutPlan([]);
+      setWeeklyStats({ totalWorkouts: 0, completedWorkouts: 0, completionRate: 0 });
     }
   };
-
-  const handleEditPrompt = () => {
-    if (!isEditingPrompt) {
-      setCustomPrompt(generatePersonalizedPrompt());
-    }
-    setIsEditingPrompt(!isEditingPrompt);
-  };
-
-  const handleSavePrompt = () => {
-    setIsEditingPrompt(false);
-  };
-
-  // Calculate completion stats
-  const totalExercises = workoutPlan.reduce((acc, day) => acc + day.exercises.length, 0);
-  const completedExercises = workoutPlan.reduce((acc, day) => 
-    acc + day.exercises.filter(exercise => exercise.completed).length, 0
-  );
-  const completedDays = workoutPlan.filter(day => day.completed).length;
 
   return (
-    <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-      {/* Navigation Breadcrumbs */}
-      <div className="mb-6">
-        <nav className="flex items-center space-x-2 text-sm text-gray-500 mb-4">
-          <Link to="/dashboard" className="hover:text-gray-700">Dashboard</Link>
-          <span>›</span>
-          <span className="text-gray-900 font-medium">Workout Plan</span>
-        </nav>
+    <div className="p-6 max-w-6xl mx-auto">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Workout Plan</h1>
+        <p className="text-gray-600">
+          Your personalized fitness journey starts here. Track your progress and stay consistent!
+        </p>
       </div>
 
-      <div className="bg-white shadow rounded-lg p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">AI Workout Plan Generator</h2>
-          <div className="flex space-x-3">
-            {!isLoadingFromStorage && workoutPlan.length === 0 && (
-              <>
-                <button
-                  onClick={handleEditPrompt}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  {isEditingPrompt ? 'Cancel Edit' : 'Edit Prompt'}
-                </button>
-                <button
-                  onClick={generateAIWorkoutPlan}
-                  disabled={isGeneratingAI}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
-                >
-                  {isGeneratingAI ? 'Generating...' : 'Generate AI Workout Plan'}
-                </button>
-              </>
-            )}
-            {!isLoadingFromStorage && workoutPlan.length > 0 && (
-              <button
-                onClick={clearWorkoutPlan}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-              >
-                Clear Plan
-              </button>
-            )}
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="bg-blue-50 p-6 rounded-xl">
+          <div className="flex items-center">
+            <div className="p-3 bg-blue-100 rounded-lg">
+              <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-blue-600">Total Workouts</p>
+              <p className="text-2xl font-bold text-blue-900">{weeklyStats.totalWorkouts}</p>
+            </div>
           </div>
         </div>
 
-        {aiError && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
-            <p className="text-red-600 text-sm">{aiError}</p>
-          </div>
-        )}
-
-        {/* Loading State */}
-        {isLoadingFromStorage && (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <span className="ml-3 text-gray-600">Loading your workout plan...</span>
-          </div>
-        )}
-
-        {/* Workout Plan Display */}
-        {!isLoadingFromStorage && workoutPlan.length > 0 && (
-          <div className="space-y-6">
-            {/* Progress Summary */}
-            <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4">
-              <h3 className="text-lg font-medium text-gray-900 mb-3">💪 Weekly Progress Summary</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-blue-600">{completedDays}/{workoutPlan.length}</p>
-                  <p className="text-sm text-gray-600">Days Completed</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-purple-600">{completedExercises}/{totalExercises}</p>
-                  <p className="text-sm text-gray-600">Exercises Completed</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-green-600">
-                    {totalExercises > 0 ? Math.round((completedExercises / totalExercises) * 100) : 0}%
-                  </p>
-                  <p className="text-sm text-gray-600">Completion Rate</p>
-                </div>
-              </div>
+        <div className="bg-green-50 p-6 rounded-xl">
+          <div className="flex items-center">
+            <div className="p-3 bg-green-100 rounded-lg">
+              <svg className="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
             </div>
-
-            {/* Workout Days */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium text-gray-900">🏋️‍♂️ This Week's Workouts</h3>
-              {workoutPlan.map((day, dayIndex) => (
-                <div
-                  key={dayIndex}
-                  className={`border rounded-lg p-4 transition-all duration-200 ${
-                    day.completed
-                      ? 'bg-green-50 border-green-200'
-                      : 'bg-white border-gray-200'
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="text-lg font-semibold text-gray-900">{day.day}</h4>
-                    <div className="flex items-center space-x-2">
-                      {day.completed && (
-                        <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                          ✓ Completed
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    {day.exercises.map((exercise, exerciseIndex) => (
-                      <div
-                        key={exerciseIndex}
-                        className={`flex items-center justify-between p-3 rounded-md transition-colors ${
-                          exercise.completed
-                            ? 'bg-green-100 border border-green-200'
-                            : 'bg-gray-50 border border-gray-200'
-                        }`}
-                      >
-                        <div className="flex items-center space-x-3">
-                          <button
-                            onClick={() => toggleExerciseCompletion(dayIndex, exerciseIndex)}
-                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
-                              exercise.completed
-                                ? 'bg-green-500 border-green-500 text-white'
-                                : 'border-gray-300 hover:border-green-400'
-                            }`}
-                          >
-                            {exercise.completed && (
-                              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                              </svg>
-                            )}
-                          </button>
-                          <div>
-                            <p className="font-medium text-gray-900">{exercise.name}</p>
-                            <p className="text-sm text-gray-600">
-                              {exercise.sets} sets × {exercise.reps} reps
-                              {exercise.weight && ` @ ${exercise.weight}kg`}
-                              {exercise.duration && ` for ${exercise.duration}s`}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
+            <div className="ml-4">
+              <p className="text-sm font-medium text-green-600">Completed</p>
+              <p className="text-2xl font-bold text-green-900">{weeklyStats.completedWorkouts}</p>
             </div>
           </div>
-        )}
+        </div>
 
-        {/* Empty State */}
-        {!isLoadingFromStorage && workoutPlan.length === 0 && !isEditingPrompt && (
-          <div className="text-center py-12">
-            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No workout plan generated</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              Get started by generating an AI-powered personalized workout plan.
-            </p>
-          </div>
-        )}
-
-        {/* Prompt Editing */}
-        {isEditingPrompt && (
-          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h3 className="text-lg font-medium text-blue-900 mb-3">
-              🎯 Personalized Workout Plan Prompt
-            </h3>
-            <div className="space-y-4">
-              <textarea
-                value={customPrompt}
-                onChange={(e) => setCustomPrompt(e.target.value)}
-                className="w-full h-64 p-3 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                placeholder="Enter your custom workout plan prompt..."
-              />
-              <div className="flex space-x-3">
-                <button
-                  onClick={handleSavePrompt}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                >
-                  Save Prompt
-                </button>
-                <button
-                  onClick={() => setIsEditingPrompt(false)}
-                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
+        <div className="bg-purple-50 p-6 rounded-xl">
+          <div className="flex items-center">
+            <div className="p-3 bg-purple-100 rounded-lg">
+              <svg className="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-purple-600">Success Rate</p>
+              <p className="text-2xl font-bold text-purple-900">{weeklyStats.completionRate.toFixed(0)}%</p>
             </div>
           </div>
-        )}
+        </div>
+      </div>
 
-        {/* Confirmation Dialog */}
-        {showConfirmDialog && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-              <div className="mt-3 text-center">
-                <h3 className="text-lg leading-6 font-medium text-gray-900">Clear Workout Plan</h3>
-                <div className="mt-2 px-7 py-3">
-                  <p className="text-sm text-gray-500">
-                    Are you sure you want to clear your current workout plan? This action cannot be undone.
-                  </p>
-                </div>
-                <div className="items-center px-4 py-3">
-                  <button
-                    onClick={handleConfirmClear}
-                    className="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-600 mb-2"
-                  >
-                    Yes, Clear Plan
-                  </button>
-                  <button
-                    onClick={handleCancelClear}
-                    className="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-600"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+      {/* Action Buttons */}
+      <div className="flex flex-wrap gap-4 mb-8">
+        <button
+          onClick={generateWorkoutPlan}
+          disabled={isLoading}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
+        >
+          {isLoading ? 'Generating...' : 'Generate New Plan'}
+        </button>
+
+        {workoutPlan.length > 0 && (
+          <>
+            <button
+              onClick={resetProgress}
+              className="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+            >
+              Reset Progress
+            </button>
+            <button
+              onClick={clearWorkoutPlan}
+              className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+            >
+              Clear Plan
+            </button>
+          </>
         )}
       </div>
-    </main>
+
+      {/* Workout Plan Display */}
+      {workoutPlan.length > 0 ? (
+        <div className="space-y-6">
+          {workoutPlan.map((day, dayIndex) => (
+            <div key={dayIndex} className="bg-white rounded-xl shadow-lg border border-gray-200">
+              <div className={`p-6 border-b border-gray-200 ${day.completed ? 'bg-green-50' : 'bg-gray-50'}`}>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xl font-bold text-gray-900">{day.day}</h3>
+                  {day.completed && (
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      Completed
+                    </span>
+                  )}
+                </div>
+              </div>
+              
+              <div className="p-6">
+                <div className="space-y-4">
+                  {day.exercises.map((exercise, exerciseIndex) => (
+                    <div
+                      key={exerciseIndex}
+                      className={`p-4 rounded-lg border-2 transition-colors ${
+                        exercise.completed 
+                          ? 'border-green-200 bg-green-50' 
+                          : 'border-gray-200 bg-white hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center mb-2">
+                            <button
+                              onClick={() => toggleExerciseComplete(dayIndex, exerciseIndex)}
+                              className={`mr-3 p-1 rounded-full transition-colors ${
+                                exercise.completed 
+                                  ? 'bg-green-600 text-white' 
+                                  : 'bg-gray-200 text-gray-400 hover:bg-gray-300'
+                              }`}
+                            >
+                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            </button>
+                            <h4 className={`text-lg font-semibold ${exercise.completed ? 'text-green-800 line-through' : 'text-gray-900'}`}>
+                              {exercise.name}
+                            </h4>
+                          </div>
+                          
+                          <div className="grid grid-cols-3 gap-4 text-sm">
+                            <div>
+                              <span className="font-medium text-gray-700">Sets:</span>
+                              <span className="ml-1 text-gray-900">{exercise.sets}</span>
+                            </div>
+                            <div>
+                              <span className="font-medium text-gray-700">Reps:</span>
+                              <span className="ml-1 text-gray-900">{exercise.reps}</span>
+                            </div>
+                            <div>
+                              <span className="font-medium text-gray-700">Rest:</span>
+                              <span className="ml-1 text-gray-900">{exercise.rest}</span>
+                            </div>
+                          </div>
+                          
+                          {exercise.notes && (
+                            <p className="mt-2 text-sm text-gray-600 italic">{exercise.notes}</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-12">
+          <div className="w-24 h-24 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+            <svg className="w-12 h-12 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <h3 className="text-xl font-medium text-gray-900 mb-2">No Workout Plan Yet</h3>
+          <p className="text-gray-600 mb-6">
+            Get started by generating your personalized workout plan based on your fitness goals.
+          </p>
+          <button
+            onClick={generateWorkoutPlan}
+            disabled={isLoading}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
+          >
+            {isLoading ? 'Generating...' : 'Create Your Plan'}
+          </button>
+        </div>
+      )}
+    </div>
   );
-} 
+}

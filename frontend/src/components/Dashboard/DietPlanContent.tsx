@@ -1,423 +1,444 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import { useProgress } from '../../contexts/ProgressContext';
-import { Link } from 'react-router-dom';
-import BackendAIService from '../../services/backendAIService';
 
 interface Meal {
   name: string;
   calories: number;
-  protein: number;
-  carbs: number;
-  fats: number;
-  completed: boolean;
+  protein: string;
+  carbs: string;
+  fats: string;
+  completed?: boolean;
+  notes?: string;
 }
 
-interface DailyMeals {    
-  time: string;
-  meal: Meal;
+interface DietDay {
+  day: string;
+  meals: Meal[];
+  totalCalories: number;
+  completed?: boolean;
 }
 
 export default function DietPlanContent() {
-  const { user } = useAuth();
-  const { updateDietProgress } = useProgress();
-  
-  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
-  const [aiError, setAiError] = useState('');
-  const [isEditingPrompt, setIsEditingPrompt] = useState(false);
-  const [customPrompt, setCustomPrompt] = useState('');
-  const [meals, setMeals] = useState<DailyMeals[]>([]);
-  const [isLoadingFromStorage, setIsLoadingFromStorage] = useState(true);
-  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [dietPlan, setDietPlan] = useState<DietDay[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [weeklyStats, setWeeklyStats] = useState({
+    totalDays: 0,
+    completedDays: 0,
+    avgCalories: 0,
+    completionRate: 0
+  });
 
-  // Cleanup on unmount to prevent state persistence
+  // Load saved diet plan from localStorage
   useEffect(() => {
-    return () => {
-      // Reset any modal states on unmount
-      setShowConfirmDialog(false);
-      setIsEditingPrompt(false);
-      setIsGeneratingAI(false);
-    };
-  }, []);
-
-  // Load diet plan from localStorage on component mount
-  useEffect(() => {
-    if (user?._id) {
-      const savedDietPlan = localStorage.getItem(`dietPlan_${user._id}`);
-      const savedResetDate = localStorage.getItem(`lastResetDate_${user._id}`);
-      
-      if (savedDietPlan) {
-        try {
-          const parsedMeals = JSON.parse(savedDietPlan);
-          setMeals(parsedMeals);
-          
-          // Check if we need to reset for today
-          const today = new Date().toDateString();
-          if (savedResetDate !== today) {
-            // Reset completion status for new day
-            const resetMeals = parsedMeals.map((mealTime: DailyMeals) => ({
-              ...mealTime,
-              meal: {
-                ...mealTime.meal,
-                completed: false
-              }
-            }));
-            setMeals(resetMeals);
-            localStorage.setItem(`dietPlan_${user._id}`, JSON.stringify(resetMeals));
-            localStorage.setItem(`lastResetDate_${user._id}`, today);
-          }
-        } catch (error) {
-          console.error('Error parsing saved diet plan:', error);
-        }
+    const savedPlan = localStorage.getItem('dietPlan');
+    if (savedPlan) {
+      try {
+        const plan = JSON.parse(savedPlan);
+        setDietPlan(plan);
+        calculateStats(plan);
+      } catch (error) {
+        console.error('Error loading diet plan:', error);
       }
     }
-    setIsLoadingFromStorage(false);
-  }, [user?._id]);
+  }, []);
 
-  // Save diet plan to localStorage whenever it changes and update progress
-  useEffect(() => {
-    if (user?._id && meals.length > 0) {
-      localStorage.setItem(`dietPlan_${user._id}`, JSON.stringify(meals));
-      updateDietProgress(meals);
+  const calculateStats = (plan: DietDay[]) => {
+    const totalDays = plan.length;
+    const completedDays = plan.filter(day => day.completed).length;
+    const totalCalories = plan.reduce((sum, day) => sum + day.totalCalories, 0);
+    const avgCalories = totalDays > 0 ? totalCalories / totalDays : 0;
+    const completionRate = totalDays > 0 ? (completedDays / totalDays) * 100 : 0;
+    
+    setWeeklyStats({
+      totalDays,
+      completedDays,
+      avgCalories,
+      completionRate
+    });
+  };
+
+  const saveDietPlan = (plan: DietDay[]) => {
+    localStorage.setItem('dietPlan', JSON.stringify(plan));
+    setDietPlan(plan);
+    calculateStats(plan);
+  };
+
+  const generateDietPlan = async () => {
+    setIsLoading(true);
+    
+    // Simulate API call with default diet plan
+    const defaultPlan: DietDay[] = [
+      {
+        day: 'Monday',
+        totalCalories: 2200,
+        meals: [
+          { 
+            name: 'Breakfast: Oatmeal with Berries', 
+            calories: 350, 
+            protein: '12g', 
+            carbs: '58g', 
+            fats: '8g',
+            notes: 'Steel-cut oats with mixed berries and honey'
+          },
+          { 
+            name: 'Lunch: Grilled Chicken Salad', 
+            calories: 450, 
+            protein: '35g', 
+            carbs: '20g', 
+            fats: '25g',
+            notes: 'Mixed greens, grilled chicken, avocado, olive oil dressing'
+          },
+          { 
+            name: 'Snack: Greek Yogurt with Nuts', 
+            calories: 200, 
+            protein: '15g', 
+            carbs: '12g', 
+            fats: '10g' 
+          },
+          { 
+            name: 'Dinner: Salmon with Quinoa', 
+            calories: 600, 
+            protein: '40g', 
+            carbs: '45g', 
+            fats: '25g',
+            notes: 'Baked salmon with steamed vegetables and quinoa'
+          },
+          { 
+            name: 'Evening Snack: Protein Smoothie', 
+            calories: 300, 
+            protein: '25g', 
+            carbs: '35g', 
+            fats: '8g' 
+          }
+        ]
+      },
+      {
+        day: 'Tuesday',
+        totalCalories: 2150,
+        meals: [
+          { 
+            name: 'Breakfast: Egg White Omelet', 
+            calories: 300, 
+            protein: '20g', 
+            carbs: '15g', 
+            fats: '15g',
+            notes: 'Spinach, mushrooms, low-fat cheese'
+          },
+          { 
+            name: 'Lunch: Turkey Wrap', 
+            calories: 400, 
+            protein: '25g', 
+            carbs: '35g', 
+            fats: '18g',
+            notes: 'Whole wheat tortilla, lean turkey, vegetables'
+          },
+          { 
+            name: 'Snack: Apple with Almond Butter', 
+            calories: 250, 
+            protein: '8g', 
+            carbs: '25g', 
+            fats: '15g' 
+          },
+          { 
+            name: 'Dinner: Lean Beef Stir-fry', 
+            calories: 550, 
+            protein: '35g', 
+            carbs: '40g', 
+            fats: '22g',
+            notes: 'Brown rice, mixed vegetables, lean beef strips'
+          },
+          { 
+            name: 'Evening Snack: Cottage Cheese', 
+            calories: 150, 
+            protein: '15g', 
+            carbs: '8g', 
+            fats: '5g' 
+          }
+        ]
+      },
+      {
+        day: 'Wednesday',
+        totalCalories: 2100,
+        meals: [
+          { 
+            name: 'Breakfast: Protein Pancakes', 
+            calories: 380, 
+            protein: '25g', 
+            carbs: '45g', 
+            fats: '12g',
+            notes: 'Made with protein powder and oat flour'
+          },
+          { 
+            name: 'Lunch: Quinoa Buddha Bowl', 
+            calories: 420, 
+            protein: '18g', 
+            carbs: '55g', 
+            fats: '16g',
+            notes: 'Quinoa, chickpeas, roasted vegetables, tahini dressing'
+          },
+          { 
+            name: 'Snack: Mixed Nuts', 
+            calories: 200, 
+            protein: '8g', 
+            carbs: '8g', 
+            fats: '16g' 
+          },
+          { 
+            name: 'Dinner: Grilled Fish with Sweet Potato', 
+            calories: 500, 
+            protein: '30g', 
+            carbs: '40g', 
+            fats: '20g',
+            notes: 'Cod or tilapia with roasted sweet potato and broccoli'
+          },
+          { 
+            name: 'Evening Snack: Herbal Tea with Honey', 
+            calories: 50, 
+            protein: '0g', 
+            carbs: '12g', 
+            fats: '0g' 
+          }
+        ]
+      }
+    ];
+
+    setTimeout(() => {
+      saveDietPlan(defaultPlan);
+      setIsLoading(false);
+    }, 1500);
+  };
+
+  const toggleMealComplete = (dayIndex: number, mealIndex: number) => {
+    const updatedPlan = [...dietPlan];
+    updatedPlan[dayIndex].meals[mealIndex].completed = 
+      !updatedPlan[dayIndex].meals[mealIndex].completed;
+    
+    // Check if all meals in the day are complete
+    const allMealsComplete = updatedPlan[dayIndex].meals.every(meal => meal.completed);
+    updatedPlan[dayIndex].completed = allMealsComplete;
+    
+    saveDietPlan(updatedPlan);
+  };
+
+  const resetProgress = () => {
+    if (window.confirm('Are you sure you want to reset all progress? This cannot be undone.')) {
+      const resetPlan = dietPlan.map(day => ({
+        ...day,
+        completed: false,
+        meals: day.meals.map(meal => ({ ...meal, completed: false }))
+      }));
+      saveDietPlan(resetPlan);
     }
-  }, [meals, user?._id, updateDietProgress]);
-
-  const toggleMealCompletion = (index: number) => {
-    const newMeals = [...meals];
-    newMeals[index].meal.completed = !newMeals[index].meal.completed;
-    setMeals(newMeals);
-    updateDietProgress(newMeals);
   };
 
   const clearDietPlan = () => {
-    setShowConfirmDialog(true);
-  };
-
-  const handleConfirmClear = () => {
-    setMeals([]);
-    if (user?._id) {
-      localStorage.removeItem(`dietPlan_${user._id}`);
+    if (window.confirm('Are you sure you want to clear your diet plan? This cannot be undone.')) {
+      localStorage.removeItem('dietPlan');
+      setDietPlan([]);
+      setWeeklyStats({ totalDays: 0, completedDays: 0, avgCalories: 0, completionRate: 0 });
     }
-    setShowConfirmDialog(false);
-  };
-
-  const handleCancelClear = () => {
-    setShowConfirmDialog(false);
-  };
-
-  // Calculate total nutrients only from completed meals
-  const totalNutrients = meals.reduce(
-    (acc, { meal }) => {
-      if (meal.completed) {
-        return {
-          calories: acc.calories + meal.calories,
-          protein: acc.protein + meal.protein,
-          carbs: acc.carbs + meal.carbs,
-          fats: acc.fats + meal.fats,
-        };
-      }
-      return acc;
-    },
-    { calories: 0, protein: 0, carbs: 0, fats: 0 }
-  );
-
-  // Generate personalized prompt based on user profile
-  const generatePersonalizedPrompt = () => {
-    if (!user?.profile) {
-      return 'Please complete your profile first to generate a personalized diet plan prompt.';
-    }
-
-    const height = user.profile.height || 170;
-    const weight = user.profile.weight || 70;
-    const heightInM = height / 100;
-    const bmi = (weight / (heightInM * heightInM)).toFixed(1);
-    
-    const healthConditionsText = user.profile.healthConditions && user.profile.healthConditions.length > 0 && !user.profile.healthConditions.includes('None') 
-      ? user.profile.healthConditions.join(', ') 
-      : 'no specific health conditions';
-
-    return `Create a detailed daily diet plan for a ${user.profile.age || 25}-year-old ${user.profile.gender || 'person'} who is ${height}cm tall and weighs ${weight}kg (BMI: ${bmi}).
-
-Their primary fitness goal is: ${user.profile.fitnessGoal || 'General Fitness'}
-Health considerations: ${healthConditionsText}
-
-Please provide a structured daily meal plan with specific foods, portions, and nutritional information.`;
-  };
-
-  const generateAIDietPlan = async () => {
-    if (!user?.profile) {
-      setAiError('Please complete your profile first to generate an AI diet plan.');
-      return;
-    }
-
-    setIsGeneratingAI(true);
-    setAiError('');
-
-    try {
-      const prompt = customPrompt || generatePersonalizedPrompt();
-      const backendAIService = new BackendAIService();
-      const aiDietPlan = await backendAIService.generateDietPlan(prompt);
-      
-      // Convert AI diet plan to our format
-      const newMeals: DailyMeals[] = [
-        {
-          time: '8:00 AM',
-          meal: {
-            name: `Breakfast: ${aiDietPlan.breakfast?.foods?.join(', ') || 'Healthy breakfast'}`,
-            calories: aiDietPlan.breakfast?.calories || 400,
-            protein: 25,
-            carbs: 50,
-            fats: 15,
-            completed: false,
-          },
-        },
-        {
-          time: '12:00 PM',
-          meal: {
-            name: `Lunch: ${aiDietPlan.lunch?.foods?.join(', ') || 'Healthy lunch'}`,
-            calories: aiDietPlan.lunch?.calories || 500,
-            protein: 35,
-            carbs: 60,
-            fats: 20,
-            completed: false,
-          },
-        },
-        {
-          time: '6:00 PM',
-          meal: {
-            name: `Dinner: ${aiDietPlan.dinner?.foods?.join(', ') || 'Healthy dinner'}`,
-            calories: aiDietPlan.dinner?.calories || 600,
-            protein: 40,
-            carbs: 70,
-            fats: 25,
-            completed: false,
-          },
-        },
-      ];
-
-      setMeals(newMeals);
-    } catch (error) {
-      console.error('Error generating AI diet plan:', error);
-      setAiError('Failed to generate diet plan. Please try again.');
-    } finally {
-      setIsGeneratingAI(false);
-    }
-  };
-
-  const handleEditPrompt = () => {
-    if (!isEditingPrompt) {
-      setCustomPrompt(generatePersonalizedPrompt());
-    }
-    setIsEditingPrompt(!isEditingPrompt);
-  };
-
-  const handleSavePrompt = () => {
-    setIsEditingPrompt(false);
   };
 
   return (
-    <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-      {/* Navigation Breadcrumbs */}
-      <div className="mb-6">
-        <nav className="flex items-center space-x-2 text-sm text-gray-500 mb-4">
-          <Link to="/dashboard" className="hover:text-gray-700">Dashboard</Link>
-          <span>›</span>
-          <span className="text-gray-900 font-medium">Diet Plan</span>
-        </nav>
+    <div className="p-6 max-w-6xl mx-auto">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Diet Plan</h1>
+        <p className="text-gray-600">
+          Fuel your body with the right nutrition. Track your meals and reach your goals!
+        </p>
       </div>
 
-      <div className="bg-white shadow rounded-lg p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">AI Diet Plan Generator</h2>
-          <div className="flex space-x-3">
-            {!isLoadingFromStorage && meals.length === 0 && (
-              <>
-                <button
-                  onClick={handleEditPrompt}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  {isEditingPrompt ? 'Cancel Edit' : 'Edit Prompt'}
-                </button>
-                <button
-                  onClick={generateAIDietPlan}
-                  disabled={isGeneratingAI}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
-                >
-                  {isGeneratingAI ? 'Generating...' : 'Generate AI Diet Plan'}
-                </button>
-              </>
-            )}
-            {!isLoadingFromStorage && meals.length > 0 && (
-              <button
-                onClick={clearDietPlan}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-              >
-                Clear Plan
-              </button>
-            )}
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="bg-blue-50 p-6 rounded-xl">
+          <div className="flex items-center">
+            <div className="p-3 bg-blue-100 rounded-lg">
+              <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zM4 7h12v9a1 1 0 01-1 1H5a1 1 0 01-1-1V7z" />
+              </svg>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-blue-600">Total Days</p>
+              <p className="text-2xl font-bold text-blue-900">{weeklyStats.totalDays}</p>
+            </div>
           </div>
         </div>
 
-        {aiError && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
-            <p className="text-red-600 text-sm">{aiError}</p>
-          </div>
-        )}
-
-        {/* Loading State */}
-        {isLoadingFromStorage && (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <span className="ml-3 text-gray-600">Loading your diet plan...</span>
-          </div>
-        )}
-
-        {/* Diet Plan Display */}
-        {!isLoadingFromStorage && meals.length > 0 && (
-          <div className="space-y-6">
-            {/* Progress Summary */}
-            <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-4">
-              <h3 className="text-lg font-medium text-gray-900 mb-3">📊 Daily Progress Summary</h3>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-green-600">{totalNutrients.calories}</p>
-                  <p className="text-sm text-gray-600">Calories Consumed</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-blue-600">{totalNutrients.protein}g</p>
-                  <p className="text-sm text-gray-600">Protein</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-purple-600">{totalNutrients.carbs}g</p>
-                  <p className="text-sm text-gray-600">Carbs</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-orange-600">{totalNutrients.fats}g</p>
-                  <p className="text-sm text-gray-600">Fats</p>
-                </div>
-              </div>
+        <div className="bg-green-50 p-6 rounded-xl">
+          <div className="flex items-center">
+            <div className="p-3 bg-green-100 rounded-lg">
+              <svg className="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
             </div>
-
-            {/* Meals List */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium text-gray-900">🍽️ Today's Meals</h3>
-              {meals.map((mealTime, index) => (
-                <div
-                  key={index}
-                  className={`border rounded-lg p-4 transition-all duration-200 ${
-                    mealTime.meal.completed
-                      ? 'bg-green-50 border-green-200'
-                      : 'bg-white border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <button
-                        onClick={() => toggleMealCompletion(index)}
-                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                          mealTime.meal.completed
-                            ? 'bg-green-500 border-green-500 text-white'
-                            : 'border-gray-300 hover:border-green-400'
-                        }`}
-                      >
-                        {mealTime.meal.completed && (
-                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        )}
-                      </button>
-                      <div>
-                        <p className="font-medium text-gray-900">{mealTime.time}</p>
-                        <p className="text-sm text-gray-600">{mealTime.meal.name}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium text-gray-900">{mealTime.meal.calories} cal</p>
-                      <p className="text-xs text-gray-500">
-                        P: {mealTime.meal.protein}g | C: {mealTime.meal.carbs}g | F: {mealTime.meal.fats}g
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
+            <div className="ml-4">
+              <p className="text-sm font-medium text-green-600">Completed</p>
+              <p className="text-2xl font-bold text-green-900">{weeklyStats.completedDays}</p>
             </div>
           </div>
-        )}
+        </div>
 
-        {/* Empty State */}
-        {!isLoadingFromStorage && meals.length === 0 && !isEditingPrompt && (
-          <div className="text-center py-12">
-            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-            </svg>
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No diet plan generated</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              Get started by generating an AI-powered personalized diet plan.
-            </p>
-          </div>
-        )}
-
-        {/* Prompt Editing */}
-        {isEditingPrompt && (
-          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h3 className="text-lg font-medium text-blue-900 mb-3">
-              🎯 Personalized Diet Plan Prompt
-            </h3>
-            <div className="space-y-4">
-              <textarea
-                value={customPrompt}
-                onChange={(e) => setCustomPrompt(e.target.value)}
-                className="w-full h-64 p-3 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                placeholder="Enter your custom diet plan prompt..."
-              />
-              <div className="flex space-x-3">
-                <button
-                  onClick={handleSavePrompt}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                >
-                  Save Prompt
-                </button>
-                <button
-                  onClick={() => setIsEditingPrompt(false)}
-                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
+        <div className="bg-orange-50 p-6 rounded-xl">
+          <div className="flex items-center">
+            <div className="p-3 bg-orange-100 rounded-lg">
+              <svg className="w-6 h-6 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
+              </svg>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-orange-600">Avg Calories</p>
+              <p className="text-2xl font-bold text-orange-900">{Math.round(weeklyStats.avgCalories)}</p>
             </div>
           </div>
-        )}
+        </div>
 
-        {/* Confirmation Dialog */}
-        {showConfirmDialog && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-              <div className="mt-3 text-center">
-                <h3 className="text-lg leading-6 font-medium text-gray-900">Clear Diet Plan</h3>
-                <div className="mt-2 px-7 py-3">
-                  <p className="text-sm text-gray-500">
-                    Are you sure you want to clear your current diet plan? This action cannot be undone.
-                  </p>
-                </div>
-                <div className="items-center px-4 py-3">
-                  <button
-                    onClick={handleConfirmClear}
-                    className="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-600 mb-2"
-                  >
-                    Yes, Clear Plan
-                  </button>
-                  <button
-                    onClick={handleCancelClear}
-                    className="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-600"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
+        <div className="bg-purple-50 p-6 rounded-xl">
+          <div className="flex items-center">
+            <div className="p-3 bg-purple-100 rounded-lg">
+              <svg className="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-purple-600">Success Rate</p>
+              <p className="text-2xl font-bold text-purple-900">{weeklyStats.completionRate.toFixed(0)}%</p>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex flex-wrap gap-4 mb-8">
+        <button
+          onClick={generateDietPlan}
+          disabled={isLoading}
+          className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
+        >
+          {isLoading ? 'Generating...' : 'Generate New Plan'}
+        </button>
+
+        {dietPlan.length > 0 && (
+          <>
+            <button
+              onClick={resetProgress}
+              className="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+            >
+              Reset Progress
+            </button>
+            <button
+              onClick={clearDietPlan}
+              className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+            >
+              Clear Plan
+            </button>
+          </>
         )}
       </div>
-    </main>
+
+      {/* Diet Plan Display */}
+      {dietPlan.length > 0 ? (
+        <div className="space-y-6">
+          {dietPlan.map((day, dayIndex) => (
+            <div key={dayIndex} className="bg-white rounded-xl shadow-lg border border-gray-200">
+              <div className={`p-6 border-b border-gray-200 ${day.completed ? 'bg-green-50' : 'bg-gray-50'}`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">{day.day}</h3>
+                    <p className="text-sm text-gray-600">Total Calories: {day.totalCalories}</p>
+                  </div>
+                  {day.completed && (
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      Completed
+                    </span>
+                  )}
+                </div>
+              </div>
+              
+              <div className="p-6">
+                <div className="space-y-4">
+                  {day.meals.map((meal, mealIndex) => (
+                    <div
+                      key={mealIndex}
+                      className={`p-4 rounded-lg border-2 transition-colors ${
+                        meal.completed 
+                          ? 'border-green-200 bg-green-50' 
+                          : 'border-gray-200 bg-white hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center mb-3">
+                            <button
+                              onClick={() => toggleMealComplete(dayIndex, mealIndex)}
+                              className={`mr-3 p-1 rounded-full transition-colors ${
+                                meal.completed 
+                                  ? 'bg-green-600 text-white' 
+                                  : 'bg-gray-200 text-gray-400 hover:bg-gray-300'
+                              }`}
+                            >
+                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            </button>
+                            <h4 className={`text-lg font-semibold ${meal.completed ? 'text-green-800 line-through' : 'text-gray-900'}`}>
+                              {meal.name}
+                            </h4>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-2">
+                            <div className="bg-blue-50 p-2 rounded">
+                              <span className="font-medium text-blue-700">Calories:</span>
+                              <span className="ml-1 text-blue-900 font-bold">{meal.calories}</span>
+                            </div>
+                            <div className="bg-red-50 p-2 rounded">
+                              <span className="font-medium text-red-700">Protein:</span>
+                              <span className="ml-1 text-red-900 font-bold">{meal.protein}</span>
+                            </div>
+                            <div className="bg-yellow-50 p-2 rounded">
+                              <span className="font-medium text-yellow-700">Carbs:</span>
+                              <span className="ml-1 text-yellow-900 font-bold">{meal.carbs}</span>
+                            </div>
+                            <div className="bg-purple-50 p-2 rounded">
+                              <span className="font-medium text-purple-700">Fats:</span>
+                              <span className="ml-1 text-purple-900 font-bold">{meal.fats}</span>
+                            </div>
+                          </div>
+                          
+                          {meal.notes && (
+                            <p className="mt-2 text-sm text-gray-600 italic">{meal.notes}</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-12">
+          <div className="w-24 h-24 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+            <svg className="w-12 h-12 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
+            </svg>
+          </div>
+          <h3 className="text-xl font-medium text-gray-900 mb-2">No Diet Plan Yet</h3>
+          <p className="text-gray-600 mb-6">
+            Get started by generating your personalized nutrition plan based on your dietary goals.
+          </p>
+          <button
+            onClick={generateDietPlan}
+            disabled={isLoading}
+            className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
+          >
+            {isLoading ? 'Generating...' : 'Create Your Plan'}
+          </button>
+        </div>
+      )}
+    </div>
   );
-} 
+}
