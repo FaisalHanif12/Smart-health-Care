@@ -229,48 +229,32 @@ class OpenAIService {
             role: 'user',
             content: `${prompt}
 
-            IMPORTANT: Analyze the user's fitness goal and health conditions carefully, then respond with ONLY a JSON object in this EXACT format:
+            IMPORTANT: Analyze the user's fitness goal and health conditions carefully, then respond with ONLY a JSON object in this EXACT format for a SINGLE DAY ONLY:
             {
               "breakfast": {
                 "time": "8:00 AM",
                 "foods": ["Specific food with portion size", "Another food with portion"],
                 "calories": 350
               },
-              "morningSnack": {
-                "time": "10:00 AM",
-                "foods": ["Light snack with portion size"],
-                "calories": 150
-              },
               "lunch": {
                 "time": "12:00 PM", 
                 "foods": ["Specific food with portion size", "Another food with portion"],
-                "calories": 450
-              },
-              "afternoonSnack": {
-                "time": "3:00 PM",
-                "foods": ["Healthy snack with portion size"],
-                "calories": 120
+                "calories": 500
               },
               "dinner": {
                 "time": "6:00 PM",
                 "foods": ["Specific food with portion size", "Another food with portion"],
-                "calories": 400
-              },
-              "eveningSnack": {
-                "time": "10:00 PM",
-                "foods": ["Light, easy-to-digest snack with portion size"],
-                "calories": 100
+                "calories": 600
               },
               "macros": {
                 "protein": 120,
                 "carbs": 150,
                 "fats": 45
               },
-              "dailyCalories": 1570,
+              "dailyCalories": 1450,
               "tips": [
                 "Drink 3-4 liters of water daily for fat burning",
                 "Eat protein within 30 minutes post-workout",
-                "Keep evening snack light to avoid sleep disruption",
                 "Avoid processed foods and added sugars"
               ]
             }
@@ -289,7 +273,7 @@ class OpenAIService {
             - Goal-specific nutrition tips and meal timing recommendations`
           }
         ],
-        max_tokens: 2000,
+        max_tokens: 4000,
         temperature: 0.3
       });
 
