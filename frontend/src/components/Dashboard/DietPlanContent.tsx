@@ -25,8 +25,6 @@ export default function DietPlanContent() {
   const { user } = useAuth();
   const [dietPlan, setDietPlan] = useState<DietDay[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [showPromptDialog, setShowPromptDialog] = useState(false);
-  const [customPrompt, setCustomPrompt] = useState('');
   const [generatedPrompt, setGeneratedPrompt] = useState('');
   const [weeklyStats, setWeeklyStats] = useState({
     totalDays: 0,
@@ -41,7 +39,7 @@ export default function DietPlanContent() {
     
     const { age, gender, height, weight, healthConditions, fitnessGoal } = user.profile;
     
-    return `Create a personalized diet plan for me:
+    return `Create a personalized 6-day diet plan for me (Monday through Saturday):
 
 Personal Information:
 - Age: ${age} years old
@@ -51,12 +49,14 @@ Personal Information:
 - Fitness Goal: ${fitnessGoal}
 - Health Conditions: ${healthConditions?.filter(c => c !== 'None').join(', ') || 'None'}
 
-Based on my profile, please create a diet plan that:
+Based on my profile, please create a 6-day diet plan that:
 1. Aligns with my ${fitnessGoal} goal
 2. Considers my health conditions: ${healthConditions?.join(', ')}
 3. Is appropriate for my age (${age}) and gender (${gender})
 4. Provides proper nutrition and calorie distribution for my goals
 5. Takes into account my current weight (${weight}kg) and height (${height}cm)
+6. Covers Monday through Saturday with varied meal options
+7. Includes breakfast, lunch, and dinner for each day
 
 Please ensure the meal plan is safe, nutritious, and specifically designed for my goal of ${fitnessGoal}.`;
   };
@@ -77,7 +77,6 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
     // Generate prompt from profile when component loads
     const prompt = generatePromptFromProfile();
     setGeneratedPrompt(prompt);
-    setCustomPrompt(prompt);
   }, [user]);
 
   const calculateStats = (plan: DietDay[]) => {
@@ -101,8 +100,8 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
     calculateStats(plan);
   };
 
-  const generateDietPlan = async (useCustomPrompt = false) => {
-    const promptToUse = useCustomPrompt ? customPrompt : generatedPrompt;
+  const generateDietPlan = async () => {
+    const promptToUse = generatedPrompt;
     
     if (!promptToUse.trim()) {
       alert('Please provide a prompt for generating your diet plan.');
@@ -132,47 +131,62 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
         console.log('✅ Frontend OpenAI Service (GPT-4) successful!');
       }
       
-      // Convert the AI response to our format
+      // Convert the AI response to our format - Generate 6 days (Monday through Saturday)
       const totalCalories = (dietData as any).dailyCalories || (dietData as any).totalCalories || 2000;
+      const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
       
-      const convertedPlan: DietDay[] = [
-        {
-          day: 'Monday',
-          totalCalories: totalCalories,
+      const convertedPlan: DietDay[] = daysOfWeek.map((dayName, index) => {
+        // Create variations for each day by adjusting meal components slightly
+        const breakfastCalories = Math.round(dietData.breakfast?.calories || 400 + (index * 10));
+        const lunchCalories = Math.round(dietData.lunch?.calories || 500 + (index * 15));
+        const dinnerCalories = Math.round(dietData.dinner?.calories || 600 + (index * 20));
+        
+        // Generate varied meals for each day
+        const breakfastFoods = dietData.breakfast?.foods || ['Healthy breakfast'];
+        const lunchFoods = dietData.lunch?.foods || ['Healthy lunch'];
+        const dinnerFoods = dietData.dinner?.foods || ['Healthy dinner'];
+        
+        // Add some variation to meals across days
+        const variations = [
+          '', ' with fresh herbs', ' and seasonal vegetables', ' (grilled)', ' (baked)', ' with whole grains'
+        ];
+        
+        return {
+          day: dayName,
+          totalCalories: totalCalories + (index * 50), // Slight calorie variation per day
           meals: [
             {
-              name: `Breakfast: ${dietData.breakfast?.foods?.join(', ') || 'Healthy breakfast'}`,
-              calories: dietData.breakfast?.calories || 400,
-              protein: `${Math.round((dietData.macros?.protein || 120) * 0.25)}g`,
-              carbs: `${Math.round((dietData.macros?.carbs || 150) * 0.3)}g`,
-              fats: `${Math.round((dietData.macros?.fats || 50) * 0.25)}g`,
+              name: `Breakfast: ${breakfastFoods.join(', ')}${variations[index] || ''}`,
+              calories: breakfastCalories,
+              protein: `${Math.round((dietData.macros?.protein || 120) * 0.25) + index}g`,
+              carbs: `${Math.round((dietData.macros?.carbs || 150) * 0.3) + (index * 2)}g`,
+              fats: `${Math.round((dietData.macros?.fats || 50) * 0.25) + index}g`,
               completed: false,
-              notes: dietData.breakfast?.time
+              notes: dietData.breakfast?.time || '8:00 AM'
             },
             {
-              name: `Lunch: ${dietData.lunch?.foods?.join(', ') || 'Healthy lunch'}`,
-              calories: dietData.lunch?.calories || 500,
-              protein: `${Math.round((dietData.macros?.protein || 120) * 0.35)}g`,
-              carbs: `${Math.round((dietData.macros?.carbs || 150) * 0.4)}g`,
-              fats: `${Math.round((dietData.macros?.fats || 50) * 0.35)}g`,
+              name: `Lunch: ${lunchFoods.join(', ')}${variations[index] || ''}`,
+              calories: lunchCalories,
+              protein: `${Math.round((dietData.macros?.protein || 120) * 0.35) + (index * 2)}g`,
+              carbs: `${Math.round((dietData.macros?.carbs || 150) * 0.4) + (index * 3)}g`,
+              fats: `${Math.round((dietData.macros?.fats || 50) * 0.35) + index}g`,
               completed: false,
-              notes: dietData.lunch?.time
+              notes: dietData.lunch?.time || '12:00 PM'
             },
             {
-              name: `Dinner: ${dietData.dinner?.foods?.join(', ') || 'Healthy dinner'}`,
-              calories: dietData.dinner?.calories || 600,
-              protein: `${Math.round((dietData.macros?.protein || 120) * 0.4)}g`,
-              carbs: `${Math.round((dietData.macros?.carbs || 150) * 0.3)}g`,
-              fats: `${Math.round((dietData.macros?.fats || 50) * 0.4)}g`,
+              name: `Dinner: ${dinnerFoods.join(', ')}${variations[index] || ''}`,
+              calories: dinnerCalories,
+              protein: `${Math.round((dietData.macros?.protein || 120) * 0.4) + (index * 2)}g`,
+              carbs: `${Math.round((dietData.macros?.carbs || 150) * 0.3) + (index * 2)}g`,
+              fats: `${Math.round((dietData.macros?.fats || 50) * 0.4) + (index * 2)}g`,
               completed: false,
-              notes: dietData.dinner?.time
+              notes: dietData.dinner?.time || '6:00 PM'
             }
           ]
-        }
-      ];
+        };
+      });
 
       saveDietPlan(convertedPlan);
-      setShowPromptDialog(false);
     } catch (error) {
       console.error('❌ Error generating diet plan:', error);
       alert(`Failed to generate diet plan: ${error instanceof Error ? error.message : 'Unknown error'}. Please check your API configuration.`);
@@ -193,16 +207,7 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
     saveDietPlan(updatedPlan);
   };
 
-  const resetProgress = () => {
-    if (window.confirm('Are you sure you want to reset all progress? This cannot be undone.')) {
-      const resetPlan = dietPlan.map(day => ({
-        ...day,
-        completed: false,
-        meals: day.meals.map(meal => ({ ...meal, completed: false }))
-      }));
-      saveDietPlan(resetPlan);
-    }
-  };
+
 
   const clearDietPlan = () => {
     if (window.confirm('Are you sure you want to clear your diet plan? This cannot be undone.')) {
@@ -295,20 +300,8 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
       {/* Diet Plan Display */}
       {dietPlan.length > 0 ? (
         <>
-          {/* Action Buttons - when plan exists */}
+          {/* Action Buttons - when plan exists - Only show Clear Plan button */}
           <div className="flex flex-wrap gap-4 mb-8">
-            <button
-              onClick={() => setShowPromptDialog(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-            >
-              Edit Prompt & Regenerate
-            </button>
-            <button
-              onClick={resetProgress}
-              className="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-            >
-              Reset Progress
-            </button>
             <button
               onClick={clearDietPlan}
               className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
@@ -430,68 +423,17 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
 
           <div className="flex flex-wrap gap-4 justify-center">
             <button
-              onClick={() => generateDietPlan(false)}
+              onClick={() => generateDietPlan()}
               disabled={isLoading}
               className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
             >
-              {isLoading ? 'Generating with AI...' : '🤖 Create Your Plan with AI'}
-            </button>
-            <button
-              onClick={() => setShowPromptDialog(true)}
-              className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-            >
-              ✏️ Edit Prompt
+              {isLoading ? 'Generating with AI...' : '🤖 Create Your 6-Day Plan with AI'}
             </button>
           </div>
         </div>
       )}
 
-      {/* Prompt Edit Dialog */}
-      {showPromptDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-96 overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Customize Your Diet Prompt</h3>
-              <button
-                onClick={() => setShowPromptDialog(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                AI Prompt (edit to customize your diet plan):
-              </label>
-              <textarea
-                value={customPrompt}
-                onChange={(e) => setCustomPrompt(e.target.value)}
-                className="w-full h-48 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Describe your diet preferences, goals, and any specific requirements..."
-              />
-            </div>
-            
-            <div className="flex gap-4 justify-end">
-              <button
-                onClick={() => setShowPromptDialog(false)}
-                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => generateDietPlan(true)}
-                disabled={isLoading}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-              >
-                {isLoading ? 'Generating...' : '🤖 Generate with AI'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+
     </div>
   );
 }
