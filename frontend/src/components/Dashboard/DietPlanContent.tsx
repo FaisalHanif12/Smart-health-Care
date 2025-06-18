@@ -41,7 +41,7 @@ export default function DietPlanContent() {
     
     const { age, gender, height, weight, healthConditions, fitnessGoal } = user.profile;
     
-    return `Create a personalized 6-day diet plan for me (Monday through Saturday):
+    return `Create a personalized 7-day diet plan for me (Monday through Sunday):
 
 Personal Information:
 - Age: ${age} years old
@@ -51,13 +51,13 @@ Personal Information:
 - Fitness Goal: ${fitnessGoal}
 - Health Conditions: ${healthConditions?.filter(c => c !== 'None').join(', ') || 'None'}
 
-Based on my profile, please create a 6-day diet plan that:
+Based on my profile, please create a 7-day diet plan that:
 1. Aligns with my ${fitnessGoal} goal
 2. Considers my health conditions: ${healthConditions?.join(', ')}
 3. Is appropriate for my age (${age}) and gender (${gender})
 4. Provides proper nutrition and calorie distribution for my goals
 5. Takes into account my current weight (${weight}kg) and height (${height}cm)
-6. Covers Monday through Saturday with varied meal options
+6. Covers Monday through Sunday with varied meal options
 7. Includes breakfast, lunch, and dinner for each day
 
 Please ensure the meal plan is safe, nutritious, and specifically designed for my goal of ${fitnessGoal}.`;
@@ -134,9 +134,9 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
         console.log('✅ Frontend OpenAI Service (GPT-4) successful!');
       }
       
-      // Convert the AI response to our format - Generate 6 days (Monday through Saturday)
+      // Convert the AI response to our format - Generate 7 days (Monday through Sunday)
       const totalCalories = (dietData as any).dailyCalories || (dietData as any).totalCalories || 2000;
-      const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
       
       const convertedPlan: DietDay[] = daysOfWeek.map((dayName, index) => {
         // Create variations for each day by adjusting meal components slightly
@@ -151,7 +151,7 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
         
         // Add some variation to meals across days
         const variations = [
-          '', ' with fresh herbs', ' and seasonal vegetables', ' (grilled)', ' (baked)', ' with whole grains'
+          '', ' with fresh herbs', ' and seasonal vegetables', ' (grilled)', ' (baked)', ' with whole grains', ' (roasted)'
         ];
         
         return {
