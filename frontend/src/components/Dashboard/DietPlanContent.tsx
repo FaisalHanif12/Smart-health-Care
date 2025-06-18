@@ -305,10 +305,10 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
       {dietPlan.length > 0 ? (
         <>
           {/* Action Buttons - when plan exists - Only show Clear Plan button */}
-          <div className="flex flex-wrap gap-4 mb-8">
+          <div className="flex justify-end mb-8">
             <button
               onClick={clearDietPlan}
-              className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
             >
               Clear Plan
             </button>

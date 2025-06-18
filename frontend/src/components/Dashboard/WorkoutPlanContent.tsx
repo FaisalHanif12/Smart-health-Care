@@ -23,8 +23,6 @@ export default function WorkoutPlanContent() {
   const { user } = useAuth();
   const [workoutPlan, setWorkoutPlan] = useState<WorkoutDay[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [showPromptDialog, setShowPromptDialog] = useState(false);
-  const [customPrompt, setCustomPrompt] = useState('');
   const [generatedPrompt, setGeneratedPrompt] = useState('');
   const [weeklyStats, setWeeklyStats] = useState({
     totalWorkouts: 0,
@@ -73,7 +71,6 @@ Please ensure exercises are safe, effective, and specifically designed for my go
     // Generate prompt from profile when component loads
     const prompt = generatePromptFromProfile();
     setGeneratedPrompt(prompt);
-    setCustomPrompt(prompt);
   }, [user]);
 
   const calculateStats = (plan: WorkoutDay[]) => {
@@ -94,8 +91,8 @@ Please ensure exercises are safe, effective, and specifically designed for my go
     calculateStats(plan);
   };
 
-  const generateWorkoutPlan = async (useCustomPrompt = false) => {
-    const promptToUse = useCustomPrompt ? customPrompt : generatedPrompt;
+  const generateWorkoutPlan = async () => {
+    const promptToUse = generatedPrompt;
     
     if (!promptToUse.trim()) {
       alert('Please provide a prompt for generating your workout plan.');
@@ -139,7 +136,6 @@ Please ensure exercises are safe, effective, and specifically designed for my go
       }));
 
       saveWorkoutPlan(convertedPlan);
-      setShowPromptDialog(false);
     } catch (error) {
       console.error('❌ Error generating workout plan:', error);
       alert(`Failed to generate workout plan: ${error instanceof Error ? error.message : 'Unknown error'}. Please check your API configuration.`);
@@ -160,16 +156,7 @@ Please ensure exercises are safe, effective, and specifically designed for my go
     saveWorkoutPlan(updatedPlan);
   };
 
-  const resetProgress = () => {
-    if (window.confirm('Are you sure you want to reset all progress? This cannot be undone.')) {
-      const resetPlan = workoutPlan.map(day => ({
-        ...day,
-        completed: false,
-        exercises: day.exercises.map(ex => ({ ...ex, completed: false }))
-      }));
-      saveWorkoutPlan(resetPlan);
-    }
-  };
+
 
   const clearWorkoutPlan = () => {
     if (window.confirm('Are you sure you want to clear your workout plan? This cannot be undone.')) {
@@ -247,23 +234,11 @@ Please ensure exercises are safe, effective, and specifically designed for my go
       {/* Workout Plan Display */}
       {workoutPlan.length > 0 ? (
         <>
-          {/* Action Buttons - when plan exists */}
-          <div className="flex flex-wrap gap-4 mb-8">
-            <button
-              onClick={() => setShowPromptDialog(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-            >
-              Edit Prompt & Regenerate
-            </button>
-            <button
-              onClick={resetProgress}
-              className="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-            >
-              Reset Progress
-            </button>
+          {/* Action Buttons - when plan exists - Only show Clear Plan button */}
+          <div className="flex justify-end mb-8">
             <button
               onClick={clearWorkoutPlan}
-              className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
             >
               Clear Plan
             </button>
@@ -375,68 +350,17 @@ Please ensure exercises are safe, effective, and specifically designed for my go
 
           <div className="flex flex-wrap gap-4 justify-center">
             <button
-              onClick={() => generateWorkoutPlan(false)}
+              onClick={() => generateWorkoutPlan()}
               disabled={isLoading}
               className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
             >
               {isLoading ? 'Generating with AI...' : '🤖 Create Your Plan with AI'}
             </button>
-            <button
-              onClick={() => setShowPromptDialog(true)}
-              className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-            >
-              ✏️ Edit Prompt
-            </button>
           </div>
         </div>
       )}
 
-      {/* Prompt Edit Dialog */}
-      {showPromptDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-96 overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Customize Your Workout Prompt</h3>
-              <button
-                onClick={() => setShowPromptDialog(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                AI Prompt (edit to customize your workout plan):
-              </label>
-              <textarea
-                value={customPrompt}
-                onChange={(e) => setCustomPrompt(e.target.value)}
-                className="w-full h-48 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Describe your workout preferences, goals, and any specific requirements..."
-              />
-            </div>
-            
-            <div className="flex gap-4 justify-end">
-              <button
-                onClick={() => setShowPromptDialog(false)}
-                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => generateWorkoutPlan(true)}
-                disabled={isLoading}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-              >
-                {isLoading ? 'Generating...' : '🤖 Generate with AI'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+
     </div>
   );
 }
