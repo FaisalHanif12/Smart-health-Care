@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useProgress } from '../../contexts/ProgressContext';
 
@@ -9,7 +9,9 @@ interface ProgressData {
 }
 
 export default function DashboardContentSimple() {
-  const [waterIntake] = useState<ProgressData>({ value: 5, max: 8, percentage: 62.5 });
+  const [waterIntake, setWaterIntake] = useState<ProgressData>({ value: 5, max: 8, percentage: 62.5 });
+  const [weeklyProgress, setWeeklyProgress] = useState<number[]>([]);
+  const [dailyCalories, setDailyCalories] = useState<number[]>([]);
   
   const { 
     getTodaysDietProgress, 
@@ -19,6 +21,87 @@ export default function DashboardContentSimple() {
     dietProgress,
     workoutProgress 
   } = useProgress();
+
+  // Load actual data from localStorage and sync with diet/workout plans
+  useEffect(() => {
+    // Load diet plan data
+    const savedDietPlan = localStorage.getItem('dietPlan');
+    if (savedDietPlan) {
+      try {
+        const dietPlan = JSON.parse(savedDietPlan);
+        // Generate weekly calorie data from diet plan
+        const weeklyCalories = dietPlan.slice(0, 7).map((day: any) => {
+          const completedMealCalories = day.meals
+            .filter((meal: any) => meal.completed)
+            .reduce((sum: number, meal: any) => sum + meal.calories, 0);
+          return completedMealCalories;
+        });
+        setDailyCalories(weeklyCalories);
+      } catch (error) {
+        console.error('Error loading diet plan:', error);
+      }
+    }
+
+    // Load workout plan data
+    const savedWorkoutPlan = localStorage.getItem('workoutPlan');
+    if (savedWorkoutPlan) {
+      try {
+        const workoutPlan = JSON.parse(savedWorkoutPlan);
+        // Generate weekly workout completion data
+        const weeklyWorkouts = workoutPlan.slice(0, 7).map((day: any) => {
+          const completedExercises = day.exercises
+            ? day.exercises.filter((ex: any) => ex.completed).length
+            : 0;
+          const totalExercises = day.exercises ? day.exercises.length : 0;
+          return totalExercises > 0 ? Math.round((completedExercises / totalExercises) * 100) : 0;
+        });
+        setWeeklyProgress(weeklyWorkouts);
+      } catch (error) {
+        console.error('Error loading workout plan:', error);
+      }
+    }
+  }, []);
+
+  const updateWaterIntake = (increment: boolean) => {
+    setWaterIntake(prev => {
+      const newValue = increment 
+        ? Math.min(prev.value + 1, prev.max)
+        : Math.max(prev.value - 1, 0);
+      const newWaterData = {
+        ...prev,
+        value: newValue,
+        percentage: (newValue / prev.max) * 100
+      };
+      
+      // Save to localStorage
+      localStorage.setItem('waterIntake', JSON.stringify({
+        ...newWaterData,
+        date: new Date().toDateString()
+      }));
+      
+      return newWaterData;
+    });
+  };
+
+  // Load water intake data on mount
+  useEffect(() => {
+    const savedWaterIntake = localStorage.getItem('waterIntake');
+    if (savedWaterIntake) {
+      try {
+        const parsed = JSON.parse(savedWaterIntake);
+        // Check if it's from today, if not reset
+        if (parsed.date === new Date().toDateString()) {
+          setWaterIntake({
+            value: parsed.value,
+            max: parsed.max,
+            percentage: parsed.percentage
+          });
+        }
+      } catch (error) {
+        console.error('Error loading water intake:', error);
+      }
+    }
+  }, []);
 
   return (
     <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 pb-20">
@@ -117,6 +200,94 @@ export default function DashboardContentSimple() {
         </div>
       </div>
 
+      {/* Progress Charts Section */}
+      <div className="mb-8">
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">Weekly Progress Charts</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          {/* Workout Progress Chart */}
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-800">Weekly Workout Progress</h3>
+              <div className="bg-blue-100 rounded-full p-2">
+                <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+              </div>
+            </div>
+            <div className="space-y-3">
+              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => (
+                <div key={day} className="flex items-center space-x-3">
+                  <span className="text-sm font-medium text-gray-600 w-8">{day}</span>
+                  <div className="flex-1 bg-gray-200 rounded-full h-3 relative">
+                    <div 
+                      className="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-500 ease-out"
+                      style={{ width: `${weeklyProgress[index] || 0}%` }}
+                    ></div>
+                  </div>
+                  <span className="text-sm text-gray-600 w-10 text-right">
+                    {weeklyProgress[index] || 0}%
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Average Completion</span>
+                <span className="font-semibold text-blue-600">
+                  {weeklyProgress.length > 0 ? Math.round(weeklyProgress.reduce((a, b) => a + b, 0) / weeklyProgress.length) : 0}%
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Calorie Intake Chart */}
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-800">Daily Calorie Intake</h3>
+              <div className="bg-green-100 rounded-full p-2">
+                <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
+                </svg>
+              </div>
+            </div>
+            <div className="h-40 flex items-end justify-between space-x-2">
+              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => {
+                const calories = dailyCalories[index] || 0;
+                const maxCalories = Math.max(...dailyCalories, 2000);
+                const height = maxCalories > 0 ? (calories / maxCalories) * 100 : 0;
+                
+                return (
+                  <div key={day} className="flex flex-col items-center flex-1">
+                    <div className="w-full bg-gray-100 rounded-t flex items-end justify-center relative" style={{ height: '120px' }}>
+                      <div 
+                        className="w-full bg-gradient-to-t from-green-500 to-green-400 rounded-t transition-all duration-500 ease-out flex items-end justify-center"
+                        style={{ height: `${height}%` }}
+                      >
+                        {calories > 0 && (
+                          <span className="text-xs text-white font-medium mb-1">
+                            {calories}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <span className="text-xs text-gray-600 mt-2 font-medium">{day}</span>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Daily Average</span>
+                <span className="font-semibold text-green-600">
+                  {dailyCalories.length > 0 ? Math.round(dailyCalories.reduce((a, b) => a + b, 0) / dailyCalories.length) : 0} cal
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Main Stats Cards */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         {/* Daily Calorie Goal Card */}
@@ -199,13 +370,41 @@ export default function DashboardContentSimple() {
                 </svg>
               </div>
             </div>
-            <div className="flex items-end justify-between">
-              <div>
-                <p className="text-2xl font-bold text-gray-900">{waterIntake.value}/{waterIntake.max}</p>
-                <p className="text-xs text-gray-500">Glasses</p>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-2xl font-bold text-gray-900">{waterIntake.value}/{waterIntake.max}</p>
+                  <p className="text-xs text-gray-500">Glasses</p>
+                </div>
+                <div className="text-sm text-cyan-500 font-medium">
+                  {waterIntake.percentage.toFixed(1)}%
+                </div>
               </div>
-              <div className="text-sm text-cyan-500 font-medium">
-                {waterIntake.percentage}%
+              <div className="w-full bg-cyan-100 rounded-full h-2">
+                <div 
+                  className="bg-cyan-500 h-2 rounded-full transition-all duration-300" 
+                  style={{ width: `${waterIntake.percentage}%` }}
+                ></div>
+              </div>
+              <div className="flex justify-between items-center pt-1">
+                <button
+                  onClick={() => updateWaterIntake(false)}
+                  className="bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-full p-1 transition-colors disabled:opacity-50"
+                  disabled={waterIntake.value === 0}
+                >
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => updateWaterIntake(true)}
+                  className="bg-cyan-500 hover:bg-cyan-600 text-white rounded-full p-1 transition-colors disabled:opacity-50"
+                  disabled={waterIntake.value === waterIntake.max}
+                >
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                  </svg>
+                </button>
               </div>
             </div>
           </div>

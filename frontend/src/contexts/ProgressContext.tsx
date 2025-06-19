@@ -85,7 +85,7 @@ export const ProgressProvider: React.FC<ProgressProviderProps> = ({ children }) 
     return new Date(d.setDate(diff));
   }
 
-  // Load progress from localStorage on mount
+  // Load progress from localStorage on mount and sync with actual plans
   useEffect(() => {
     if (user?._id) {
       const savedDietProgress = localStorage.getItem(`dietProgress_${user._id}`);
@@ -114,6 +114,40 @@ export const ProgressProvider: React.FC<ProgressProviderProps> = ({ children }) 
           console.error('Error parsing workout progress:', error);
         }
       }
+
+      // Auto-sync with actual diet and workout plans
+      const syncWithPlans = () => {
+        const savedDietPlan = localStorage.getItem('dietPlan');
+        if (savedDietPlan) {
+          try {
+            const dietPlan = JSON.parse(savedDietPlan);
+            const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+            const todaysPlan = dietPlan.find((day: any) => day.day === today);
+            
+            if (todaysPlan && todaysPlan.meals) {
+              updateDietProgress(todaysPlan.meals.map((meal: any) => ({ meal })));
+            }
+          } catch (error) {
+            console.error('Error syncing diet plan:', error);
+          }
+        }
+
+        const savedWorkoutPlan = localStorage.getItem('workoutPlan');
+        if (savedWorkoutPlan) {
+          try {
+            const workoutPlan = JSON.parse(savedWorkoutPlan);
+            updateWorkoutProgress(workoutPlan);
+          } catch (error) {
+            console.error('Error syncing workout plan:', error);
+          }
+        }
+      };
+
+      syncWithPlans();
+      
+      // Set up interval to check for plan updates
+      const interval = setInterval(syncWithPlans, 5000); // Check every 5 seconds
+      return () => clearInterval(interval);
     }
   }, [user?._id]);
 
