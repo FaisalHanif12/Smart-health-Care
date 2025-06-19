@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 // Import both services
 import OpenAIService from '../../services/openaiService';
 import BackendAIService from '../../services/backendAIService';
+import { useFitnessPlans } from '../../contexts/FitnessPlansContext';
 
 interface Exercise {
   name: string;
@@ -21,10 +22,20 @@ interface WorkoutDay {
 
 export default function WorkoutPlanContent() {
   const { user } = useAuth();
+  const { 
+    currentPlan, 
+    createNewPlan, 
+    getCurrentMonthProgress,
+    updateMonthlyProgress,
+    shouldShowMonthlyCompletion,
+    markMonthAsCompleted 
+  } = useFitnessPlans();
+  
   const [workoutPlan, setWorkoutPlan] = useState<WorkoutDay[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [generatedPrompt, setGeneratedPrompt] = useState('');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [showPlanAnalysis, setShowPlanAnalysis] = useState(false);
   const [weeklyStats, setWeeklyStats] = useState({
     totalWorkouts: 0,
     completedWorkouts: 0,
@@ -193,6 +204,120 @@ Please ensure exercises are safe, effective, and specifically designed for my go
           Your personalized fitness journey starts here. Track your progress and stay consistent!
         </p>
       </div>
+
+      {/* Long-term Plan Overview */}
+      {currentPlan && (
+        <div className="mb-8 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-xl font-bold text-purple-900">
+                {currentPlan.totalMonths}-Month Fitness Journey
+              </h2>
+              <p className="text-purple-700">
+                {currentPlan.userAnalysis.planType.replace('_', ' ').toUpperCase()} Plan • 
+                Current Month: {currentPlan.currentMonth}/{currentPlan.totalMonths}
+              </p>
+            </div>
+            <button
+              onClick={() => setShowPlanAnalysis(!showPlanAnalysis)}
+              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+            >
+              {showPlanAnalysis ? 'Hide Details' : 'View Analysis'}
+            </button>
+          </div>
+
+          {/* Monthly Progress Tracker */}
+          <div className="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-12 gap-2 mb-4">
+            {currentPlan.monthlyProgress.map((month) => (
+              <div
+                key={month.month}
+                className={`relative p-3 rounded-lg text-center transition-all ${
+                  month.isCompleted
+                    ? 'bg-green-500 text-white'
+                    : month.month === currentPlan.currentMonth
+                    ? 'bg-purple-500 text-white ring-2 ring-purple-300'
+                    : 'bg-gray-200 text-gray-600'
+                }`}
+              >
+                <div className="text-xs font-medium">Month</div>
+                <div className="text-lg font-bold">{month.month}</div>
+                {month.isCompleted && (
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-600 rounded-full flex items-center justify-center">
+                    <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {showPlanAnalysis && (
+            <div className="bg-white rounded-lg p-4 border border-purple-200">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-2">Plan Analysis</h3>
+                  <div className="space-y-2 text-sm">
+                    <div><span className="font-medium">Current BMI:</span> {currentPlan.userAnalysis.currentBMI.toFixed(1)}</div>
+                    <div><span className="font-medium">Target BMI:</span> {currentPlan.userAnalysis.targetBMI.toFixed(1)}</div>
+                    <div><span className="font-medium">Goal:</span> {currentPlan.userAnalysis.weightGoal} weight</div>
+                    <div><span className="font-medium">Urgency:</span> 
+                      <span className={`ml-1 px-2 py-1 rounded text-xs ${
+                        currentPlan.userAnalysis.urgency === 'high' ? 'bg-red-100 text-red-800' :
+                        currentPlan.userAnalysis.urgency === 'moderate' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-green-100 text-green-800'
+                      }`}>
+                        {currentPlan.userAnalysis.urgency}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-2">Current Month Progress</h3>
+                  {getCurrentMonthProgress() && (
+                    <div className="space-y-2 text-sm">
+                      <div><span className="font-medium">Diet Compliance:</span> {getCurrentMonthProgress()?.dietCompliance || 0}%</div>
+                      <div><span className="font-medium">Workout Compliance:</span> {getCurrentMonthProgress()?.workoutCompliance || 0}%</div>
+                      {getCurrentMonthProgress()?.aiPrediction && (
+                        <div className="mt-3 p-3 bg-purple-50 rounded text-xs">
+                          <span className="font-medium">AI Prediction:</span>
+                          <p className="mt-1">{getCurrentMonthProgress()?.aiPrediction}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Create Plan Button - if no plan exists */}
+      {!currentPlan && user?.profile && (
+        <div className="mb-8 bg-gradient-to-r from-orange-50 to-red-50 rounded-xl border border-orange-200 p-6">
+          <div className="text-center">
+            <h2 className="text-xl font-bold text-orange-900 mb-2">Ready to Start Your Fitness Journey?</h2>
+            <p className="text-orange-700 mb-4">
+              Let our AI analyze your profile and create a personalized long-term plan
+            </p>
+            <button
+              onClick={async () => {
+                try {
+                  await createNewPlan();
+                  setShowPlanAnalysis(true);
+                } catch (error) {
+                  console.error('Error creating plan:', error);
+                  alert('Error creating plan. Please ensure your profile is complete.');
+                }
+              }}
+              className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+            >
+              Create My Long-term Plan
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

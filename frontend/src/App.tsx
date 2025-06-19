@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import './App.css';
 import { AuthProvider } from './contexts/AuthContext';
 import { ProgressProvider } from './contexts/ProgressContext';
+import { FitnessPlansProvider } from './contexts/FitnessPlansContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import AuthRoute from './components/AuthRoute'; 
 import Login from './components/Login';
@@ -17,7 +18,8 @@ function App() {
   return (
     <AuthProvider>
       <ProgressProvider>
-        <Routes>
+        <FitnessPlansProvider>
+          <Routes>
           {/* Public routes - redirect to dashboard if already authenticated */}
           <Route path="/" element={<AuthRoute><LoginPage /></AuthRoute>} />
           <Route path="/login" element={<AuthRoute><Login /></AuthRoute>} />
@@ -29,6 +31,7 @@ function App() {
           <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
           <Route path="/dashboard/*" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
         </Routes>
+        </FitnessPlansProvider>
       </ProgressProvider>
     </AuthProvider>
   )
