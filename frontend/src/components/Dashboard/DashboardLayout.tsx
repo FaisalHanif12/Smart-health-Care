@@ -15,6 +15,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const handleLogout = async () => {
     try {
+      setIsMobileMenuOpen(false); // Close mobile menu
       await logout();
       navigate('/');
     } catch (error) {
@@ -42,14 +43,30 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             className="text-white" 
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
+            {isMobileMenuOpen ? (
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            )}
           </button>
         </div>
+
+        {/* Mobile Menu Overlay */}
+        {isMobileMenuOpen && (
+          <div 
+            className="md:hidden fixed inset-0 z-30 bg-black bg-opacity-50"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+        )}
         
         {/* Sidebar Navigation */}
-        <div className={`w-64 bg-gray-900 min-h-screen ${isMobileMenuOpen ? 'block' : 'hidden'} md:block`}>
+        <div className={`w-64 bg-gray-900 min-h-screen fixed md:relative left-0 top-0 z-40 md:z-auto transform transition-transform duration-300 ease-in-out ${
+          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        } md:translate-x-0 md:block`}>
           <div className="p-4">
             <h1 className="text-xl font-bold text-yellow-400 mb-8 mt-4 md:mt-0">HEALTH TRACKER</h1>
             
@@ -142,7 +159,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 md:ml-0 pt-16 md:pt-0">
+        <div className="flex-1 w-full md:ml-0 pt-16 md:pt-0">
           {children}
         </div>
       </div>
