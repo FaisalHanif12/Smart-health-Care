@@ -3,7 +3,6 @@ import { useAuth } from '../../contexts/AuthContext';
 // Import both services
 import OpenAIService from '../../services/openaiService';
 import BackendAIService from '../../services/backendAIService';
-import { useFitnessPlans } from '../../contexts/FitnessPlansContext';
 
 interface Exercise {
   name: string;
@@ -22,20 +21,12 @@ interface WorkoutDay {
 
 export default function WorkoutPlanContent() {
   const { user } = useAuth();
-  const { 
-    currentPlan, 
-    createNewPlan, 
-    getCurrentMonthProgress,
-    updateMonthlyProgress,
-    shouldShowMonthlyCompletion,
-    markMonthAsCompleted 
-  } = useFitnessPlans();
-  
   const [workoutPlan, setWorkoutPlan] = useState<WorkoutDay[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [generatedPrompt, setGeneratedPrompt] = useState('');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
-  const [showPlanAnalysis, setShowPlanAnalysis] = useState(false);
+  const [showPromptDialog, setShowPromptDialog] = useState(false);
+  const [customPrompt, setCustomPrompt] = useState('');
   const [weeklyStats, setWeeklyStats] = useState({
     totalWorkouts: 0,
     completedWorkouts: 0,
@@ -195,6 +186,64 @@ Please ensure exercises are safe, effective, and specifically designed for my go
     }
   };
 
+  const openPromptDialog = () => {
+    setCustomPrompt(generatedPrompt);
+    setShowPromptDialog(true);
+  };
+
+  const handleCustomGenerate = async () => {
+    if (!customPrompt.trim()) {
+      alert('Please provide a prompt for generating your workout plan.');
+      return;
+    }
+    
+    setGeneratedPrompt(customPrompt);
+    setShowPromptDialog(false);
+    
+    // Generate with custom prompt
+    setIsLoading(true);
+    
+    try {
+      let workoutData;
+      
+      try {
+        console.log('🔄 Attempting to generate workout plan with Backend AI Service (GPT-4)...');
+        const backendService = new BackendAIService();
+        workoutData = await backendService.generateWorkoutPlan(customPrompt);
+        console.log('✅ Backend AI Service (GPT-4) successful!');
+      } catch (backendError) {
+        console.warn('⚠️ Backend AI Service failed, trying Frontend OpenAI Service (GPT-3.5)...', backendError);
+        
+        const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+        if (!apiKey) {
+          throw new Error('OpenAI API key not configured');
+        }
+        const openaiService = new OpenAIService(apiKey);
+        workoutData = await openaiService.generateWorkoutPlan(customPrompt);
+        console.log('✅ Frontend OpenAI Service successful!');
+      }
+      
+      const convertedPlan: WorkoutDay[] = Object.entries(workoutData).map(([day, data]: [string, any]) => ({
+        day: day,
+        exercises: data.exercises?.map((exercise: any) => ({
+          name: exercise.name,
+          sets: exercise.sets?.toString() || '3',
+          reps: exercise.reps?.toString() || '10-12',
+          rest: exercise.restTime || '60s',
+          notes: exercise.equipment ? `Equipment: ${exercise.equipment}` : undefined,
+          completed: false
+        })) || []
+      }));
+
+      saveWorkoutPlan(convertedPlan);
+    } catch (error) {
+      console.error('❌ Error generating workout plan:', error);
+      alert(`Failed to generate workout plan: ${error instanceof Error ? error.message : 'Unknown error'}. Please check your API configuration.`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="p-6 max-w-6xl mx-auto">
       {/* Header */}
@@ -204,120 +253,6 @@ Please ensure exercises are safe, effective, and specifically designed for my go
           Your personalized fitness journey starts here. Track your progress and stay consistent!
         </p>
       </div>
-
-      {/* Long-term Plan Overview */}
-      {currentPlan && (
-        <div className="mb-8 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-xl font-bold text-purple-900">
-                {currentPlan.totalMonths}-Month Fitness Journey
-              </h2>
-              <p className="text-purple-700">
-                {currentPlan.userAnalysis.planType.replace('_', ' ').toUpperCase()} Plan • 
-                Current Month: {currentPlan.currentMonth}/{currentPlan.totalMonths}
-              </p>
-            </div>
-            <button
-              onClick={() => setShowPlanAnalysis(!showPlanAnalysis)}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-            >
-              {showPlanAnalysis ? 'Hide Details' : 'View Analysis'}
-            </button>
-          </div>
-
-          {/* Monthly Progress Tracker */}
-          <div className="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-12 gap-2 mb-4">
-            {currentPlan.monthlyProgress.map((month) => (
-              <div
-                key={month.month}
-                className={`relative p-3 rounded-lg text-center transition-all ${
-                  month.isCompleted
-                    ? 'bg-green-500 text-white'
-                    : month.month === currentPlan.currentMonth
-                    ? 'bg-purple-500 text-white ring-2 ring-purple-300'
-                    : 'bg-gray-200 text-gray-600'
-                }`}
-              >
-                <div className="text-xs font-medium">Month</div>
-                <div className="text-lg font-bold">{month.month}</div>
-                {month.isCompleted && (
-                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-600 rounded-full flex items-center justify-center">
-                    <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {showPlanAnalysis && (
-            <div className="bg-white rounded-lg p-4 border border-purple-200">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Plan Analysis</h3>
-                  <div className="space-y-2 text-sm">
-                    <div><span className="font-medium">Current BMI:</span> {currentPlan.userAnalysis.currentBMI.toFixed(1)}</div>
-                    <div><span className="font-medium">Target BMI:</span> {currentPlan.userAnalysis.targetBMI.toFixed(1)}</div>
-                    <div><span className="font-medium">Goal:</span> {currentPlan.userAnalysis.weightGoal} weight</div>
-                    <div><span className="font-medium">Urgency:</span> 
-                      <span className={`ml-1 px-2 py-1 rounded text-xs ${
-                        currentPlan.userAnalysis.urgency === 'high' ? 'bg-red-100 text-red-800' :
-                        currentPlan.userAnalysis.urgency === 'moderate' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-green-100 text-green-800'
-                      }`}>
-                        {currentPlan.userAnalysis.urgency}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Current Month Progress</h3>
-                  {getCurrentMonthProgress() && (
-                    <div className="space-y-2 text-sm">
-                      <div><span className="font-medium">Diet Compliance:</span> {getCurrentMonthProgress()?.dietCompliance || 0}%</div>
-                      <div><span className="font-medium">Workout Compliance:</span> {getCurrentMonthProgress()?.workoutCompliance || 0}%</div>
-                      {getCurrentMonthProgress()?.aiPrediction && (
-                        <div className="mt-3 p-3 bg-purple-50 rounded text-xs">
-                          <span className="font-medium">AI Prediction:</span>
-                          <p className="mt-1">{getCurrentMonthProgress()?.aiPrediction}</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Create Plan Button - if no plan exists */}
-      {!currentPlan && user?.profile && (
-        <div className="mb-8 bg-gradient-to-r from-orange-50 to-red-50 rounded-xl border border-orange-200 p-6">
-          <div className="text-center">
-            <h2 className="text-xl font-bold text-orange-900 mb-2">Ready to Start Your Fitness Journey?</h2>
-            <p className="text-orange-700 mb-4">
-              Let our AI analyze your profile and create a personalized long-term plan
-            </p>
-            <button
-              onClick={async () => {
-                try {
-                  await createNewPlan();
-                  setShowPlanAnalysis(true);
-                } catch (error) {
-                  console.error('Error creating plan:', error);
-                  alert('Error creating plan. Please ensure your profile is complete.');
-                }
-              }}
-              className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-            >
-              Create My Long-term Plan
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -367,8 +302,37 @@ Please ensure exercises are safe, effective, and specifically designed for my go
       {/* Workout Plan Display */}
       {workoutPlan.length > 0 ? (
         <>
-          {/* Action Buttons - when plan exists - Only show Clear Plan button */}
-          <div className="flex justify-end mb-8">
+          {/* Action Buttons - when plan exists */}
+          <div className="flex justify-between items-center mb-8">
+            <div className="flex gap-4">
+              <button
+                onClick={() => generateWorkoutPlan()}
+                disabled={isLoading}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                {isLoading ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    🔄 Generate New Plan
+                  </>
+                )}
+              </button>
+              
+              <button
+                onClick={openPromptDialog}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
+              >
+                ✏️ Edit Prompt
+              </button>
+            </div>
+            
             <button
               onClick={clearWorkoutPlan}
               className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
@@ -489,6 +453,13 @@ Please ensure exercises are safe, effective, and specifically designed for my go
             >
               {isLoading ? 'Generating with AI...' : '🤖 Create Your Plan with AI'}
             </button>
+            
+            <button
+              onClick={openPromptDialog}
+              className="bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 rounded-lg font-medium transition-colors"
+            >
+              ✏️ Edit Prompt
+            </button>
           </div>
         </div>
       )}
@@ -525,6 +496,64 @@ Please ensure exercises are safe, effective, and specifically designed for my go
                 className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
               >
                 Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Prompt Dialog */}
+      {showPromptDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Edit Workout Plan Prompt</h3>
+              <button
+                onClick={() => setShowPromptDialog(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Customize your workout plan prompt:
+              </label>
+              <textarea
+                value={customPrompt}
+                onChange={(e) => setCustomPrompt(e.target.value)}
+                rows={12}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                placeholder="Describe your ideal workout plan..."
+              />
+            </div>
+            
+            <div className="flex gap-4 justify-end">
+              <button
+                onClick={() => setShowPromptDialog(false)}
+                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCustomGenerate}
+                disabled={isLoading || !customPrompt.trim()}
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                {isLoading ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Generating...
+                  </>
+                ) : (
+                  '🤖 Generate with Custom Prompt'
+                )}
               </button>
             </div>
           </div>

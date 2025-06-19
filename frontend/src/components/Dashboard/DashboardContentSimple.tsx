@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useProgress } from '../../contexts/ProgressContext';
+import AIRecommendations from './AIRecommendations';
 
 interface ProgressData {
   value: number;
@@ -409,6 +410,11 @@ export default function DashboardContentSimple() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* AI Recommendations Section */}
+      <div className="mb-8">
+        <AIRecommendations />
       </div>
 
       {/* Quick Actions */}

@@ -142,6 +142,15 @@ class BackendAIService {
     }
   }
 
+  async generateAIRecommendations(prompt: string): Promise<{ recommendations: any[] }> {
+    try {
+      return await this.makeRequest<{ recommendations: any[] }>('/generate-recommendations', { prompt });
+    } catch (error) {
+      console.error('Error generating AI recommendations:', error);
+      throw error;
+    }
+  }
+
   async checkStatus(): Promise<{ openai_configured: boolean; model: string; status: string }> {
     try {
       const token = localStorage.getItem('token');

@@ -143,6 +143,75 @@ router.post('/generate-diet-plan',
   }
 );
 
+// @route   POST /api/ai/generate-recommendations
+// @desc    Generate AI health recommendations
+// @access  Private
+router.post('/generate-recommendations', 
+  auth,
+  [
+    body('prompt')
+      .notEmpty()
+      .withMessage('Prompt is required')
+      .isLength({ min: 50 })
+      .withMessage('Prompt must be at least 50 characters long')
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Validation failed',
+          errors: errors.array() 
+        });
+      }
+
+      const { prompt } = req.body;
+
+      // Check if OpenAI API key is configured
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(500).json({
+          success: false,
+          message: 'OpenAI API key not configured on server'
+        });
+      }
+
+      // Generate AI recommendations using OpenAI
+      const openaiService = new OpenAIService();
+      const recommendations = await openaiService.generateAIRecommendations(prompt);
+
+      res.json({
+        success: true,
+        message: 'AI recommendations generated successfully',
+        data: recommendations
+      });
+
+    } catch (error) {
+      console.error('Error generating AI recommendations:', error);
+      
+      // Handle specific OpenAI errors
+      if (error.code === 'insufficient_quota') {
+        return res.status(402).json({
+          success: false,
+          message: 'OpenAI API quota exceeded. Please try again later.'
+        });
+      }
+      
+      if (error.code === 'invalid_api_key') {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid OpenAI API key configuration'
+        });
+      }
+
+      res.status(500).json({
+        success: false,
+        message: error.message || 'Failed to generate AI recommendations'
+      });
+    }
+  }
+);
+
 // @route   GET /api/ai/status
 // @desc    Check AI service status
 // @access  Private

@@ -249,6 +249,70 @@ class OpenAIService {
       throw new Error('Failed to generate workout plan. Please check your API key and try again.');
     }
   }
+
+  async generateAIRecommendations(prompt: string): Promise<{ recommendations: any[] }> {
+    try {
+      const response = await fetch(this.baseURL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o',
+          messages: [
+            {
+              role: 'system',
+              content: `You are an AI health coach providing personalized fitness and nutrition recommendations.
+              Always respond with ONLY a valid JSON object that matches the exact structure requested.
+              Do not include any explanatory text, markdown formatting, or code blocks - just pure JSON.
+              Focus on actionable, specific, and motivating advice.`
+            },
+            {
+              role: 'user',
+              content: prompt
+            }
+          ],
+          max_tokens: 1500,
+          temperature: 0.7,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
+      }
+
+      const data: OpenAIResponse = await response.json();
+      let content = data.choices[0].message.content.trim();
+      
+      // Clean up the response - remove any markdown formatting
+      content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      
+      // Validate and parse the JSON response
+      let recommendations: { recommendations: any[] };
+      try {
+        recommendations = JSON.parse(content);
+      } catch (parseError) {
+        console.error('JSON Parse Error:', parseError);
+        console.error('Raw content:', content);
+        throw new Error('Invalid response format from AI. Please try again.');
+      }
+      
+      // Validate the structure
+      if (!recommendations.recommendations || !Array.isArray(recommendations.recommendations)) {
+        throw new Error('Invalid recommendations format received. Please try again.');
+      }
+      
+      return recommendations;
+    } catch (error) {
+      console.error('Error generating AI recommendations:', error);
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Failed to generate AI recommendations. Please check your API key and try again.');
+    }
+  }
 }
 
 export default OpenAIService;

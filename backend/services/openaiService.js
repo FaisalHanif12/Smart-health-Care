@@ -298,6 +298,73 @@ class OpenAIService {
       throw error;
     }
   }
+
+  async generateAIRecommendations(prompt) {
+    try {
+      const completion = await this.openai.chat.completions.create({
+        model: 'gpt-4o',
+        messages: [
+          {
+            role: 'system',
+            content: `You are an AI health coach providing personalized fitness and nutrition recommendations.
+            
+            CRITICAL REQUIREMENTS:
+            1. Analyze the user's progress data carefully and provide actionable insights
+            2. Focus on motivation, specific improvements, and celebrating achievements
+            3. Provide recommendations that are:
+               - Specific and actionable
+               - Personalized to their fitness goal and current progress
+               - Motivating and encouraging
+               - Based on scientific fitness principles
+            
+            4. Use these recommendation types appropriately:
+               - "motivation": Encouraging messages, celebrate progress, build confidence
+               - "warning": Alert about concerning patterns, health risks, need for change
+               - "suggestion": Practical tips, improvements, strategy adjustments
+               - "achievement": Celebrate milestones, acknowledge successes
+            
+            5. Set priority levels based on importance:
+               - "high": Critical issues requiring immediate attention
+               - "medium": Important improvements that would be beneficial
+               - "low": Nice-to-have optimizations and minor adjustments
+            
+            Always respond with ONLY a valid JSON object. No explanatory text, markdown, or code blocks.`
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        max_tokens: 1500,
+        temperature: 0.7
+      });
+
+      let content = completion.choices[0].message.content.trim();
+      
+      // Clean up the response - remove any markdown formatting
+      content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      
+      // Validate and parse the JSON response
+      let recommendations;
+      try {
+        recommendations = JSON.parse(content);
+      } catch (parseError) {
+        console.error('JSON Parse Error:', parseError);
+        console.error('Raw content:', content);
+        throw new Error('Invalid response format from AI. Please try again.');
+      }
+      
+      // Validate the structure
+      if (!recommendations.recommendations || !Array.isArray(recommendations.recommendations)) {
+        throw new Error('Invalid recommendations format received. Please try again.');
+      }
+      
+      return recommendations;
+    } catch (error) {
+      console.error('Error generating AI recommendations:', error);
+      throw error;
+    }
+  }
 }
 
 module.exports = OpenAIService; 
