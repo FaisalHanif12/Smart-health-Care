@@ -14,6 +14,7 @@ interface Product {
 export default function StoreContent() {
   const navigate = useNavigate();
   const [showMoreItems, setShowMoreItems] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
   
   // Initial 12 products
   const initialProducts: Product[] = [
@@ -163,13 +164,18 @@ export default function StoreContent() {
       calories: 121,
       protein: 0,
       image: '🥥',
-      category: 'Oils',
+      category: 'Supplements',
     },
   ];
 
   // Combine products based on showMoreItems state
   const [products] = useState<Product[]>(initialProducts);
-  const displayedProducts = showMoreItems ? [...products, ...additionalProducts] : products;
+  const allProducts = showMoreItems ? [...products, ...additionalProducts] : products;
+  
+  // Filter products by category
+  const displayedProducts = selectedCategory === 'All' 
+    ? allProducts 
+    : allProducts.filter(product => product.category === selectedCategory);
 
   const [cart, setCart] = useState<number[]>(() => {
     const savedCart = localStorage.getItem('cart');
@@ -200,44 +206,68 @@ export default function StoreContent() {
 
   const cartItemCount = cart.length;
   const cartTotal = cart.reduce((total, productId) => {
-    const product = [...displayedProducts, ...additionalProducts].find(p => p.id === productId);
+    const product = [...allProducts, ...additionalProducts].find(p => p.id === productId);
     return total + (product?.price || 0);
   }, 0);
+
+  const handleCategoryFilter = (category: string) => {
+    setSelectedCategory(category);
+  };
 
   return (
     <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
       {/* Header */}
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Healthy Food Store</h1>
-          <p className="mt-2 text-gray-600">Fresh, organic, and nutritious foods for your fitness journey</p>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-8 space-y-4 sm:space-y-0">
+        <div className="flex-1">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Healthy Food Store</h1>
+          <p className="mt-2 text-gray-600 text-sm sm:text-base">Fresh, organic, and nutritious foods for your fitness journey</p>
         </div>
         
         {/* Cart Button */}
         <button
           onClick={handleViewCart}
-          className="relative bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
+          className="relative bg-green-600 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center space-x-2 w-full sm:w-auto"
         >
-          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
             <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
           </svg>
-          <span>Cart ({cartItemCount})</span>
+          <span className="text-sm sm:text-base">Cart ({cartItemCount})</span>
           {cartItemCount > 0 && (
-            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center">
+            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 sm:h-6 sm:w-6 flex items-center justify-center">
               {cartItemCount}
             </span>
           )}
         </button>
       </div>
 
+      {/* Category Filter */}
+      <div className="mb-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-3">Shop by Category</h2>
+        <div className="flex flex-wrap gap-2 sm:gap-3">
+          {['All', 'Protein', 'Dairy', 'Grains', 'Nuts', 'Fruits', 'Vegetables', 'Supplements'].map((category) => (
+            <button
+              key={category}
+              onClick={() => handleCategoryFilter(category)}
+              className={`px-3 py-2 sm:px-4 sm:py-2 rounded-full text-sm font-medium transition-colors ${
+                selectedCategory === category
+                  ? 'bg-green-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Cart Summary */}
       {cartItemCount > 0 && (
         <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-          <div className="flex justify-between items-center">
-            <span className="text-green-800">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-2 sm:space-y-0">
+            <span className="text-green-800 text-sm sm:text-base">
               {cartItemCount} item{cartItemCount !== 1 ? 's' : ''} in cart
             </span>
-            <span className="text-green-800 font-semibold">
+            <span className="text-green-800 font-semibold text-sm sm:text-base">
               Total: ${cartTotal.toFixed(2)}
             </span>
           </div>
@@ -245,15 +275,15 @@ export default function StoreContent() {
       )}
 
       {/* Products Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
         {displayedProducts.map((product) => (
           <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-            <div className="p-6">
-              <div className="text-4xl mb-4 text-center">{product.image}</div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">{product.name}</h3>
-              <p className="text-sm text-gray-600 mb-2">{product.category}</p>
+            <div className="p-4 sm:p-6">
+              <div className="text-3xl sm:text-4xl mb-3 sm:mb-4 text-center">{product.image}</div>
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">{product.name}</h3>
+              <p className="text-xs sm:text-sm text-gray-600 mb-2">{product.category}</p>
               
-              <div className="space-y-1 text-sm text-gray-600 mb-4">
+              <div className="space-y-1 text-xs sm:text-sm text-gray-600 mb-4">
                 <div className="flex justify-between">
                   <span>Calories:</span>
                   <span>{product.calories}</span>
@@ -264,11 +294,11 @@ export default function StoreContent() {
                 </div>
               </div>
               
-              <div className="flex justify-between items-center">
-                <span className="text-xl font-bold text-green-600">${product.price}</span>
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-2 sm:space-y-0">
+                <span className="text-lg sm:text-xl font-bold text-green-600">${product.price}</span>
                 <button
                   onClick={() => isInCart(product.id) ? removeFromCart(product.id) : addToCart(product.id)}
-                  className={`px-4 py-2 rounded-lg transition-colors ${
+                  className={`px-3 py-2 sm:px-4 sm:py-2 rounded-lg transition-colors text-sm sm:text-base w-full sm:w-auto ${
                     isInCart(product.id)
                       ? 'bg-red-600 text-white hover:bg-red-700'
                       : 'bg-green-600 text-white hover:bg-green-700'
@@ -283,35 +313,25 @@ export default function StoreContent() {
       </div>
 
       {/* Load More Button */}
-      {!showMoreItems && (
-        <div className="text-center mt-8">
+      {!showMoreItems && selectedCategory === 'All' && (
+        <div className="text-center mt-6 sm:mt-8">
           <button
             onClick={handleLoadMore}
-            className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+            className="bg-green-600 text-white px-6 py-2 sm:px-8 sm:py-3 rounded-lg hover:bg-green-700 transition-colors text-sm sm:text-base w-full sm:w-auto"
           >
             Load More Items
           </button>
         </div>
       )}
 
-      {/* Categories Filter - Optional Enhancement */}
-      <div className="mt-12 bg-gray-50 rounded-lg p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Shop by Category</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {['Protein', 'Dairy', 'Grains', 'Nuts', 'Fruits', 'Vegetables'].map((category) => (
-            <div key={category} className="text-center p-4 bg-white rounded-lg hover:shadow-md transition-shadow cursor-pointer">
-              <div className="text-2xl mb-2">
-                {category === 'Protein' && '🍗'}
-                {category === 'Dairy' && '🥛'}
-                {category === 'Grains' && '🌾'}
-                {category === 'Nuts' && '🥜'}
-                {category === 'Fruits' && '🍎'}
-                {category === 'Vegetables' && '🥬'}
-              </div>
-              <span className="text-sm font-medium text-gray-700">{category}</span>
-            </div>
-          ))}
-        </div>
+      {/* Results Info */}
+      <div className="mt-6 sm:mt-8 text-center">
+        <p className="text-gray-600 text-sm sm:text-base">
+          {displayedProducts.length === 0 
+            ? `No products found in "${selectedCategory}" category` 
+            : `Showing ${displayedProducts.length} product${displayedProducts.length !== 1 ? 's' : ''} ${selectedCategory !== 'All' ? `in "${selectedCategory}" category` : ''}`
+          }
+        </p>
       </div>
     </main>
   );
