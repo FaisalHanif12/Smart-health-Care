@@ -13,6 +13,7 @@ export default function DashboardContentSimple() {
   const [waterIntake, setWaterIntake] = useState<ProgressData>({ value: 5, max: 8, percentage: 62.5 });
   const [weeklyProgress, setWeeklyProgress] = useState<number[]>([]);
   const [dailyCalories, setDailyCalories] = useState<number[]>([]);
+  const [searchQuery, setSearchQuery] = useState<string>('');
   
   const { 
     getTodaysDietProgress, 
@@ -104,6 +105,43 @@ export default function DashboardContentSimple() {
     }
   }, []);
 
+  // Search functionality
+  const searchableContent = [
+    { id: 'progress-overview', title: 'Progress Overview', keywords: ['progress', 'overview', 'diet', 'workout', 'today', 'week'] },
+    { id: 'weekly-charts', title: 'Weekly Progress Charts', keywords: ['weekly', 'progress', 'charts', 'workout', 'calorie', 'intake', 'daily'] },
+    { id: 'ai-health-coach', title: 'AI Health Coach', keywords: ['ai', 'health', 'coach', 'recommendations', 'artificial', 'intelligence'] },
+    { id: 'quick-actions', title: 'Quick Actions', keywords: ['quick', 'actions', 'diet', 'workout', 'profile', 'store', 'plan'] }
+  ];
+
+  const filteredSections = searchQuery.trim() === '' 
+    ? searchableContent 
+    : searchableContent.filter(section => {
+        const query = searchQuery.toLowerCase();
+        return section.title.toLowerCase().includes(query) || 
+               section.keywords.some(keyword => keyword.toLowerCase().includes(query));
+      });
+
+  const shouldShowSection = (sectionId: string) => {
+    return searchQuery.trim() === '' || filteredSections.some(section => section.id === sectionId);
+  };
+
+  const highlightText = (text: string) => {
+    if (!searchQuery.trim()) return text;
+    
+    const query = searchQuery.toLowerCase();
+    const index = text.toLowerCase().indexOf(query);
+    
+    if (index === -1) return text;
+    
+    return (
+      <>
+        {text.substring(0, index)}
+        <span className="bg-yellow-200 px-1 rounded">{text.substring(index, index + query.length)}</span>
+        {text.substring(index + query.length)}
+      </>
+    );
+  };
+
   return (
     <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 pb-20">
       {/* Header */}
@@ -113,19 +151,49 @@ export default function DashboardContentSimple() {
           <div className="relative mr-4">
             <input 
               type="text" 
-              placeholder="Search..." 
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200"
+              placeholder="Search sections..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             />
             <svg className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
             </svg>
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            )}
           </div>
         </div>
       </div>
 
+      {/* Search Results Info */}
+      {searchQuery && (
+        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-center space-x-2">
+            <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+            </svg>
+            <span className="text-blue-800 font-medium">
+              {filteredSections.length > 0 
+                ? `Found ${filteredSections.length} section${filteredSections.length !== 1 ? 's' : ''} matching "${searchQuery}"`
+                : `No sections found matching "${searchQuery}"`
+              }
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Progress Overview Section */}
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Progress Overview</h2>
+      {shouldShowSection('progress-overview') && (
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">{highlightText('Progress Overview')}</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Diet Progress Card */}
           <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl p-6">
@@ -200,10 +268,12 @@ export default function DashboardContentSimple() {
           </div>
         </div>
       </div>
+      )}
 
       {/* Progress Charts Section */}
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Weekly Progress Charts</h2>
+      {shouldShowSection('weekly-charts') && (
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">{highlightText('Weekly Progress Charts')}</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           
           {/* Workout Progress Chart */}
@@ -288,8 +358,10 @@ export default function DashboardContentSimple() {
           </div>
         </div>
       </div>
+      )}
 
-      {/* Main Stats Cards */}
+      {/* Main Stats Cards - Always show, part of Progress Overview */}
+      {shouldShowSection('progress-overview') && (
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         {/* Daily Calorie Goal Card */}
         <div className="bg-white overflow-hidden shadow-lg rounded-xl border border-gray-100 transform transition-all duration-300 hover:shadow-xl">
@@ -411,15 +483,19 @@ export default function DashboardContentSimple() {
           </div>
         </div>
       </div>
+      )}
 
       {/* AI Recommendations Section */}
-      <div className="mb-8">
-        <AIRecommendations />
-      </div>
+      {shouldShowSection('ai-health-coach') && (
+        <div className="mb-8">
+          <AIRecommendations />
+        </div>
+      )}
 
       {/* Quick Actions */}
-      <div className="bg-white shadow-lg rounded-xl border border-gray-100 p-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
+      {shouldShowSection('quick-actions') && (
+        <div className="bg-white shadow-lg rounded-xl border border-gray-100 p-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">{highlightText('Quick Actions')}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           <Link
             to="/dashboard/diet"
@@ -490,6 +566,7 @@ export default function DashboardContentSimple() {
           </Link>
         </div>
       </div>
+      )}
     </main>
   );
 } 

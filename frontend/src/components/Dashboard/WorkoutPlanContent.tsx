@@ -302,17 +302,8 @@ Please ensure exercises are safe, effective, and specifically designed for my go
       {/* Workout Plan Display */}
       {workoutPlan.length > 0 ? (
         <>
-          {/* Action Buttons - when plan exists */}
-          <div className="flex justify-between items-center mb-8">
-            <div className="flex gap-4">
-              <button
-                onClick={openPromptDialog}
-                className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
-              >
-                ✏️ Edit Prompt
-              </button>
-            </div>
-            
+          {/* Action Buttons - when plan exists - Only show Clear Plan button */}
+          <div className="flex justify-end mb-8">
             <button
               onClick={clearWorkoutPlan}
               className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
