@@ -463,6 +463,7 @@ export default function PaymentContent() {
                         <option value="CA">Canada</option>
                         <option value="UK">United Kingdom</option>
                         <option value="AU">Australia</option>
+                        <option value="PK">Pakistan</option>
                       </select>
                     </div>
                   </div>
