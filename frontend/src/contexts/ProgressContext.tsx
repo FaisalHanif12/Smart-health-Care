@@ -11,6 +11,10 @@ interface DietProgress {
   proteinConsumed: number;
   carbsConsumed: number;
   fatsConsumed: number;
+  weeklyCompletedMeals: number;
+  weeklyTotalMeals: number;
+  weeklyCaloriesConsumed: number;
+  weekStart: string;
 }
 
 interface WorkoutProgress {
@@ -31,10 +35,10 @@ interface WorkoutProgress {
 interface ProgressContextType {
   dietProgress: DietProgress;
   workoutProgress: WorkoutProgress;
-  updateDietProgress: (meals: any[]) => void;
   updateWorkoutProgress: (workoutPlan: any[]) => void;
   getTodaysDietProgress: () => number;
   getWeeklyWorkoutProgress: () => number;
+  getWeeklyDietProgress: () => number;
   getCaloriesConsumed: () => number;
   getCompletedWorkoutsThisWeek: () => number;
   resetDailyProgress: () => void;
@@ -66,6 +70,10 @@ export const ProgressProvider: React.FC<ProgressProviderProps> = ({ children }) 
     proteinConsumed: 0,
     carbsConsumed: 0,
     fatsConsumed: 0,
+    weeklyCompletedMeals: 0,
+    weeklyTotalMeals: 0,
+    weeklyCaloriesConsumed: 0,
+    weekStart: getWeekStart(new Date()).toDateString(),
   });
 
   const [workoutProgress, setWorkoutProgress] = useState<WorkoutProgress>({
@@ -121,12 +129,70 @@ export const ProgressProvider: React.FC<ProgressProviderProps> = ({ children }) 
         if (savedDietPlan) {
           try {
             const dietPlan = JSON.parse(savedDietPlan);
-            const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
-            const todaysPlan = dietPlan.find((day: any) => day.day === today);
             
-            if (todaysPlan && todaysPlan.meals) {
-              updateDietProgress(todaysPlan.meals.map((meal: any) => ({ meal })));
-            }
+            // Calculate weekly progress from all days in the plan
+            let weeklyCompletedMeals = 0;
+            let weeklyTotalMeals = 0;
+            let weeklyCaloriesConsumed = 0;
+            let todayCompletedMeals = 0;
+            let todayTotalMeals = 0;
+            let todayCaloriesConsumed = 0;
+            let todayProtein = 0;
+            let todayCarbs = 0;
+            let todayFats = 0;
+            
+            const todayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+            
+            dietPlan.forEach((day: any) => {
+              if (day.meals) {
+                const completedMeals = day.meals.filter((meal: any) => meal.completed).length;
+                const totalMeals = day.meals.length;
+                
+                weeklyCompletedMeals += completedMeals;
+                weeklyTotalMeals += totalMeals;
+                
+                // Calculate calories for completed meals only
+                const completedCalories = day.meals
+                  .filter((meal: any) => meal.completed)
+                  .reduce((sum: number, meal: any) => sum + (meal.calories || 0), 0);
+                weeklyCaloriesConsumed += completedCalories;
+                
+                // If this is today, also track daily progress
+                if (day.day === todayName) {
+                  todayCompletedMeals = completedMeals;
+                  todayTotalMeals = totalMeals;
+                  todayCaloriesConsumed = completedCalories;
+                  
+                  // Calculate macros for today
+                  day.meals.forEach((meal: any) => {
+                    if (meal.completed) {
+                      todayProtein += parseFloat(meal.protein) || 0;
+                      todayCarbs += parseFloat(meal.carbs) || 0;
+                      todayFats += parseFloat(meal.fats) || 0;
+                    }
+                  });
+                }
+              }
+            });
+            
+            // Update diet progress with both daily and weekly data
+            const today = new Date().toDateString();
+            const weekStart = getWeekStart(new Date()).toDateString();
+            
+            setDietProgress({
+              date: today,
+              completedMeals: todayCompletedMeals,
+              totalMeals: todayTotalMeals,
+              caloriesConsumed: todayCaloriesConsumed,
+              targetCalories: 2000,
+              proteinConsumed: todayProtein,
+              carbsConsumed: todayCarbs,
+              fatsConsumed: todayFats,
+              weeklyCompletedMeals,
+              weeklyTotalMeals,
+              weeklyCaloriesConsumed,
+              weekStart,
+            });
           } catch (error) {
             console.error('Error syncing diet plan:', error);
           }
@@ -163,38 +229,6 @@ export const ProgressProvider: React.FC<ProgressProviderProps> = ({ children }) 
       localStorage.setItem(`workoutProgress_${user._id}`, JSON.stringify(workoutProgress));
     }
   }, [workoutProgress, user?._id]);
-
-  const updateDietProgress = (meals: any[]) => {
-    const today = new Date().toDateString();
-    const completedMeals = meals.filter(meal => meal.meal.completed).length;
-    const totalMeals = meals.length;
-    
-    const nutrients = meals.reduce(
-      (acc, { meal }) => {
-        if (meal.completed) {
-          return {
-            calories: acc.calories + meal.calories,
-            protein: acc.protein + meal.protein,
-            carbs: acc.carbs + meal.carbs,
-            fats: acc.fats + meal.fats,
-          };
-        }
-        return acc;
-      },
-      { calories: 0, protein: 0, carbs: 0, fats: 0 }
-    );
-
-    setDietProgress({
-      date: today,
-      completedMeals,
-      totalMeals,
-      caloriesConsumed: nutrients.calories,
-      targetCalories: 2000, // This could be dynamic based on user profile
-      proteinConsumed: nutrients.protein,
-      carbsConsumed: nutrients.carbs,
-      fatsConsumed: nutrients.fats,
-    });
-  };
 
   const updateWorkoutProgress = (workoutPlan: any[]) => {
     const weekStart = getWeekStart(new Date()).toDateString();
@@ -243,6 +277,11 @@ export const ProgressProvider: React.FC<ProgressProviderProps> = ({ children }) 
     return Math.round((workoutProgress.completedWorkouts / workoutProgress.totalWorkouts) * 100);
   };
 
+  const getWeeklyDietProgress = (): number => {
+    if (dietProgress.weeklyTotalMeals === 0) return 0;
+    return Math.round((dietProgress.weeklyCompletedMeals / dietProgress.weeklyTotalMeals) * 100);
+  };
+
   const getCaloriesConsumed = (): number => {
     return dietProgress.caloriesConsumed;
   };
@@ -253,7 +292,9 @@ export const ProgressProvider: React.FC<ProgressProviderProps> = ({ children }) 
 
   const resetDailyProgress = () => {
     const today = new Date().toDateString();
-    if (dietProgress.date !== today) {
+    const currentWeekStart = getWeekStart(new Date()).toDateString();
+    
+    if (dietProgress.date !== today || dietProgress.weekStart !== currentWeekStart) {
       setDietProgress({
         date: today,
         completedMeals: 0,
@@ -263,6 +304,10 @@ export const ProgressProvider: React.FC<ProgressProviderProps> = ({ children }) 
         proteinConsumed: 0,
         carbsConsumed: 0,
         fatsConsumed: 0,
+        weeklyCompletedMeals: 0,
+        weeklyTotalMeals: 0,
+        weeklyCaloriesConsumed: 0,
+        weekStart: currentWeekStart,
       });
     }
     
@@ -282,10 +327,10 @@ export const ProgressProvider: React.FC<ProgressProviderProps> = ({ children }) 
   const value: ProgressContextType = useMemo(() => ({
     dietProgress,
     workoutProgress,
-    updateDietProgress,
     updateWorkoutProgress,
     getTodaysDietProgress,
     getWeeklyWorkoutProgress,
+    getWeeklyDietProgress,
     getCaloriesConsumed,
     getCompletedWorkoutsThisWeek,
     resetDailyProgress,

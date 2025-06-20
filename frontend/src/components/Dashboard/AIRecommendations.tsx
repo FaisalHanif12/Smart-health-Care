@@ -23,7 +23,7 @@ interface ProgressAnalysis {
 
 export default function AIRecommendations() {
   const { user } = useAuth();
-  const { dietProgress, workoutProgress } = useProgress();
+  const { dietProgress, workoutProgress, getWeeklyDietProgress } = useProgress();
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [analysis, setAnalysis] = useState<ProgressAnalysis | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -42,9 +42,7 @@ export default function AIRecommendations() {
     const currentWeek = Math.max(1, Math.min(weeksDiff + 1, totalWeeks));
 
     // Calculate compliance rates
-    const dietCompliance = dietProgress.totalMeals > 0 
-      ? (dietProgress.completedMeals / dietProgress.totalMeals) * 100 
-      : 0;
+    const dietCompliance = getWeeklyDietProgress();
     
     const workoutCompliance = workoutProgress.totalWorkouts > 0 
       ? (workoutProgress.completedWorkouts / workoutProgress.totalWorkouts) * 100 
