@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useProgress } from '../../contexts/ProgressContext';
 // Import both services
 import OpenAIService from '../../services/openaiService';
 import BackendAIService from '../../services/backendAIService';
@@ -21,6 +22,7 @@ interface WorkoutDay {
 
 export default function WorkoutPlanContent() {
   const { user } = useAuth();
+  const { archiveCurrentProgress } = useProgress();
   const [workoutPlan, setWorkoutPlan] = useState<WorkoutDay[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [generatedPrompt, setGeneratedPrompt] = useState('');
@@ -159,13 +161,14 @@ Please ensure exercises are safe, effective, and specifically designed for my go
     saveWorkoutPlan(updatedPlan);
   };
 
-
-
   const clearWorkoutPlan = () => {
     setShowClearConfirm(true);
   };
 
   const confirmClearPlan = () => {
+    // Archive current progress before clearing
+    archiveCurrentProgress();
+    
     localStorage.removeItem('workoutPlan');
     setWorkoutPlan([]);
     setWeeklyStats({ totalWorkouts: 0, completedWorkouts: 0, completionRate: 0 });
@@ -452,7 +455,7 @@ Please ensure exercises are safe, effective, and specifically designed for my go
             </div>
             
             <p className="text-gray-700 mb-6">
-              Are you sure you want to clear your workout plan? All your progress and exercise tracking will be permanently deleted.
+              Are you sure you want to clear your workout plan? Your current progress will be automatically archived and preserved. This action will only remove the plan structure so you can create a new one.
             </p>
             
             <div className="flex gap-4 justify-end">

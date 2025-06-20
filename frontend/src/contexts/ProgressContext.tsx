@@ -42,6 +42,7 @@ interface ProgressContextType {
   getCaloriesConsumed: () => number;
   getCompletedWorkoutsThisWeek: () => number;
   resetDailyProgress: () => void;
+  archiveCurrentProgress: () => void;
 }
 
 const ProgressContext = createContext<ProgressContextType | undefined>(undefined);
@@ -196,6 +197,30 @@ export const ProgressProvider: React.FC<ProgressProviderProps> = ({ children }) 
           } catch (error) {
             console.error('Error syncing diet plan:', error);
           }
+        } else {
+          // No diet plan exists - check if we have historical progress to preserve
+          const today = new Date().toDateString();
+          const weekStart = getWeekStart(new Date()).toDateString();
+          
+          // Only reset if it's a new day/week, otherwise preserve current progress
+          if (dietProgress.date !== today || dietProgress.weekStart !== weekStart) {
+            setDietProgress(prev => ({
+              ...prev,
+              date: today,
+              completedMeals: 0,
+              totalMeals: 0,
+              caloriesConsumed: 0,
+              proteinConsumed: 0,
+              carbsConsumed: 0,
+              fatsConsumed: 0,
+              // Only reset weekly data if it's a new week
+              weeklyCompletedMeals: prev.weekStart !== weekStart ? 0 : prev.weeklyCompletedMeals,
+              weeklyTotalMeals: prev.weekStart !== weekStart ? 0 : prev.weeklyTotalMeals,
+              weeklyCaloriesConsumed: prev.weekStart !== weekStart ? 0 : prev.weeklyCaloriesConsumed,
+              weekStart,
+            }));
+          }
+          // If same day/week, preserve existing progress data
         }
 
         const savedWorkoutPlan = localStorage.getItem('workoutPlan');
@@ -206,6 +231,21 @@ export const ProgressProvider: React.FC<ProgressProviderProps> = ({ children }) 
           } catch (error) {
             console.error('Error syncing workout plan:', error);
           }
+        } else {
+          // No workout plan exists - preserve current week's progress if it's the same week
+          const currentWeekStart = getWeekStart(new Date()).toDateString();
+          if (workoutProgress.weekStart !== currentWeekStart) {
+            // New week - reset progress
+            setWorkoutProgress(prev => ({
+              weekStart: currentWeekStart,
+              completedWorkouts: 0,
+              totalWorkouts: 0,
+              completedExercises: 0,
+              totalExercises: 0,
+              workoutDays: {},
+            }));
+          }
+          // Same week - keep existing progress even if plan is cleared
         }
       };
 
@@ -324,6 +364,43 @@ export const ProgressProvider: React.FC<ProgressProviderProps> = ({ children }) 
     }
   };
 
+  const archiveCurrentProgress = () => {
+    if (!user?._id) return;
+    
+    const archiveData = {
+      timestamp: new Date().toISOString(),
+      dietProgress: { ...dietProgress },
+      workoutProgress: { ...workoutProgress },
+      weekEnding: dietProgress.weekStart,
+    };
+    
+    // Get existing archives
+    const existingArchives = localStorage.getItem(`progressArchive_${user._id}`);
+    let archives = [];
+    
+    if (existingArchives) {
+      try {
+        archives = JSON.parse(existingArchives);
+      } catch (error) {
+        console.error('Error parsing progress archives:', error);
+        archives = [];
+      }
+    }
+    
+    // Add current progress to archives
+    archives.unshift(archiveData); // Add to beginning
+    
+    // Keep only last 10 weeks of archives to prevent localStorage bloat
+    if (archives.length > 10) {
+      archives = archives.slice(0, 10);
+    }
+    
+    // Save back to localStorage
+    localStorage.setItem(`progressArchive_${user._id}`, JSON.stringify(archives));
+    
+    console.log('✅ Progress archived successfully');
+  };
+
   const value: ProgressContextType = useMemo(() => ({
     dietProgress,
     workoutProgress,
@@ -334,6 +411,7 @@ export const ProgressProvider: React.FC<ProgressProviderProps> = ({ children }) 
     getCaloriesConsumed,
     getCompletedWorkoutsThisWeek,
     resetDailyProgress,
+    archiveCurrentProgress,
   }), [dietProgress, workoutProgress]);
 
   return (

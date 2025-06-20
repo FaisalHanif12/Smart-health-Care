@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useProgress } from '../../contexts/ProgressContext';
 // Import both services
 import OpenAIService from '../../services/openaiService';
 import BackendAIService from '../../services/backendAIService';
@@ -23,6 +24,7 @@ interface DietDay {
 
 export default function DietPlanContent() {
   const { user } = useAuth();
+  const { archiveCurrentProgress } = useProgress();
   const [dietPlan, setDietPlan] = useState<DietDay[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showPromptDialog, setShowPromptDialog] = useState(false);
@@ -212,13 +214,14 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
     saveDietPlan(updatedPlan);
   };
 
-
-
   const clearDietPlan = () => {
     setShowClearConfirm(true);
   };
 
   const confirmClearPlan = () => {
+    // Archive current progress before clearing
+    archiveCurrentProgress();
+    
     localStorage.removeItem('dietPlan');
     setDietPlan([]);
     setWeeklyStats({ totalDays: 0, completedDays: 0, avgCalories: 0, completionRate: 0 });
@@ -439,7 +442,7 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
               disabled={isLoading}
               className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
             >
-              {isLoading ? 'Generating with AI...' : '🤖 Create Your 6-Day Plan with AI'}
+              {isLoading ? 'Generating with AI...' : '🤖 Create Plan with AI'}
             </button>
             <button
               onClick={() => setShowPromptDialog(true)}
@@ -516,7 +519,7 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
             </div>
             
             <p className="text-gray-700 mb-6">
-              Are you sure you want to clear your diet plan? All your progress and meal tracking will be permanently deleted.
+              Are you sure you want to clear your diet plan? Your current progress will be automatically archived and preserved. This action will only remove the plan structure so you can create a new one.
             </p>
             
             <div className="flex gap-4 justify-end">
