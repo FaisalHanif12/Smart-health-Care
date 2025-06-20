@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import { useAuth } from './AuthContext';
+import { PlanRenewalService } from '../services/planRenewalService';
 
 interface DietProgress {
   date: string;
@@ -236,14 +237,14 @@ export const ProgressProvider: React.FC<ProgressProviderProps> = ({ children }) 
           const currentWeekStart = getWeekStart(new Date()).toDateString();
           if (workoutProgress.weekStart !== currentWeekStart) {
             // New week - reset progress
-            setWorkoutProgress(prev => ({
+            setWorkoutProgress({
               weekStart: currentWeekStart,
               completedWorkouts: 0,
               totalWorkouts: 0,
               completedExercises: 0,
               totalExercises: 0,
               workoutDays: {},
-            }));
+            });
           }
           // Same week - keep existing progress even if plan is cleared
         }
@@ -251,8 +252,24 @@ export const ProgressProvider: React.FC<ProgressProviderProps> = ({ children }) 
 
       syncWithPlans();
       
-      // Set up interval to check for plan updates
-      const interval = setInterval(syncWithPlans, 5000); // Check every 5 seconds
+      // Check for plan renewals and initialize renewal service
+      const checkPlanRenewals = async () => {
+        if (user?.profile) {
+          const renewalService = PlanRenewalService.getInstance();
+          await renewalService.checkAndRenewPlans(user.profile);
+          
+          // Request notification permission on first load
+          await renewalService.requestNotificationPermission();
+        }
+      };
+      
+      checkPlanRenewals();
+      
+      // Set up interval to check for plan updates and renewals
+      const interval = setInterval(() => {
+        syncWithPlans();
+        checkPlanRenewals();
+      }, 5000); // Check every 5 seconds
       return () => clearInterval(interval);
     }
   }, [user?._id]);

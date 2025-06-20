@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useProgress } from '../../contexts/ProgressContext';
 import AIRecommendations from './AIRecommendations';
+import PlanRenewalStatus from './PlanRenewalStatus';
 
 interface ProgressData {
   value: number;
@@ -189,6 +190,9 @@ export default function DashboardContentSimple() {
           </div>
         </div>
       )}
+
+      {/* Plan Renewal Status */}
+      <PlanRenewalStatus />
 
       {/* Progress Overview Section */}
       {shouldShowSection('progress-overview') && (

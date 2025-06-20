@@ -4,6 +4,7 @@ import { useProgress } from '../../contexts/ProgressContext';
 // Import both services
 import OpenAIService from '../../services/openaiService';
 import BackendAIService from '../../services/backendAIService';
+import { PlanRenewalService } from '../../services/planRenewalService';
 
 interface Exercise {
   name: string;
@@ -141,6 +142,12 @@ Please ensure exercises are safe, effective, and specifically designed for my go
       }));
 
       saveWorkoutPlan(convertedPlan);
+      
+      // Initialize plan metadata for auto-renewal system
+      const renewalService = PlanRenewalService.getInstance();
+      const planDuration = localStorage.getItem('planDuration') || '3 months';
+      const totalWeeks = planDuration.includes('3') ? 12 : planDuration.includes('6') ? 24 : 52;
+      renewalService.initializePlanMetadata('workout', totalWeeks);
     } catch (error) {
       console.error('❌ Error generating workout plan:', error);
       alert(`Failed to generate workout plan: ${error instanceof Error ? error.message : 'Unknown error'}. Please check your API configuration.`);
@@ -239,6 +246,12 @@ Please ensure exercises are safe, effective, and specifically designed for my go
       }));
 
       saveWorkoutPlan(convertedPlan);
+      
+      // Initialize plan metadata for auto-renewal system
+      const renewalService = PlanRenewalService.getInstance();
+      const planDuration = localStorage.getItem('planDuration') || '3 months';
+      const totalWeeks = planDuration.includes('3') ? 12 : planDuration.includes('6') ? 24 : 52;
+      renewalService.initializePlanMetadata('workout', totalWeeks);
     } catch (error) {
       console.error('❌ Error generating workout plan:', error);
       alert(`Failed to generate workout plan: ${error instanceof Error ? error.message : 'Unknown error'}. Please check your API configuration.`);

@@ -4,6 +4,7 @@ import { useProgress } from '../../contexts/ProgressContext';
 // Import both services
 import OpenAIService from '../../services/openaiService';
 import BackendAIService from '../../services/backendAIService';
+import { PlanRenewalService } from '../../services/planRenewalService';
 
 interface Meal {
   name: string;
@@ -193,6 +194,13 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
       });
 
       saveDietPlan(convertedPlan);
+      
+      // Initialize plan metadata for auto-renewal system
+      const renewalService = PlanRenewalService.getInstance();
+      const planDuration = localStorage.getItem('planDuration') || '3 months';
+      const totalWeeks = planDuration.includes('3') ? 12 : planDuration.includes('6') ? 24 : 52;
+      renewalService.initializePlanMetadata('diet', totalWeeks);
+      
       setShowPromptDialog(false);
     } catch (error) {
       console.error('❌ Error generating diet plan:', error);
