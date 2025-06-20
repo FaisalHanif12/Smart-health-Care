@@ -4,6 +4,9 @@ import Dashboard from '../components/Dashboard/Dashboard';
 import WorkoutPlanContent from '../components/Dashboard/WorkoutPlanContent';
 import DietPlanContent from '../components/Dashboard/DietPlanContent';
 import StoreContent from '../components/Dashboard/StoreContent';
+import CartContent from '../components/Dashboard/CartContent';
+import PaymentContent from '../components/Dashboard/PaymentContent';
+import PaymentSuccessContent from '../components/Dashboard/PaymentSuccessContent';
 import ProfileContent from '../components/Dashboard/ProfileContent';
 
 export default function DashboardPage() {
@@ -14,6 +17,9 @@ export default function DashboardPage() {
         <Route path="/workout" element={<WorkoutPlanContent />} />
         <Route path="/diet" element={<DietPlanContent />} />
         <Route path="/store" element={<StoreContent />} />
+        <Route path="/cart" element={<CartContent />} />
+        <Route path="/payment" element={<PaymentContent />} />
+        <Route path="/payment-success" element={<PaymentSuccessContent />} />
         <Route path="/profile" element={<ProfileContent />} />
       </Routes>
     </DashboardLayout>
