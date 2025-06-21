@@ -1,4 +1,6 @@
-const API_BASE_URL = '/api';
+import { getAPIBaseURL } from '../config/api';
+
+const API_BASE_URL = getAPIBaseURL();
 
 // API response types
 export interface ApiResponse<T = any> {

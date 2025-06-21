@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface PaymentFormData {
   cardNumber: string;
@@ -31,6 +32,7 @@ interface FormErrors {
 
 export default function PaymentContent() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [formData, setFormData] = useState<PaymentFormData>({
     cardNumber: '',
     expiryDate: '',
@@ -53,7 +55,8 @@ export default function PaymentContent() {
 
   useEffect(() => {
     // Load cart data and calculate actual total
-    const savedCart = localStorage.getItem('cart');
+    if (!user?._id) return;
+    const savedCart = localStorage.getItem(`cart_${user._id}`);
     if (savedCart) {
       const cart = JSON.parse(savedCart);
       
@@ -84,7 +87,7 @@ export default function PaymentContent() {
       setCartItems(cartProducts);
       setCartTotal(actualTotal);
     }
-  }, []);
+  }, [user]);
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -215,7 +218,9 @@ export default function PaymentContent() {
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       // Clear cart
-      localStorage.removeItem('cart');
+      if (user?._id) {
+        localStorage.removeItem(`cart_${user._id}`);
+      }
       
       // Navigate to success page
       navigate('/dashboard/payment-success');

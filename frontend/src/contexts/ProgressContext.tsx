@@ -127,7 +127,9 @@ export const ProgressProvider: React.FC<ProgressProviderProps> = ({ children }) 
 
       // Auto-sync with actual diet and workout plans
       const syncWithPlans = () => {
-        const savedDietPlan = localStorage.getItem('dietPlan');
+        if (!user?._id) return; // Don't sync if no user
+        
+        const savedDietPlan = localStorage.getItem(`dietPlan_${user._id}`);
         if (savedDietPlan) {
           try {
             const dietPlan = JSON.parse(savedDietPlan);
@@ -198,33 +200,10 @@ export const ProgressProvider: React.FC<ProgressProviderProps> = ({ children }) 
           } catch (error) {
             console.error('Error syncing diet plan:', error);
           }
-        } else {
-          // No diet plan exists - check if we have historical progress to preserve
-          const today = new Date().toDateString();
-          const weekStart = getWeekStart(new Date()).toDateString();
-          
-          // Only reset if it's a new day/week, otherwise preserve current progress
-          if (dietProgress.date !== today || dietProgress.weekStart !== weekStart) {
-            setDietProgress(prev => ({
-              ...prev,
-              date: today,
-              completedMeals: 0,
-              totalMeals: 0,
-              caloriesConsumed: 0,
-              proteinConsumed: 0,
-              carbsConsumed: 0,
-              fatsConsumed: 0,
-              // Only reset weekly data if it's a new week
-              weeklyCompletedMeals: prev.weekStart !== weekStart ? 0 : prev.weeklyCompletedMeals,
-              weeklyTotalMeals: prev.weekStart !== weekStart ? 0 : prev.weeklyTotalMeals,
-              weeklyCaloriesConsumed: prev.weekStart !== weekStart ? 0 : prev.weeklyCaloriesConsumed,
-              weekStart,
-            }));
-          }
-          // If same day/week, preserve existing progress data
         }
 
-        const savedWorkoutPlan = localStorage.getItem('workoutPlan');
+        // Sync workout plan
+        const savedWorkoutPlan = localStorage.getItem(`workoutPlan_${user._id}`);
         if (savedWorkoutPlan) {
           try {
             const workoutPlan = JSON.parse(savedWorkoutPlan);
@@ -232,21 +211,6 @@ export const ProgressProvider: React.FC<ProgressProviderProps> = ({ children }) 
           } catch (error) {
             console.error('Error syncing workout plan:', error);
           }
-        } else {
-          // No workout plan exists - preserve current week's progress if it's the same week
-          const currentWeekStart = getWeekStart(new Date()).toDateString();
-          if (workoutProgress.weekStart !== currentWeekStart) {
-            // New week - reset progress
-            setWorkoutProgress({
-              weekStart: currentWeekStart,
-              completedWorkouts: 0,
-              totalWorkouts: 0,
-              completedExercises: 0,
-              totalExercises: 0,
-              workoutDays: {},
-            });
-          }
-          // Same week - keep existing progress even if plan is cleared
         }
       };
 
@@ -256,7 +220,7 @@ export const ProgressProvider: React.FC<ProgressProviderProps> = ({ children }) 
       const checkPlanRenewals = async () => {
         if (user?.profile) {
           const renewalService = PlanRenewalService.getInstance();
-          await renewalService.checkAndRenewPlans(user.profile);
+          await renewalService.checkAndRenewPlans(user.profile, user._id);
           
           // Request notification permission on first load
           await renewalService.requestNotificationPermission();

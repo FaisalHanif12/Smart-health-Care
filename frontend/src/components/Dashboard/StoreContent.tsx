@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface Product {
   id: number;
@@ -13,6 +14,7 @@ interface Product {
 
 export default function StoreContent() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [showMoreItems, setShowMoreItems] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   
@@ -178,20 +180,23 @@ export default function StoreContent() {
     : allProducts.filter(product => product.category === selectedCategory);
 
   const [cart, setCart] = useState<number[]>(() => {
-    const savedCart = localStorage.getItem('cart');
+    if (!user?._id) return [];
+    const savedCart = localStorage.getItem(`cart_${user._id}`);
     return savedCart ? JSON.parse(savedCart) : [];
   });
 
   const addToCart = (productId: number) => {
+    if (!user?._id) return;
     const newCart = [...cart, productId];
     setCart(newCart);
-    localStorage.setItem('cart', JSON.stringify(newCart));
+    localStorage.setItem(`cart_${user._id}`, JSON.stringify(newCart));
   };
 
   const removeFromCart = (productId: number) => {
+    if (!user?._id) return;
     const newCart = cart.filter(id => id !== productId);
     setCart(newCart);
-    localStorage.setItem('cart', JSON.stringify(newCart));
+    localStorage.setItem(`cart_${user._id}`, JSON.stringify(newCart));
   };
 
   const isInCart = (productId: number) => cart.includes(productId);

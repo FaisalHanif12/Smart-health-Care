@@ -5,8 +5,11 @@ export const API_CONFIG = {
   // In production, this should be moved to backend for security
   OPENAI_API_KEY: import.meta.env.VITE_OPENAI_API_KEY || '',
   
-  // Backend API URL - Use relative path to leverage Vite proxy
-  BACKEND_URL: '',
+  // Backend API URL - Use environment variable with fallback
+  // Set VITE_BACKEND_URL in your .env file or environment
+  // Production: https://smart-health-care-8isu.onrender.com
+  // Development: http://localhost:5000
+  BACKEND_URL: import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000',
   
   // OpenAI API settings
   OPENAI: {
@@ -14,6 +17,11 @@ export const API_CONFIG = {
     MAX_TOKENS: 2000,
     TEMPERATURE: 0.7,
   }
+};
+
+// Helper function to get the API base URL
+export const getAPIBaseURL = (): string => {
+  return `${API_CONFIG.BACKEND_URL}/api`;
 };
 
 // Helper function to check if OpenAI API key is configured

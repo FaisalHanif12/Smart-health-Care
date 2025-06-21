@@ -31,7 +31,7 @@ export default function AIRecommendations() {
   // Calculate plan analysis
   const calculateProgressAnalysis = (): ProgressAnalysis => {
     // Get plan duration from localStorage or user preferences (defaulting to 3 months)
-    const planDuration = localStorage.getItem('planDuration') || '3 months';
+    const planDuration = localStorage.getItem(`planDuration_${user?._id}`) || '3 months';
     const totalWeeks = planDuration.includes('3') ? 12 : planDuration.includes('6') ? 24 : 52;
     
     // Calculate current week (for demo, using date-based calculation)
@@ -332,7 +332,9 @@ Focus on:
           <select
             value={analysis.planDuration}
             onChange={(e) => {
-              localStorage.setItem('planDuration', e.target.value);
+                                    if (user?._id) {
+                        localStorage.setItem(`planDuration_${user._id}`, e.target.value);
+                      }
               const newAnalysis = calculateProgressAnalysis();
               setAnalysis(newAnalysis);
               generateAIRecommendations(newAnalysis);

@@ -63,7 +63,9 @@ Please ensure exercises are safe, effective, and specifically designed for my go
 
   // Load saved workout plan from localStorage
   useEffect(() => {
-    const savedPlan = localStorage.getItem('workoutPlan');
+    if (!user?._id) return; // Don't load if no user
+    
+    const savedPlan = localStorage.getItem(`workoutPlan_${user._id}`);
     if (savedPlan) {
       try {
         const plan = JSON.parse(savedPlan);
@@ -92,7 +94,9 @@ Please ensure exercises are safe, effective, and specifically designed for my go
   };
 
   const saveWorkoutPlan = (plan: WorkoutDay[]) => {
-    localStorage.setItem('workoutPlan', JSON.stringify(plan));
+    if (!user?._id) return; // Don't save if no user
+    
+    localStorage.setItem(`workoutPlan_${user._id}`, JSON.stringify(plan));
     setWorkoutPlan(plan);
     calculateStats(plan);
   };
@@ -145,9 +149,9 @@ Please ensure exercises are safe, effective, and specifically designed for my go
       
       // Initialize plan metadata for auto-renewal system
       const renewalService = PlanRenewalService.getInstance();
-      const planDuration = localStorage.getItem('planDuration') || '3 months';
+      const planDuration = localStorage.getItem(`planDuration_${user?._id}`) || '3 months';
       const totalWeeks = planDuration.includes('3') ? 12 : planDuration.includes('6') ? 24 : 52;
-      renewalService.initializePlanMetadata('workout', totalWeeks);
+      renewalService.initializePlanMetadata('workout', totalWeeks, user?._id);
     } catch (error) {
       console.error('❌ Error generating workout plan:', error);
       alert(`Failed to generate workout plan: ${error instanceof Error ? error.message : 'Unknown error'}. Please check your API configuration.`);
@@ -173,10 +177,12 @@ Please ensure exercises are safe, effective, and specifically designed for my go
   };
 
   const confirmClearPlan = () => {
+    if (!user?._id) return; // Don't clear if no user
+    
     // Archive current progress before clearing
     archiveCurrentProgress();
     
-    localStorage.removeItem('workoutPlan');
+    localStorage.removeItem(`workoutPlan_${user._id}`);
     setWorkoutPlan([]);
     setWeeklyStats({ totalWorkouts: 0, completedWorkouts: 0, completionRate: 0 });
     setShowClearConfirm(false);
@@ -249,9 +255,9 @@ Please ensure exercises are safe, effective, and specifically designed for my go
       
       // Initialize plan metadata for auto-renewal system
       const renewalService = PlanRenewalService.getInstance();
-      const planDuration = localStorage.getItem('planDuration') || '3 months';
+      const planDuration = localStorage.getItem(`planDuration_${user?._id}`) || '3 months';
       const totalWeeks = planDuration.includes('3') ? 12 : planDuration.includes('6') ? 24 : 52;
-      renewalService.initializePlanMetadata('workout', totalWeeks);
+      renewalService.initializePlanMetadata('workout', totalWeeks, user?._id);
     } catch (error) {
       console.error('❌ Error generating workout plan:', error);
       alert(`Failed to generate workout plan: ${error instanceof Error ? error.message : 'Unknown error'}. Please check your API configuration.`);

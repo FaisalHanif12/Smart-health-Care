@@ -49,57 +49,11 @@ export class PlanRenewalService {
   }
 
   /**
-   * Check if plans need renewal and automatically renew them
-   */
-  public async checkAndRenewPlans(userProfile: any): Promise<void> {
-    await Promise.all([
-      this.checkDietPlanRenewal(userProfile),
-      this.checkWorkoutPlanRenewal(userProfile)
-    ]);
-  }
-
-  /**
-   * Check if diet plan needs renewal (every 7 days)
-   */
-  private async checkDietPlanRenewal(userProfile: any): Promise<void> {
-    const metadata = this.getDietPlanMetadata();
-    const now = new Date();
-    
-    if (!metadata) {
-      return;
-    }
-
-    const renewalDate = new Date(metadata.renewalDate);
-    
-    if (now >= renewalDate && metadata.currentWeek < metadata.totalWeeks) {
-      console.log(`🔄 Auto-renewing diet plan - Week ${metadata.currentWeek + 1}`);
-      await this.renewDietPlan(userProfile, metadata);
-    }
-  }
-
-  /**
-   * Check if workout plan needs renewal (every 6 days)
-   */
-  private async checkWorkoutPlanRenewal(userProfile: any): Promise<void> {
-    const metadata = this.getWorkoutPlanMetadata();
-    const now = new Date();
-    
-    if (!metadata) {
-      return;
-    }
-
-    const renewalDate = new Date(metadata.renewalDate);
-    
-    if (now >= renewalDate && metadata.currentWeek < metadata.totalWeeks) {
-      console.log(`🔄 Auto-renewing workout plan - Week ${metadata.currentWeek + 1}`);
-      await this.renewWorkoutPlan(userProfile, metadata);
-    }
-  }
-
-  /**
    * Initialize plan metadata when a new plan is created
    */
-  public initializePlanMetadata(planType: 'diet' | 'workout', totalWeeks: number = 12): void {
+  public initializePlanMetadata(planType: 'diet' | 'workout', totalWeeks: number = 12, userId?: string): void {
+    if (!userId) return; // Don't initialize if no user
+    
     const now = new Date();
     const renewalDays = planType === 'diet' ? 7 : 6;
     const renewalDate = new Date(now.getTime() + (renewalDays * 24 * 60 * 60 * 1000));
@@ -113,26 +67,77 @@ export class PlanRenewalService {
       lastRenewalDate: now.toISOString()
     };
     
-    localStorage.setItem(`${planType}PlanMetadata`, JSON.stringify(metadata));
+    localStorage.setItem(`${planType}PlanMetadata_${userId}`, JSON.stringify(metadata));
     
-    if (!localStorage.getItem('planStartDate')) {
-      localStorage.setItem('planStartDate', now.toISOString());
+    if (!localStorage.getItem(`planStartDate_${userId}`)) {
+      localStorage.setItem(`planStartDate_${userId}`, now.toISOString());
     }
     
-    console.log(`✅ Initialized ${planType} plan metadata:`, metadata);
+    console.log(`✅ Initialized ${planType} plan metadata for user ${userId}:`, metadata);
   }
 
-  private getDietPlanMetadata(): PlanMetadata | null {
-    const stored = localStorage.getItem('dietPlanMetadata');
+  private getDietPlanMetadata(userId?: string): PlanMetadata | null {
+    if (!userId) return null;
+    const stored = localStorage.getItem(`dietPlanMetadata_${userId}`);
     return stored ? JSON.parse(stored) : null;
   }
 
-  private getWorkoutPlanMetadata(): PlanMetadata | null {
-    const stored = localStorage.getItem('workoutPlanMetadata');
+  private getWorkoutPlanMetadata(userId?: string): PlanMetadata | null {
+    if (!userId) return null;
+    const stored = localStorage.getItem(`workoutPlanMetadata_${userId}`);
     return stored ? JSON.parse(stored) : null;
   }
 
-  private async renewDietPlan(userProfile: any, metadata: PlanMetadata): Promise<void> {
+  /**
+   * Check if plans need renewal and automatically renew them
+   */
+  public async checkAndRenewPlans(userProfile: any, userId?: string): Promise<void> {
+    if (!userId) return;
+    await Promise.all([
+      this.checkDietPlanRenewal(userProfile, userId),
+      this.checkWorkoutPlanRenewal(userProfile, userId)
+    ]);
+  }
+
+  /**
+   * Check if diet plan needs renewal (every 7 days)
+   */
+  private async checkDietPlanRenewal(userProfile: any, userId: string): Promise<void> {
+    const metadata = this.getDietPlanMetadata(userId);
+    const now = new Date();
+    
+    if (!metadata) {
+      return;
+    }
+
+    const renewalDate = new Date(metadata.renewalDate);
+    
+    if (now >= renewalDate && metadata.currentWeek < metadata.totalWeeks) {
+      console.log(`🔄 Auto-renewing diet plan - Week ${metadata.currentWeek + 1} for user ${userId}`);
+      await this.renewDietPlan(userProfile, metadata, userId);
+    }
+  }
+
+  /**
+   * Check if workout plan needs renewal (every 6 days)
+   */
+  private async checkWorkoutPlanRenewal(userProfile: any, userId: string): Promise<void> {
+    const metadata = this.getWorkoutPlanMetadata(userId);
+    const now = new Date();
+    
+    if (!metadata) {
+      return;
+    }
+
+    const renewalDate = new Date(metadata.renewalDate);
+    
+    if (now >= renewalDate && metadata.currentWeek < metadata.totalWeeks) {
+      console.log(`🔄 Auto-renewing workout plan - Week ${metadata.currentWeek + 1} for user ${userId}`);
+      await this.renewWorkoutPlan(userProfile, metadata, userId);
+    }
+  }
+
+  private async renewDietPlan(userProfile: any, metadata: PlanMetadata, userId: string): Promise<void> {
     try {
       const newWeek = metadata.currentWeek + 1;
       const prompt = this.generateProgressiveDietPrompt(userProfile, newWeek, metadata.totalWeeks);
@@ -152,9 +157,9 @@ export class PlanRenewalService {
 
       const convertedPlan = this.convertDietPlanToAppFormat(dietResponse, newWeek);
       
-      this.archiveCurrentPlan('diet', metadata);
+      this.archiveCurrentPlan('diet', metadata, userId);
       
-      localStorage.setItem('dietPlan', JSON.stringify(convertedPlan));
+      localStorage.setItem(`dietPlan_${userId}`, JSON.stringify(convertedPlan));
       
       const now = new Date();
       const nextRenewalDate = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000));
@@ -166,7 +171,7 @@ export class PlanRenewalService {
         lastRenewalDate: now.toISOString()
       };
       
-      localStorage.setItem('dietPlanMetadata', JSON.stringify(updatedMetadata));
+      localStorage.setItem(`dietPlanMetadata_${userId}`, JSON.stringify(updatedMetadata));
       
       this.showRenewalNotification('diet', newWeek);
       
@@ -175,7 +180,7 @@ export class PlanRenewalService {
     }
   }
 
-  private async renewWorkoutPlan(userProfile: any, metadata: PlanMetadata): Promise<void> {
+  private async renewWorkoutPlan(userProfile: any, metadata: PlanMetadata, userId: string): Promise<void> {
     try {
       const newWeek = metadata.currentWeek + 1;
       const prompt = this.generateProgressiveWorkoutPrompt(userProfile, newWeek, metadata.totalWeeks);
@@ -195,9 +200,9 @@ export class PlanRenewalService {
 
       const convertedPlan = this.convertWorkoutPlanToAppFormat(workoutResponse, newWeek);
       
-      this.archiveCurrentPlan('workout', metadata);
+      this.archiveCurrentPlan('workout', metadata, userId);
       
-      localStorage.setItem('workoutPlan', JSON.stringify(convertedPlan));
+      localStorage.setItem(`workoutPlan_${userId}`, JSON.stringify(convertedPlan));
       
       const now = new Date();
       const nextRenewalDate = new Date(now.getTime() + (6 * 24 * 60 * 60 * 1000));
@@ -209,7 +214,7 @@ export class PlanRenewalService {
         lastRenewalDate: now.toISOString()
       };
       
-      localStorage.setItem('workoutPlanMetadata', JSON.stringify(updatedMetadata));
+      localStorage.setItem(`workoutPlanMetadata_${userId}`, JSON.stringify(updatedMetadata));
       
       this.showRenewalNotification('workout', newWeek);
       
@@ -367,10 +372,10 @@ Please ensure workouts are progressively more challenging than Week ${week - 1} 
     });
   }
 
-  private archiveCurrentPlan(planType: 'diet' | 'workout', metadata: PlanMetadata): void {
-    const currentPlan = localStorage.getItem(`${planType}Plan`);
+  private archiveCurrentPlan(planType: 'diet' | 'workout', metadata: PlanMetadata, userId: string): void {
+    const currentPlan = localStorage.getItem(`${planType}Plan_${userId}`);
     if (currentPlan) {
-      const archiveKey = `${planType}PlanArchive_week${metadata.currentWeek}`;
+      const archiveKey = `${planType}PlanArchive_week${metadata.currentWeek}_${userId}`;
       const archiveData = {
         week: metadata.currentWeek,
         plan: JSON.parse(currentPlan),
@@ -378,7 +383,7 @@ Please ensure workouts are progressively more challenging than Week ${week - 1} 
         metadata: { ...metadata }
       };
       localStorage.setItem(archiveKey, JSON.stringify(archiveData));
-      console.log(`📦 Archived ${planType} plan for Week ${metadata.currentWeek}`);
+      console.log(`📦 Archived ${planType} plan for Week ${metadata.currentWeek} for user ${userId}`);
     }
   }
 
@@ -411,31 +416,17 @@ Please ensure workouts are progressively more challenging than Week ${week - 1} 
     localStorage.setItem('planRenewalNotifications', JSON.stringify(notifications));
   }
 
-  public getCurrentWeek(planType: 'diet' | 'workout'): number {
-    const metadata = planType === 'diet' ? this.getDietPlanMetadata() : this.getWorkoutPlanMetadata();
+  public getCurrentWeek(planType: 'diet' | 'workout', userId?: string): number {
+    if (!userId) return 1;
+    const metadata = planType === 'diet' ? this.getDietPlanMetadata(userId) : this.getWorkoutPlanMetadata(userId);
     return metadata?.currentWeek || 1;
   }
 
-  public getRenewalStatus(): { diet: any, workout: any } {
-    const dietMetadata = this.getDietPlanMetadata();
-    const workoutMetadata = this.getWorkoutPlanMetadata();
-    const now = new Date();
-    
+  public getRenewalStatus(userId?: string): { diet: any, workout: any } {
+    if (!userId) return { diet: null, workout: null };
     return {
-      diet: dietMetadata ? {
-        currentWeek: dietMetadata.currentWeek,
-        totalWeeks: dietMetadata.totalWeeks,
-        renewalDate: dietMetadata.renewalDate,
-        daysUntilRenewal: Math.ceil((new Date(dietMetadata.renewalDate).getTime() - now.getTime()) / (24 * 60 * 60 * 1000)),
-        needsRenewal: now >= new Date(dietMetadata.renewalDate)
-      } : null,
-      workout: workoutMetadata ? {
-        currentWeek: workoutMetadata.currentWeek,
-        totalWeeks: workoutMetadata.totalWeeks,
-        renewalDate: workoutMetadata.renewalDate,
-        daysUntilRenewal: Math.ceil((new Date(workoutMetadata.renewalDate).getTime() - now.getTime()) / (24 * 60 * 60 * 1000)),
-        needsRenewal: now >= new Date(workoutMetadata.renewalDate)
-      } : null
+      diet: this.getDietPlanMetadata(userId),
+      workout: this.getWorkoutPlanMetadata(userId)
     };
   }
 

@@ -1,8 +1,0 @@
-# Environment Variables Template
-# Copy this file to .env and fill in your actual values
-
-# OpenAI API Key for AI features
-VITE_OPENAI_API_KEY=your_openai_api_key_here
-
-# Backend API URL (optional, defaults to localhost:5000)
-VITE_BACKEND_URL=http://localhost:5000 

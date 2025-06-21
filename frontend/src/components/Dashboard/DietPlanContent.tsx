@@ -69,7 +69,9 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
 
   // Load saved diet plan from localStorage
   useEffect(() => {
-    const savedPlan = localStorage.getItem('dietPlan');
+    if (!user?._id) return; // Don't load if no user
+    
+    const savedPlan = localStorage.getItem(`dietPlan_${user._id}`);
     if (savedPlan) {
       try {
         const plan = JSON.parse(savedPlan);
@@ -102,7 +104,9 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
   };
 
   const saveDietPlan = (plan: DietDay[]) => {
-    localStorage.setItem('dietPlan', JSON.stringify(plan));
+    if (!user?._id) return; // Don't save if no user
+    
+    localStorage.setItem(`dietPlan_${user._id}`, JSON.stringify(plan));
     setDietPlan(plan);
     calculateStats(plan);
   };
@@ -197,9 +201,9 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
       
       // Initialize plan metadata for auto-renewal system
       const renewalService = PlanRenewalService.getInstance();
-      const planDuration = localStorage.getItem('planDuration') || '3 months';
+      const planDuration = localStorage.getItem(`planDuration_${user?._id}`) || '3 months';
       const totalWeeks = planDuration.includes('3') ? 12 : planDuration.includes('6') ? 24 : 52;
-      renewalService.initializePlanMetadata('diet', totalWeeks);
+      renewalService.initializePlanMetadata('diet', totalWeeks, user?._id);
       
       setShowPromptDialog(false);
     } catch (error) {
@@ -227,10 +231,12 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
   };
 
   const confirmClearPlan = () => {
+    if (!user?._id) return; // Don't clear if no user
+    
     // Archive current progress before clearing
     archiveCurrentProgress();
     
-    localStorage.removeItem('dietPlan');
+    localStorage.removeItem(`dietPlan_${user._id}`);
     setDietPlan([]);
     setWeeklyStats({ totalDays: 0, completedDays: 0, avgCalories: 0, completionRate: 0 });
     setShowClearConfirm(false);
@@ -452,7 +458,7 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
             >
               {isLoading ? 'Generating with AI...' : '🤖 Create Plan with AI'}
             </button>
-            <button
+            <button 
               onClick={() => setShowPromptDialog(true)}
               className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
             >

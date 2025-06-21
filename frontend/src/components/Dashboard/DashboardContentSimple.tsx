@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useProgress } from '../../contexts/ProgressContext';
+import { useAuth } from '../../contexts/AuthContext';
 import AIRecommendations from './AIRecommendations';
 import PlanRenewalStatus from './PlanRenewalStatus';
 
@@ -11,6 +12,7 @@ interface ProgressData {
 }
 
 export default function DashboardContentSimple() {
+  const { user } = useAuth();
   const [waterIntake, setWaterIntake] = useState<ProgressData>({ value: 5, max: 8, percentage: 62.5 });
   const [weeklyProgress, setWeeklyProgress] = useState<number[]>([]);
   const [dailyCalories, setDailyCalories] = useState<number[]>([]);
@@ -27,8 +29,10 @@ export default function DashboardContentSimple() {
 
   // Load actual data from localStorage and sync with diet/workout plans
   useEffect(() => {
+    if (!user?._id) return; // Don't load if no user
+    
     // Load diet plan data
-    const savedDietPlan = localStorage.getItem('dietPlan');
+    const savedDietPlan = localStorage.getItem(`dietPlan_${user._id}`);
     if (savedDietPlan) {
       try {
         const dietPlan = JSON.parse(savedDietPlan);
@@ -46,7 +50,7 @@ export default function DashboardContentSimple() {
     }
 
     // Load workout plan data
-    const savedWorkoutPlan = localStorage.getItem('workoutPlan');
+    const savedWorkoutPlan = localStorage.getItem(`workoutPlan_${user._id}`);
     if (savedWorkoutPlan) {
       try {
         const workoutPlan = JSON.parse(savedWorkoutPlan);
@@ -63,9 +67,11 @@ export default function DashboardContentSimple() {
         console.error('Error loading workout plan:', error);
       }
     }
-  }, []);
+  }, [user]);
 
   const updateWaterIntake = (increment: boolean) => {
+    if (!user?._id) return; // Don't update if no user
+    
     setWaterIntake(prev => {
       const newValue = increment 
         ? Math.min(prev.value + 1, prev.max)
@@ -76,8 +82,8 @@ export default function DashboardContentSimple() {
         percentage: (newValue / prev.max) * 100
       };
       
-      // Save to localStorage
-      localStorage.setItem('waterIntake', JSON.stringify({
+      // Save to localStorage with user-specific key
+      localStorage.setItem(`waterIntake_${user._id}`, JSON.stringify({
         ...newWaterData,
         date: new Date().toDateString()
       }));
@@ -88,7 +94,9 @@ export default function DashboardContentSimple() {
 
   // Load water intake data on mount
   useEffect(() => {
-    const savedWaterIntake = localStorage.getItem('waterIntake');
+    if (!user?._id) return; // Don't load if no user
+    
+    const savedWaterIntake = localStorage.getItem(`waterIntake_${user._id}`);
     if (savedWaterIntake) {
       try {
         const parsed = JSON.parse(savedWaterIntake);
@@ -104,7 +112,7 @@ export default function DashboardContentSimple() {
         console.error('Error loading water intake:', error);
       }
     }
-  }, []);
+  }, [user]);
 
   // Search functionality
   const searchableContent = [

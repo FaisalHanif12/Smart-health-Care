@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface Product {
   id: number;
@@ -13,12 +14,13 @@ interface Product {
 
 export default function CartContent() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [cartItems, setCartItems] = useState<number[]>([]);
   const [cartProducts, setCartProducts] = useState<Product[]>([]);
-  const [totalPrice, setTotalPrice] = useState(0);
-  const [totalCalories, setTotalCalories] = useState(0);
-  const [totalProtein, setTotalProtein] = useState(0);
+  const [totalPrice, setTotalPrice] = useState<number>(0);
+  const [totalCalories, setTotalCalories] = useState<number>(0);
+  const [totalProtein, setTotalProtein] = useState<number>(0);
 
   useEffect(() => {
     // Load products data
@@ -176,7 +178,8 @@ export default function CartContent() {
 
     // Load cart items from localStorage
     const loadCartItems = () => {
-      const savedCart = localStorage.getItem('cart');
+      if (!user?._id) return;
+      const savedCart = localStorage.getItem(`cart_${user._id}`);
       if (savedCart) {
         const parsedCart = JSON.parse(savedCart);
         setCartItems(parsedCart);
@@ -185,7 +188,7 @@ export default function CartContent() {
 
     loadProducts();
     loadCartItems();
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     // Update cart products whenever cartItems changes
@@ -209,14 +212,16 @@ export default function CartContent() {
   }, [products, cartItems]);
 
   const removeFromCart = (productId: number) => {
+    if (!user?._id) return;
     const newCart = cartItems.filter(id => id !== productId);
     setCartItems(newCart);
-    localStorage.setItem('cart', JSON.stringify(newCart));
+    localStorage.setItem(`cart_${user._id}`, JSON.stringify(newCart));
   };
 
   const clearCart = () => {
+    if (!user?._id) return;
     setCartItems([]);
-    localStorage.removeItem('cart');
+    localStorage.removeItem(`cart_${user._id}`);
   };
 
   const handleCheckout = () => {

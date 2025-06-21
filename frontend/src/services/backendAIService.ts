@@ -1,4 +1,4 @@
-
+import { getAPIBaseURL } from '../config/api';
 
 // Backend AI Service Interface
 interface BackendAIResponse<T> {
@@ -64,8 +64,11 @@ interface DietPlan {
 }
 
 class BackendAIService {
+  private apiBaseURL: string;
+
   constructor() {
-    // Using relative URLs with Vite proxy
+    // Use the configured backend URL
+    this.apiBaseURL = getAPIBaseURL();
   }
 
   private async makeRequest<T>(endpoint: string, data: any): Promise<T> {
@@ -75,8 +78,8 @@ class BackendAIService {
       throw new Error('Authentication required. Please log in.');
     }
 
-    // Use relative URL to leverage Vite proxy
-    const url = `/api/ai${endpoint}`;
+    // Use the configured backend URL
+    const url = `${this.apiBaseURL}/ai${endpoint}`;
 
     try {
       const response = await fetch(url, {
@@ -117,7 +120,7 @@ class BackendAIService {
       
       // Handle specific fetch errors
       if (error instanceof TypeError && error.message.includes('fetch')) {
-        throw new Error('Unable to connect to server. Please check if the backend is running on port 5000.');
+        throw new Error('Unable to connect to server. Please check if the backend is running.');
       }
       
       throw error;
@@ -159,7 +162,7 @@ class BackendAIService {
         throw new Error('Authentication required. Please log in.');
       }
 
-      const response = await fetch(`/api/ai/status`, {
+      const response = await fetch(`${this.apiBaseURL}/ai/status`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
