@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router-dom';
 interface AppSettings {
   theme: 'light' | 'dark';
   units: 'metric' | 'imperial';
-  autoSave: boolean;
 }
 
 export default function SettingsContent() {
@@ -17,12 +16,10 @@ export default function SettingsContent() {
   // State for app settings
   const [appSettings, setAppSettings] = useState<AppSettings>({
     theme: 'dark',
-    units: 'metric',
-    autoSave: true
+    units: 'metric'
   });
 
   // State for UI interactions
-  const [activeSection, setActiveSection] = useState<'general' | 'account'>('general');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -37,7 +34,6 @@ export default function SettingsContent() {
         try {
           const settings = JSON.parse(savedAppSettings);
           setAppSettings(settings);
-          // Don't set theme here - ThemeContext handles it
         } catch (error) {
           console.error('Error loading app settings:', error);
         }
@@ -73,6 +69,12 @@ export default function SettingsContent() {
       setTheme(value); // Use theme context for theme changes
     }
     setAppSettings(prev => ({ ...prev, [key]: value }));
+    
+    // Auto-save when theme or units change
+    if (user?._id) {
+      const newSettings = { ...appSettings, [key]: value };
+      localStorage.setItem(`appSettings_${user._id}`, JSON.stringify(newSettings));
+    }
   };
 
   // Export user data
@@ -148,216 +150,267 @@ export default function SettingsContent() {
     }
   };
 
-  const sectionTabs = [
-    { id: 'general' as const, name: 'General', icon: '⚙️' },
-    { id: 'account' as const, name: 'Account', icon: '👤' }
-  ];
-
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Settings</h1>
-        <p className="text-gray-600 dark:text-gray-400">Manage your preferences and account settings</p>
-      </div>
-
-      {/* Save Status */}
-      {saveStatus !== 'idle' && (
-        <div className={`mb-6 p-4 rounded-lg ${
-          saveStatus === 'saving' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200' :
-          saveStatus === 'saved' ? 'bg-green-50 dark:bg-green-900/30 text-green-800 dark:text-green-200' :
-          'bg-red-50 dark:bg-red-900/30 text-red-800 dark:text-red-200'
-        }`}>
-          {saveStatus === 'saving' && '💾 Saving settings...'}
-          {saveStatus === 'saved' && '✅ Settings saved successfully!'}
-          {saveStatus === 'error' && '❌ Error saving settings. Please try again.'}
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-10">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-3">⚙️ Settings</h1>
+          <p className="text-lg text-gray-600 dark:text-gray-400">Manage your preferences and account</p>
         </div>
-      )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Sidebar Navigation */}
-        <div className="lg:col-span-1">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Settings Categories</h3>
-            <nav className="space-y-2">
-              {sectionTabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveSection(tab.id)}
-                  className={`w-full flex items-center space-x-3 p-3 rounded-lg text-left transition-colors ${
-                    activeSection === tab.id
-                      ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-blue-700'
-                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+        {/* Save Status */}
+        {saveStatus !== 'idle' && (
+          <div className={`mb-8 p-4 rounded-xl text-center font-medium ${
+            saveStatus === 'saving' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200' :
+            saveStatus === 'saved' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' :
+            'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200'
+          }`}>
+            {saveStatus === 'saving' && '💾 Saving settings...'}
+            {saveStatus === 'saved' && '✅ Settings saved successfully!'}
+            {saveStatus === 'error' && '❌ Error saving settings. Please try again.'}
+          </div>
+        )}
+
+        {/* Settings Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          
+          {/* Theme Preference Card */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-gray-700 hover:shadow-2xl transition-all duration-300">
+            <div className="flex items-center mb-6">
+              <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-full p-3 mr-4">
+                <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Theme</h3>
+                <p className="text-gray-600 dark:text-gray-400">Appearance preference</p>
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              {['light', 'dark'].map((themeOption) => (
+                <label
+                  key={themeOption}
+                  className={`flex items-center p-4 rounded-xl cursor-pointer transition-all ${
+                    appSettings.theme === themeOption
+                      ? 'bg-blue-50 dark:bg-blue-900/30 border-2 border-blue-500'
+                      : 'bg-gray-50 dark:bg-gray-700 border-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600'
                   }`}
                 >
-                  <span className="text-lg">{tab.icon}</span>
-                  <span className="font-medium">{tab.name}</span>
-                </button>
+                  <input
+                    type="radio"
+                    name="theme"
+                    value={themeOption}
+                    checked={appSettings.theme === themeOption}
+                    onChange={(e) => updateAppSetting('theme', e.target.value)}
+                    className="sr-only"
+                  />
+                  <div className="flex items-center">
+                    <span className="text-2xl mr-3">
+                      {themeOption === 'light' ? '🌞' : '🌙'}
+                    </span>
+                    <span className="font-medium text-gray-900 dark:text-white capitalize">
+                      {themeOption}
+                    </span>
+                  </div>
+                  {appSettings.theme === themeOption && (
+                    <svg className="w-5 h-5 text-blue-500 ml-auto" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                </label>
               ))}
-            </nav>
+            </div>
+          </div>
 
-            {/* Quick Actions */}
-            <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-600">
-              <h4 className="font-medium text-gray-900 dark:text-white mb-3">Quick Actions</h4>
-              <div className="space-y-2">
-                <button
-                  onClick={saveSettings}
-                  disabled={saveStatus === 'saving'}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
-                >
-                  💾 Save Settings
-                </button>
-                <button
-                  onClick={exportUserData}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors"
-                >
-                  📥 Export Data
-                </button>
+          {/* Account Information Card */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-gray-700 hover:shadow-2xl transition-all duration-300">
+            <div className="flex items-center mb-6">
+              <div className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full p-3 mr-4">
+                <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Account</h3>
+                <p className="text-gray-600 dark:text-gray-400">Your profile details</p>
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-600">
+                <span className="text-gray-600 dark:text-gray-400 font-medium">Username</span>
+                <span className="text-gray-900 dark:text-white font-semibold">{user?.username}</span>
+              </div>
+              <div className="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-600">
+                <span className="text-gray-600 dark:text-gray-400 font-medium">Email</span>
+                <span className="text-gray-900 dark:text-white font-semibold">{user?.email}</span>
+              </div>
+              <div className="flex justify-between items-center py-3">
+                <span className="text-gray-600 dark:text-gray-400 font-medium">Member Since</span>
+                <span className="text-gray-900 dark:text-white font-semibold">
+                  {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+                </span>
               </div>
             </div>
           </div>
+
+          {/* Measurement Units Card */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-gray-700 hover:shadow-2xl transition-all duration-300">
+            <div className="flex items-center mb-6">
+              <div className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-full p-3 mr-4">
+                <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4zM18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Units</h3>
+                <p className="text-gray-600 dark:text-gray-400">Measurement system</p>
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              {[
+                { value: 'metric', label: 'Metric', desc: 'kg, cm, liters', icon: '📏' },
+                { value: 'imperial', label: 'Imperial', desc: 'lbs, ft/in, oz', icon: '📐' }
+              ].map((unit) => (
+                <label
+                  key={unit.value}
+                  className={`flex items-center p-4 rounded-xl cursor-pointer transition-all ${
+                    appSettings.units === unit.value
+                      ? 'bg-green-50 dark:bg-green-900/30 border-2 border-green-500'
+                      : 'bg-gray-50 dark:bg-gray-700 border-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="units"
+                    value={unit.value}
+                    checked={appSettings.units === unit.value}
+                    onChange={(e) => updateAppSetting('units', e.target.value)}
+                    className="sr-only"
+                  />
+                  <div className="flex items-center flex-1">
+                    <span className="text-2xl mr-3">{unit.icon}</span>
+                    <div>
+                      <div className="font-medium text-gray-900 dark:text-white">{unit.label}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">{unit.desc}</div>
+                    </div>
+                  </div>
+                  {appSettings.units === unit.value && (
+                    <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Export Data Card */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-gray-700 hover:shadow-2xl transition-all duration-300">
+            <div className="flex items-center mb-6">
+              <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-full p-3 mr-4">
+                <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Export Data</h3>
+                <p className="text-gray-600 dark:text-gray-400">Download your information</p>
+              </div>
+            </div>
+            
+            <p className="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
+              Get a complete backup of your fitness data including diet plans, workout plans, and progress tracking.
+            </p>
+            
+            <button
+              onClick={exportUserData}
+              className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
+            >
+              📥 Download My Data
+            </button>
+          </div>
+
         </div>
 
-        {/* Main Content Area */}
-        <div className="lg:col-span-3">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        {/* Danger Zone */}
+        <div className="mt-12 bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border-2 border-red-200 dark:border-red-800">
+          <div className="flex items-center mb-6">
+            <div className="bg-gradient-to-r from-red-500 to-rose-500 rounded-full p-3 mr-4">
+              <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-red-700 dark:text-red-400">Danger Zone</h3>
+              <p className="text-red-600 dark:text-red-400">Irreversible actions</p>
+            </div>
+          </div>
+          
+          <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-6 border border-red-200 dark:border-red-800">
+            <h4 className="font-bold text-red-800 dark:text-red-300 mb-2">Clear Account Data</h4>
+            <p className="text-red-700 dark:text-red-400 mb-6 leading-relaxed">
+              This will permanently remove all your local data including diet plans, workout plans, and progress. You will be logged out immediately.
+            </p>
             
-            {/* General Settings */}
-            {activeSection === 'general' && (
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">⚙️ General Settings</h2>
-                
-                <div className="space-y-6">
-                  {/* Theme Selection */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Theme Preference
-                    </label>
-                    <select
-                      value={appSettings.theme}
-                      onChange={(e) => updateAppSetting('theme', e.target.value)}
-                      className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    >
-                      <option value="light">🌞 Light</option>
-                      <option value="dark">🌙 Dark</option>
-                    </select>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Choose your preferred theme for the dashboard</p>
-                  </div>
-
-                  {/* Units Selection */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Measurement Units
-                    </label>
-                    <select
-                      value={appSettings.units}
-                      onChange={(e) => updateAppSetting('units', e.target.value)}
-                      className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    >
-                      <option value="metric">📏 Metric (kg, cm)</option>
-                      <option value="imperial">📐 Imperial (lbs, ft/in)</option>
-                    </select>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Units used for weight, height, and measurements</p>
-                  </div>
-
-                  {/* Auto Save */}
-                  <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <div>
-                      <h4 className="font-medium text-gray-900 dark:text-white">Auto-save Progress</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Automatically save your workout and diet progress as you complete them</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={appSettings.autoSave}
-                        onChange={(e) => updateAppSetting('autoSave', e.target.checked)}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-gray-200 dark:bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                    </label>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Account Management */}
-            {activeSection === 'account' && (
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">👤 Account Management</h2>
-                
-                <div className="space-y-6">
-                  {/* Account Info */}
-                  <div className="p-6 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg">
-                    <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-200 mb-2">📋 Account Information</h3>
-                    <div className="space-y-2 text-blue-700 dark:text-blue-300">
-                      <p><strong>Username:</strong> {user?.username}</p>
-                      <p><strong>Email:</strong> {user?.email}</p>
-                      <p><strong>Member Since:</strong> {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</p>
-                    </div>
-                  </div>
-
-                  {/* Export Data */}
-                  <div className="p-6 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 rounded-lg">
-                    <h3 className="text-lg font-semibold text-green-900 dark:text-green-200 mb-2">📥 Export Your Data</h3>
-                    <p className="text-green-700 dark:text-green-300 mb-4">Download a complete copy of all your fitness data, including diet plans, workout plans, and progress.</p>
-                    <button
-                      onClick={exportUserData}
-                      className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition-colors"
-                    >
-                      Download Data Export
-                    </button>
-                  </div>
-
-                  {/* Delete Account */}
-                  <div className="p-6 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-lg">
-                    <h3 className="text-lg font-semibold text-red-900 dark:text-red-200 mb-2">🗑️ Clear Account Data</h3>
-                    <p className="text-red-700 dark:text-red-300 mb-4">This will clear all your local data including diet plans, workout plans, and progress. You will be logged out after this action.</p>
-                    <button
-                      onClick={() => setShowDeleteConfirm(true)}
-                      className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg transition-colors"
-                    >
-                      Clear My Data
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-8 rounded-xl transition-all duration-300 transform hover:scale-105"
+            >
+              🗑️ Clear My Data
+            </button>
           </div>
         </div>
+
       </div>
 
       {/* Delete Account Confirmation Modal */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full mx-4">
-            <h3 className="text-xl font-bold text-red-900 dark:text-red-200 mb-4">⚠️ Clear Account Data</h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              This action will clear all your local fitness data including diet plans, workout plans, and progress. You will be logged out immediately.
-            </p>
-            <p className="text-sm text-red-600 dark:text-red-400 mb-4">
-              Type <strong>"DELETE MY ACCOUNT"</strong> below to confirm:
-            </p>
-            <input
-              type="text"
-              value={deleteConfirmText}
-              onChange={(e) => setDeleteConfirmText(e.target.value)}
-              placeholder="Type here..."
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg mb-6 focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            />
-            <div className="flex space-x-3">
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-md w-full shadow-2xl">
+            <div className="text-center mb-6">
+              <div className="bg-red-100 dark:bg-red-900/30 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-red-600 dark:text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Clear Account Data</h3>
+              <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                This action will clear all your local fitness data and log you out immediately.
+              </p>
+            </div>
+            
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Type <span className="font-bold text-red-600 dark:text-red-400">"DELETE MY ACCOUNT"</span> to confirm:
+              </label>
+              <input
+                type="text"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                placeholder="Type here..."
+                className="w-full p-4 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+            </div>
+            
+            <div className="flex space-x-4">
               <button
                 onClick={() => {
                   setShowDeleteConfirm(false);
                   setDeleteConfirmText('');
                 }}
-                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                className="flex-1 px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={deleteAccount}
                 disabled={isLoading || deleteConfirmText !== 'DELETE MY ACCOUNT'}
-                className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {isLoading ? 'Clearing...' : 'Clear Data'}
               </button>
