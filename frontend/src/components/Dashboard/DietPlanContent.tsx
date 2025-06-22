@@ -69,7 +69,16 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
 
   // Load saved diet plan from localStorage
   useEffect(() => {
-    if (!user?._id) return; // Don't load if no user
+    if (!user?._id) {
+      // Reset data if no user
+      setDietPlan([]);
+      setWeeklyStats({ totalDays: 0, completedDays: 0, avgCalories: 0, completionRate: 0 });
+      return;
+    }
+    
+    // Initialize with empty data first
+    setDietPlan([]);
+    setWeeklyStats({ totalDays: 0, completedDays: 0, avgCalories: 0, completionRate: 0 });
     
     const savedPlan = localStorage.getItem(`dietPlan_${user._id}`);
     if (savedPlan) {
@@ -79,6 +88,8 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
         calculateStats(plan);
       } catch (error) {
         console.error('Error loading diet plan:', error);
+        setDietPlan([]);
+        setWeeklyStats({ totalDays: 0, completedDays: 0, avgCalories: 0, completionRate: 0 });
       }
     }
 
@@ -86,7 +97,7 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
     const prompt = generatePromptFromProfile();
     setGeneratedPrompt(prompt);
     setCustomPrompt(prompt);
-  }, [user]);
+  }, [user?._id]); // Changed dependency to user._id to ensure it resets when user changes
 
   const calculateStats = (plan: DietDay[]) => {
     const totalDays = plan.length;

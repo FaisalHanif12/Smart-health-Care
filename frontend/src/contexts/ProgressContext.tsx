@@ -97,146 +97,199 @@ export const ProgressProvider: React.FC<ProgressProviderProps> = ({ children }) 
 
   // Load progress from localStorage on mount and sync with actual plans
   useEffect(() => {
-    if (user?._id) {
-      const savedDietProgress = localStorage.getItem(`dietProgress_${user._id}`);
-      const savedWorkoutProgress = localStorage.getItem(`workoutProgress_${user._id}`);
+    if (!user?._id) {
+      // Reset progress data if no user
+      setDietProgress({
+        date: new Date().toDateString(),
+        completedMeals: 0,
+        totalMeals: 0,
+        caloriesConsumed: 0,
+        targetCalories: 2000,
+        proteinConsumed: 0,
+        carbsConsumed: 0,
+        fatsConsumed: 0,
+        weeklyCompletedMeals: 0,
+        weeklyTotalMeals: 0,
+        weeklyCaloriesConsumed: 0,
+        weekStart: getWeekStart(new Date()).toDateString(),
+      });
       
-      if (savedDietProgress) {
-        try {
-          const parsed = JSON.parse(savedDietProgress);
-          // Check if it's from today, if not reset
-          if (parsed.date === new Date().toDateString()) {
-            setDietProgress(parsed);
-          }
-        } catch (error) {
-          console.error('Error parsing diet progress:', error);
-        }
-      }
-      
-      if (savedWorkoutProgress) {
-        try {
-          const parsed = JSON.parse(savedWorkoutProgress);
-          // Check if it's from this week, if not reset
-          if (parsed.weekStart === getWeekStart(new Date()).toDateString()) {
-            setWorkoutProgress(parsed);
-          }
-        } catch (error) {
-          console.error('Error parsing workout progress:', error);
-        }
-      }
-
-      // Auto-sync with actual diet and workout plans
-      const syncWithPlans = () => {
-        if (!user?._id) return; // Don't sync if no user
-        
-        const savedDietPlan = localStorage.getItem(`dietPlan_${user._id}`);
-        if (savedDietPlan) {
-          try {
-            const dietPlan = JSON.parse(savedDietPlan);
-            
-            // Calculate weekly progress from all days in the plan
-            let weeklyCompletedMeals = 0;
-            let weeklyTotalMeals = 0;
-            let weeklyCaloriesConsumed = 0;
-            let todayCompletedMeals = 0;
-            let todayTotalMeals = 0;
-            let todayCaloriesConsumed = 0;
-            let todayProtein = 0;
-            let todayCarbs = 0;
-            let todayFats = 0;
-            
-            const todayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
-            
-            dietPlan.forEach((day: any) => {
-              if (day.meals) {
-                const completedMeals = day.meals.filter((meal: any) => meal.completed).length;
-                const totalMeals = day.meals.length;
-                
-                weeklyCompletedMeals += completedMeals;
-                weeklyTotalMeals += totalMeals;
-                
-                // Calculate calories for completed meals only
-                const completedCalories = day.meals
-                  .filter((meal: any) => meal.completed)
-                  .reduce((sum: number, meal: any) => sum + (meal.calories || 0), 0);
-                weeklyCaloriesConsumed += completedCalories;
-                
-                // If this is today, also track daily progress
-                if (day.day === todayName) {
-                  todayCompletedMeals = completedMeals;
-                  todayTotalMeals = totalMeals;
-                  todayCaloriesConsumed = completedCalories;
-                  
-                  // Calculate macros for today
-                  day.meals.forEach((meal: any) => {
-                    if (meal.completed) {
-                      todayProtein += parseFloat(meal.protein) || 0;
-                      todayCarbs += parseFloat(meal.carbs) || 0;
-                      todayFats += parseFloat(meal.fats) || 0;
-                    }
-                  });
-                }
-              }
-            });
-            
-            // Update diet progress with both daily and weekly data
-            const today = new Date().toDateString();
-            const weekStart = getWeekStart(new Date()).toDateString();
-            
-            setDietProgress({
-              date: today,
-              completedMeals: todayCompletedMeals,
-              totalMeals: todayTotalMeals,
-              caloriesConsumed: todayCaloriesConsumed,
-              targetCalories: 2000,
-              proteinConsumed: todayProtein,
-              carbsConsumed: todayCarbs,
-              fatsConsumed: todayFats,
-              weeklyCompletedMeals,
-              weeklyTotalMeals,
-              weeklyCaloriesConsumed,
-              weekStart,
-            });
-          } catch (error) {
-            console.error('Error syncing diet plan:', error);
-          }
-        }
-
-        // Sync workout plan
-        const savedWorkoutPlan = localStorage.getItem(`workoutPlan_${user._id}`);
-        if (savedWorkoutPlan) {
-          try {
-            const workoutPlan = JSON.parse(savedWorkoutPlan);
-            updateWorkoutProgress(workoutPlan);
-          } catch (error) {
-            console.error('Error syncing workout plan:', error);
-          }
-        }
-      };
-
-      syncWithPlans();
-      
-      // Check for plan renewals and initialize renewal service
-      const checkPlanRenewals = async () => {
-        if (user?.profile) {
-          const renewalService = PlanRenewalService.getInstance();
-          await renewalService.checkAndRenewPlans(user.profile, user._id);
-          
-          // Request notification permission on first load
-          await renewalService.requestNotificationPermission();
-        }
-      };
-      
-      checkPlanRenewals();
-      
-      // Set up interval to check for plan updates and renewals
-      const interval = setInterval(() => {
-        syncWithPlans();
-        checkPlanRenewals();
-      }, 5000); // Check every 5 seconds
-      return () => clearInterval(interval);
+      setWorkoutProgress({
+        weekStart: getWeekStart(new Date()).toDateString(),
+        completedWorkouts: 0,
+        totalWorkouts: 0,
+        completedExercises: 0,
+        totalExercises: 0,
+        workoutDays: {},
+      });
+      return;
     }
-  }, [user?._id]);
+
+    // Initialize with default values first
+    const today = new Date().toDateString();
+    const currentWeekStart = getWeekStart(new Date()).toDateString();
+    
+    setDietProgress({
+      date: today,
+      completedMeals: 0,
+      totalMeals: 0,
+      caloriesConsumed: 0,
+      targetCalories: 2000,
+      proteinConsumed: 0,
+      carbsConsumed: 0,
+      fatsConsumed: 0,
+      weeklyCompletedMeals: 0,
+      weeklyTotalMeals: 0,
+      weeklyCaloriesConsumed: 0,
+      weekStart: currentWeekStart,
+    });
+    
+    setWorkoutProgress({
+      weekStart: currentWeekStart,
+      completedWorkouts: 0,
+      totalWorkouts: 0,
+      completedExercises: 0,
+      totalExercises: 0,
+      workoutDays: {},
+    });
+
+    const savedDietProgress = localStorage.getItem(`dietProgress_${user._id}`);
+    const savedWorkoutProgress = localStorage.getItem(`workoutProgress_${user._id}`);
+    
+    if (savedDietProgress) {
+      try {
+        const parsed = JSON.parse(savedDietProgress);
+        // Check if it's from today, if not keep defaults
+        if (parsed.date === today && parsed.weekStart === currentWeekStart) {
+          setDietProgress(parsed);
+        }
+      } catch (error) {
+        console.error('Error parsing diet progress:', error);
+      }
+    }
+    
+    if (savedWorkoutProgress) {
+      try {
+        const parsed = JSON.parse(savedWorkoutProgress);
+        // Check if it's from this week, if not keep defaults
+        if (parsed.weekStart === currentWeekStart) {
+          setWorkoutProgress(parsed);
+        }
+      } catch (error) {
+        console.error('Error parsing workout progress:', error);
+      }
+    }
+
+    // Auto-sync with actual diet and workout plans
+    const syncWithPlans = () => {
+      if (!user?._id) return; // Don't sync if no user
+      
+      const savedDietPlan = localStorage.getItem(`dietPlan_${user._id}`);
+      if (savedDietPlan) {
+        try {
+          const dietPlan = JSON.parse(savedDietPlan);
+          
+          // Calculate weekly progress from all days in the plan
+          let weeklyCompletedMeals = 0;
+          let weeklyTotalMeals = 0;
+          let weeklyCaloriesConsumed = 0;
+          let todayCompletedMeals = 0;
+          let todayTotalMeals = 0;
+          let todayCaloriesConsumed = 0;
+          let todayProtein = 0;
+          let todayCarbs = 0;
+          let todayFats = 0;
+          
+          const todayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+          
+          dietPlan.forEach((day: any) => {
+            if (day.meals) {
+              const completedMeals = day.meals.filter((meal: any) => meal.completed).length;
+              const totalMeals = day.meals.length;
+              
+              weeklyCompletedMeals += completedMeals;
+              weeklyTotalMeals += totalMeals;
+              
+              // Calculate calories for completed meals only
+              const completedCalories = day.meals
+                .filter((meal: any) => meal.completed)
+                .reduce((sum: number, meal: any) => sum + (meal.calories || 0), 0);
+              weeklyCaloriesConsumed += completedCalories;
+              
+              // If this is today, also track daily progress
+              if (day.day === todayName) {
+                todayCompletedMeals = completedMeals;
+                todayTotalMeals = totalMeals;
+                todayCaloriesConsumed = completedCalories;
+                
+                // Calculate macros for today
+                day.meals.forEach((meal: any) => {
+                  if (meal.completed) {
+                    todayProtein += parseFloat(meal.protein) || 0;
+                    todayCarbs += parseFloat(meal.carbs) || 0;
+                    todayFats += parseFloat(meal.fats) || 0;
+                  }
+                });
+              }
+            }
+          });
+          
+          // Update diet progress with both daily and weekly data
+          const weekStart = getWeekStart(new Date()).toDateString();
+          
+          setDietProgress({
+            date: today,
+            completedMeals: todayCompletedMeals,
+            totalMeals: todayTotalMeals,
+            caloriesConsumed: todayCaloriesConsumed,
+            targetCalories: 2000,
+            proteinConsumed: todayProtein,
+            carbsConsumed: todayCarbs,
+            fatsConsumed: todayFats,
+            weeklyCompletedMeals,
+            weeklyTotalMeals,
+            weeklyCaloriesConsumed,
+            weekStart,
+          });
+        } catch (error) {
+          console.error('Error syncing diet plan:', error);
+        }
+      }
+
+      // Sync workout plan
+      const savedWorkoutPlan = localStorage.getItem(`workoutPlan_${user._id}`);
+      if (savedWorkoutPlan) {
+        try {
+          const workoutPlan = JSON.parse(savedWorkoutPlan);
+          updateWorkoutProgress(workoutPlan);
+        } catch (error) {
+          console.error('Error syncing workout plan:', error);
+        }
+      }
+    };
+
+    syncWithPlans();
+    
+    // Check for plan renewals and initialize renewal service
+    const checkPlanRenewals = async () => {
+      if (user?.profile) {
+        const renewalService = PlanRenewalService.getInstance();
+        await renewalService.checkAndRenewPlans(user.profile, user._id);
+        
+        // Request notification permission on first load
+        await renewalService.requestNotificationPermission();
+      }
+    };
+    
+    checkPlanRenewals();
+    
+    // Set up interval to check for plan updates and renewals
+    const interval = setInterval(() => {
+      syncWithPlans();
+      checkPlanRenewals();
+    }, 5000); // Check every 5 seconds
+    return () => clearInterval(interval);
+  }, [user?._id]); // Changed dependency to user._id to ensure it resets when user changes
 
   // Save progress to localStorage whenever it changes
   useEffect(() => {

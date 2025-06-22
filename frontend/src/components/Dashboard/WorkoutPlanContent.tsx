@@ -63,7 +63,16 @@ Please ensure exercises are safe, effective, and specifically designed for my go
 
   // Load saved workout plan from localStorage
   useEffect(() => {
-    if (!user?._id) return; // Don't load if no user
+    if (!user?._id) {
+      // Reset data if no user
+      setWorkoutPlan([]);
+      setWeeklyStats({ totalWorkouts: 0, completedWorkouts: 0, completionRate: 0 });
+      return;
+    }
+    
+    // Initialize with empty data first
+    setWorkoutPlan([]);
+    setWeeklyStats({ totalWorkouts: 0, completedWorkouts: 0, completionRate: 0 });
     
     const savedPlan = localStorage.getItem(`workoutPlan_${user._id}`);
     if (savedPlan) {
@@ -73,13 +82,15 @@ Please ensure exercises are safe, effective, and specifically designed for my go
         calculateStats(plan);
       } catch (error) {
         console.error('Error loading workout plan:', error);
+        setWorkoutPlan([]);
+        setWeeklyStats({ totalWorkouts: 0, completedWorkouts: 0, completionRate: 0 });
       }
     }
 
     // Generate prompt from profile when component loads
     const prompt = generatePromptFromProfile();
     setGeneratedPrompt(prompt);
-  }, [user]);
+  }, [user?._id]); // Changed dependency to user._id to ensure it resets when user changes
 
   const calculateStats = (plan: WorkoutDay[]) => {
     const totalWorkouts = plan.length;

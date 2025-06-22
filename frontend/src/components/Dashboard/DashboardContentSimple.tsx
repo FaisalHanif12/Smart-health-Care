@@ -29,7 +29,16 @@ export default function DashboardContentSimple() {
 
   // Load actual data from localStorage and sync with diet/workout plans
   useEffect(() => {
-    if (!user?._id) return; // Don't load if no user
+    if (!user?._id) {
+      // Reset all data if no user
+      setDailyCalories([]);
+      setWeeklyProgress([]);
+      return;
+    }
+    
+    // Initialize default empty data first
+    setDailyCalories([]);
+    setWeeklyProgress([]);
     
     // Load diet plan data
     const savedDietPlan = localStorage.getItem(`dietPlan_${user._id}`);
@@ -46,6 +55,7 @@ export default function DashboardContentSimple() {
         setDailyCalories(weeklyCalories);
       } catch (error) {
         console.error('Error loading diet plan:', error);
+        setDailyCalories([]);
       }
     }
 
@@ -65,9 +75,10 @@ export default function DashboardContentSimple() {
         setWeeklyProgress(weeklyWorkouts);
       } catch (error) {
         console.error('Error loading workout plan:', error);
+        setWeeklyProgress([]);
       }
     }
-  }, [user]);
+  }, [user?._id]); // Changed dependency to user._id to ensure it resets when user changes
 
   const updateWaterIntake = (increment: boolean) => {
     if (!user?._id) return; // Don't update if no user
@@ -94,7 +105,11 @@ export default function DashboardContentSimple() {
 
   // Load water intake data on mount
   useEffect(() => {
-    if (!user?._id) return; // Don't load if no user
+    if (!user?._id) {
+      // Reset water intake if no user
+      setWaterIntake({ value: 0, max: 8, percentage: 0 });
+      return;
+    }
     
     const savedWaterIntake = localStorage.getItem(`waterIntake_${user._id}`);
     if (savedWaterIntake) {
@@ -107,12 +122,20 @@ export default function DashboardContentSimple() {
             max: parsed.max,
             percentage: parsed.percentage
           });
+        } else {
+          // Reset for new day
+          setWaterIntake({ value: 0, max: 8, percentage: 0 });
         }
       } catch (error) {
         console.error('Error loading water intake:', error);
+        // Reset on error
+        setWaterIntake({ value: 0, max: 8, percentage: 0 });
       }
+    } else {
+      // No saved data for this user, reset to default
+      setWaterIntake({ value: 0, max: 8, percentage: 0 });
     }
-  }, [user]);
+  }, [user?._id]); // Changed dependency to user._id to ensure it resets when user changes
 
   // Search functionality
   const searchableContent = [

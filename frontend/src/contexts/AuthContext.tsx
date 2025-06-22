@@ -149,21 +149,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.error('Logout error:', error);
       // Continue with logout even if backend call fails
     } finally {
-      // Clear user-specific localStorage data
-      if (user?._id) {
-        localStorage.removeItem(`dietPlan_${user._id}`);
-        localStorage.removeItem(`workoutPlan_${user._id}`);
-        localStorage.removeItem(`dietProgress_${user._id}`);
-        localStorage.removeItem(`workoutProgress_${user._id}`);
-        localStorage.removeItem(`waterIntake_${user._id}`);
-        localStorage.removeItem(`planDuration_${user._id}`);
-        localStorage.removeItem(`cart_${user._id}`);
-        localStorage.removeItem(`dietPlanMetadata_${user._id}`);
-        localStorage.removeItem(`workoutPlanMetadata_${user._id}`);
-        localStorage.removeItem(`planStartDate_${user._id}`);
-      }
+      // DO NOT clear user-specific data like plans and progress - these should persist!
+      // Only clear session-related data and general auth data
       
-      // Clear general auth data
+      // Clear general auth data only
       clearAuthData();
       setUser(null);
       setIsAuthenticated(false);

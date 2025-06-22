@@ -30,12 +30,24 @@ export default function AIRecommendations() {
 
   // Calculate plan analysis
   const calculateProgressAnalysis = (): ProgressAnalysis => {
+    if (!user?._id) {
+      // Return default analysis if no user
+      return {
+        planDuration: '3 months',
+        currentWeek: 1,
+        totalWeeks: 12,
+        dietCompliance: 0,
+        workoutCompliance: 0,
+        overall: 'poor'
+      };
+    }
+
     // Get plan duration from localStorage or user preferences (defaulting to 3 months)
-    const planDuration = localStorage.getItem(`planDuration_${user?._id}`) || '3 months';
+    const planDuration = localStorage.getItem(`planDuration_${user._id}`) || '3 months';
     const totalWeeks = planDuration.includes('3') ? 12 : planDuration.includes('6') ? 24 : 52;
     
     // Calculate current week (for demo, using date-based calculation)
-    const planStartDate = localStorage.getItem('planStartDate');
+    const planStartDate = localStorage.getItem(`planStartDate_${user._id}`);
     const startDate = planStartDate ? new Date(planStartDate) : new Date();
     const currentDate = new Date();
     const weeksDiff = Math.floor((currentDate.getTime() - startDate.getTime()) / (7 * 24 * 60 * 60 * 1000));
@@ -185,41 +197,50 @@ Focus on:
 
   // Load analysis and generate recommendations
   useEffect(() => {
+    if (!user?._id) {
+      // Reset data if no user
+      setRecommendations([]);
+      setAnalysis(null);
+      return;
+    }
+
     const analysis = calculateProgressAnalysis();
     setAnalysis(analysis);
 
-    // Store plan start date if not exists
-    if (!localStorage.getItem('planStartDate')) {
-      localStorage.setItem('planStartDate', new Date().toISOString());
+    // Store plan start date if not exists (user-specific)
+    if (!localStorage.getItem(`planStartDate_${user._id}`)) {
+      localStorage.setItem(`planStartDate_${user._id}`, new Date().toISOString());
     }
 
     // Generate recommendations (throttled to avoid excessive API calls)
-    const lastGeneration = localStorage.getItem('lastRecommendationGeneration');
+    const lastGeneration = localStorage.getItem(`lastRecommendationGeneration_${user._id}`);
     const now = Date.now();
     const oneHour = 60 * 60 * 1000;
 
     if (!lastGeneration || (now - parseInt(lastGeneration)) > oneHour) {
       generateAIRecommendations(analysis);
-      localStorage.setItem('lastRecommendationGeneration', now.toString());
+      localStorage.setItem(`lastRecommendationGeneration_${user._id}`, now.toString());
     } else {
-      // Load cached recommendations
-      const cached = localStorage.getItem('cachedRecommendations');
+      // Load cached recommendations (user-specific)
+      const cached = localStorage.getItem(`cachedRecommendations_${user._id}`);
       if (cached) {
         try {
           setRecommendations(JSON.parse(cached));
         } catch (error) {
           setRecommendations(getDefaultRecommendations(analysis));
         }
+      } else {
+        setRecommendations(getDefaultRecommendations(analysis));
       }
     }
-  }, [dietProgress, workoutProgress]);
+  }, [user?._id, dietProgress, workoutProgress]); // Added user._id dependency
 
-  // Cache recommendations
+  // Cache recommendations (user-specific)
   useEffect(() => {
-    if (recommendations.length > 0) {
-      localStorage.setItem('cachedRecommendations', JSON.stringify(recommendations));
+    if (recommendations.length > 0 && user?._id) {
+      localStorage.setItem(`cachedRecommendations_${user._id}`, JSON.stringify(recommendations));
     }
-  }, [recommendations]);
+  }, [recommendations, user?._id]);
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
