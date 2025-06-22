@@ -2,23 +2,8 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
-interface NotificationSettings {
-  emailNotifications: boolean;
-  pushNotifications: boolean;
-  workoutReminders: boolean;
-  dietReminders: boolean;
-  progressUpdates: boolean;
-}
-
-interface PrivacySettings {
-  profileVisibility: 'public' | 'private' | 'friends';
-  shareProgress: boolean;
-  dataCollection: boolean;
-}
-
 interface AppSettings {
-  theme: 'light' | 'dark' | 'auto';
-  language: 'en' | 'es' | 'fr' | 'de';
+  theme: 'light' | 'dark';
   units: 'metric' | 'imperial';
   autoSave: boolean;
 }
@@ -27,32 +12,16 @@ export default function SettingsContent() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   
-  // State for different settings sections
-  const [notifications, setNotifications] = useState<NotificationSettings>({
-    emailNotifications: true,
-    pushNotifications: true,
-    workoutReminders: true,
-    dietReminders: true,
-    progressUpdates: false
-  });
-
-  const [privacy, setPrivacy] = useState<PrivacySettings>({
-    profileVisibility: 'private',
-    shareProgress: false,
-    dataCollection: true
-  });
-
+  // State for app settings
   const [appSettings, setAppSettings] = useState<AppSettings>({
     theme: 'dark',
-    language: 'en',
     units: 'metric',
     autoSave: true
   });
 
   // State for UI interactions
-  const [activeSection, setActiveSection] = useState<'general' | 'notifications' | 'privacy' | 'data'>('general');
+  const [activeSection, setActiveSection] = useState<'general' | 'account'>('general');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [showDataExport, setShowDataExport] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
@@ -60,25 +29,7 @@ export default function SettingsContent() {
   // Load settings from localStorage on mount
   useEffect(() => {
     if (user?._id) {
-      const savedNotifications = localStorage.getItem(`notifications_${user._id}`);
-      const savedPrivacy = localStorage.getItem(`privacy_${user._id}`);
       const savedAppSettings = localStorage.getItem(`appSettings_${user._id}`);
-
-      if (savedNotifications) {
-        try {
-          setNotifications(JSON.parse(savedNotifications));
-        } catch (error) {
-          console.error('Error loading notification settings:', error);
-        }
-      }
-
-      if (savedPrivacy) {
-        try {
-          setPrivacy(JSON.parse(savedPrivacy));
-        } catch (error) {
-          console.error('Error loading privacy settings:', error);
-        }
-      }
 
       if (savedAppSettings) {
         try {
@@ -96,8 +47,6 @@ export default function SettingsContent() {
 
     setSaveStatus('saving');
     try {
-      localStorage.setItem(`notifications_${user._id}`, JSON.stringify(notifications));
-      localStorage.setItem(`privacy_${user._id}`, JSON.stringify(privacy));
       localStorage.setItem(`appSettings_${user._id}`, JSON.stringify(appSettings));
       
       setSaveStatus('saved');
@@ -107,16 +56,6 @@ export default function SettingsContent() {
       setSaveStatus('error');
       setTimeout(() => setSaveStatus('idle'), 3000);
     }
-  };
-
-  // Handle notification setting changes
-  const updateNotification = (key: keyof NotificationSettings, value: boolean) => {
-    setNotifications(prev => ({ ...prev, [key]: value }));
-  };
-
-  // Handle privacy setting changes
-  const updatePrivacy = (key: keyof PrivacySettings, value: any) => {
-    setPrivacy(prev => ({ ...prev, [key]: value }));
   };
 
   // Handle app setting changes
@@ -135,8 +74,6 @@ export default function SettingsContent() {
       dietProgress: localStorage.getItem(`dietProgress_${user._id}`),
       workoutProgress: localStorage.getItem(`workoutProgress_${user._id}`),
       settings: {
-        notifications,
-        privacy,
         appSettings
       },
       exportDate: new Date().toISOString()
@@ -153,38 +90,9 @@ export default function SettingsContent() {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-
-    setShowDataExport(false);
   };
 
-  // Clear all user data
-  const clearAllData = () => {
-    if (!user?._id) return;
-
-    const keys = [
-      `dietPlan_${user._id}`,
-      `workoutPlan_${user._id}`,
-      `dietProgress_${user._id}`,
-      `workoutProgress_${user._id}`,
-      `waterIntake_${user._id}`,
-      `planDuration_${user._id}`,
-      `cart_${user._id}`,
-      `dietPlanMetadata_${user._id}`,
-      `workoutPlanMetadata_${user._id}`,
-      `planStartDate_${user._id}`,
-      `lastRecommendationGeneration_${user._id}`,
-      `cachedRecommendations_${user._id}`,
-      `notifications_${user._id}`,
-      `privacy_${user._id}`,
-      `appSettings_${user._id}`
-    ];
-
-    keys.forEach(key => localStorage.removeItem(key));
-    
-    alert('All your data has been cleared successfully.');
-  };
-
-  // Delete account (placeholder - would need backend integration)
+  // Delete account (clears local data and logs out)
   const deleteAccount = async () => {
     if (deleteConfirmText !== 'DELETE MY ACCOUNT') {
       alert('Please type "DELETE MY ACCOUNT" exactly to confirm.');
@@ -193,19 +101,34 @@ export default function SettingsContent() {
 
     setIsLoading(true);
     try {
-      // Clear all local data first
-      clearAllData();
+      // Clear all local data for this user
+      if (user?._id) {
+        const keys = [
+          `dietPlan_${user._id}`,
+          `workoutPlan_${user._id}`,
+          `dietProgress_${user._id}`,
+          `workoutProgress_${user._id}`,
+          `waterIntake_${user._id}`,
+          `planDuration_${user._id}`,
+          `cart_${user._id}`,
+          `dietPlanMetadata_${user._id}`,
+          `workoutPlanMetadata_${user._id}`,
+          `planStartDate_${user._id}`,
+          `lastRecommendationGeneration_${user._id}`,
+          `cachedRecommendations_${user._id}`,
+          `appSettings_${user._id}`
+        ];
+
+        keys.forEach(key => localStorage.removeItem(key));
+      }
       
-      // In a real app, you would call an API endpoint here
-      // await authAPI.deleteAccount();
-      
-      // For now, just logout the user
+      // Logout the user
       await logout();
       navigate('/login');
-      alert('Your account has been deleted. You will be redirected to the login page.');
+      alert('Your local account data has been cleared. You will be redirected to the login page.');
     } catch (error) {
       console.error('Error deleting account:', error);
-      alert('There was an error deleting your account. Please try again.');
+      alert('There was an error clearing your data. Please try again.');
     } finally {
       setIsLoading(false);
       setShowDeleteConfirm(false);
@@ -215,9 +138,7 @@ export default function SettingsContent() {
 
   const sectionTabs = [
     { id: 'general' as const, name: 'General', icon: '⚙️' },
-    { id: 'notifications' as const, name: 'Notifications', icon: '🔔' },
-    { id: 'privacy' as const, name: 'Privacy', icon: '🔒' },
-    { id: 'data' as const, name: 'Data & Account', icon: '📊' }
+    { id: 'account' as const, name: 'Account', icon: '👤' }
   ];
 
   return (
@@ -225,7 +146,7 @@ export default function SettingsContent() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Settings</h1>
-        <p className="text-gray-600">Manage your preferences, privacy, and account settings</p>
+        <p className="text-gray-600">Manage your preferences and account settings</p>
       </div>
 
       {/* Save Status */}
@@ -272,13 +193,13 @@ export default function SettingsContent() {
                   disabled={saveStatus === 'saving'}
                   className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
                 >
-                  💾 Save All Settings
+                  💾 Save Settings
                 </button>
                 <button
-                  onClick={() => setShowDataExport(true)}
+                  onClick={exportUserData}
                   className="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
                 >
-                  📥 Export My Data
+                  📥 Export Data
                 </button>
               </div>
             </div>
@@ -307,25 +228,8 @@ export default function SettingsContent() {
                     >
                       <option value="light">🌞 Light</option>
                       <option value="dark">🌙 Dark</option>
-                      <option value="auto">🔄 Auto (System)</option>
                     </select>
-                  </div>
-
-                  {/* Language Selection */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Language
-                    </label>
-                    <select
-                      value={appSettings.language}
-                      onChange={(e) => updateAppSetting('language', e.target.value)}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="en">🇺🇸 English</option>
-                      <option value="es">🇪🇸 Español</option>
-                      <option value="fr">🇫🇷 Français</option>
-                      <option value="de">🇩🇪 Deutsch</option>
-                    </select>
+                    <p className="text-sm text-gray-500 mt-1">Choose your preferred theme for the dashboard</p>
                   </div>
 
                   {/* Units Selection */}
@@ -341,13 +245,14 @@ export default function SettingsContent() {
                       <option value="metric">📏 Metric (kg, cm)</option>
                       <option value="imperial">📐 Imperial (lbs, ft/in)</option>
                     </select>
+                    <p className="text-sm text-gray-500 mt-1">Units used for weight, height, and measurements</p>
                   </div>
 
                   {/* Auto Save */}
                   <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                     <div>
                       <h4 className="font-medium text-gray-900">Auto-save Progress</h4>
-                      <p className="text-sm text-gray-600">Automatically save your workout and diet progress</p>
+                      <p className="text-sm text-gray-600">Automatically save your workout and diet progress as you complete them</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
@@ -363,139 +268,43 @@ export default function SettingsContent() {
               </div>
             )}
 
-            {/* Notification Settings */}
-            {activeSection === 'notifications' && (
+            {/* Account Management */}
+            {activeSection === 'account' && (
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">🔔 Notification Settings</h2>
-                
-                <div className="space-y-4">
-                  {Object.entries(notifications).map(([key, value]) => (
-                    <div key={key} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                      <div>
-                        <h4 className="font-medium text-gray-900 capitalize">
-                          {key.replace(/([A-Z])/g, ' $1').trim()}
-                        </h4>
-                        <p className="text-sm text-gray-600">
-                          {key === 'emailNotifications' && 'Receive updates via email'}
-                          {key === 'pushNotifications' && 'Browser push notifications'}
-                          {key === 'workoutReminders' && 'Reminders for scheduled workouts'}
-                          {key === 'dietReminders' && 'Meal and nutrition reminders'}
-                          {key === 'progressUpdates' && 'Weekly progress summaries'}
-                        </p>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={value}
-                          onChange={(e) => updateNotification(key as keyof NotificationSettings, e.target.checked)}
-                          className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Privacy Settings */}
-            {activeSection === 'privacy' && (
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">🔒 Privacy Settings</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">👤 Account Management</h2>
                 
                 <div className="space-y-6">
-                  {/* Profile Visibility */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Profile Visibility
-                    </label>
-                    <select
-                      value={privacy.profileVisibility}
-                      onChange={(e) => updatePrivacy('profileVisibility', e.target.value)}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="private">🔒 Private (Only you can see)</option>
-                      <option value="friends">👥 Friends Only</option>
-                      <option value="public">🌍 Public</option>
-                    </select>
-                  </div>
-
-                  {/* Share Progress */}
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div>
-                      <h4 className="font-medium text-gray-900">Share Progress Data</h4>
-                      <p className="text-sm text-gray-600">Allow sharing of fitness progress with other users</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={privacy.shareProgress}
-                        onChange={(e) => updatePrivacy('shareProgress', e.target.checked)}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                    </label>
-                  </div>
-
-                  {/* Data Collection */}
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div>
-                      <h4 className="font-medium text-gray-900">Analytics & Data Collection</h4>
-                      <p className="text-sm text-gray-600">Help improve the app by sharing usage analytics</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={privacy.dataCollection}
-                        onChange={(e) => updatePrivacy('dataCollection', e.target.checked)}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                    </label>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Data & Account Settings */}
-            {activeSection === 'data' && (
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">📊 Data & Account Management</h2>
-                
-                <div className="space-y-6">
-                  {/* Export Data */}
+                  {/* Account Info */}
                   <div className="p-6 bg-blue-50 border border-blue-200 rounded-lg">
-                    <h3 className="text-lg font-semibold text-blue-900 mb-2">📥 Export Your Data</h3>
-                    <p className="text-blue-700 mb-4">Download a complete copy of all your fitness data, including plans, progress, and settings.</p>
+                    <h3 className="text-lg font-semibold text-blue-900 mb-2">📋 Account Information</h3>
+                    <div className="space-y-2 text-blue-700">
+                      <p><strong>Username:</strong> {user?.username}</p>
+                      <p><strong>Email:</strong> {user?.email}</p>
+                      <p><strong>Member Since:</strong> {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</p>
+                    </div>
+                  </div>
+
+                  {/* Export Data */}
+                  <div className="p-6 bg-green-50 border border-green-200 rounded-lg">
+                    <h3 className="text-lg font-semibold text-green-900 mb-2">📥 Export Your Data</h3>
+                    <p className="text-green-700 mb-4">Download a complete copy of all your fitness data, including diet plans, workout plans, and progress.</p>
                     <button
-                      onClick={() => setShowDataExport(true)}
-                      className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                      onClick={exportUserData}
+                      className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
                     >
                       Download Data Export
                     </button>
                   </div>
 
-                  {/* Clear Data */}
-                  <div className="p-6 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <h3 className="text-lg font-semibold text-yellow-900 mb-2">🧹 Clear All Data</h3>
-                    <p className="text-yellow-700 mb-4">Remove all your local data including diet plans, workout plans, and progress. This cannot be undone.</p>
-                    <button
-                      onClick={clearAllData}
-                      className="bg-yellow-600 text-white px-6 py-2 rounded-lg hover:bg-yellow-700 transition-colors"
-                    >
-                      Clear All Local Data
-                    </button>
-                  </div>
-
                   {/* Delete Account */}
                   <div className="p-6 bg-red-50 border border-red-200 rounded-lg">
-                    <h3 className="text-lg font-semibold text-red-900 mb-2">🗑️ Delete Account</h3>
-                    <p className="text-red-700 mb-4">Permanently delete your account and all associated data. This action cannot be undone.</p>
+                    <h3 className="text-lg font-semibold text-red-900 mb-2">🗑️ Clear Account Data</h3>
+                    <p className="text-red-700 mb-4">This will clear all your local data including diet plans, workout plans, and progress. You will be logged out after this action.</p>
                     <button
                       onClick={() => setShowDeleteConfirm(true)}
                       className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors"
                     >
-                      Delete My Account
+                      Clear My Data
                     </button>
                   </div>
                 </div>
@@ -505,45 +314,13 @@ export default function SettingsContent() {
         </div>
       </div>
 
-      {/* Data Export Modal */}
-      {showDataExport && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">📥 Export Your Data</h3>
-            <p className="text-gray-600 mb-6">
-              This will download a JSON file containing all your fitness data, including:
-            </p>
-            <ul className="text-sm text-gray-600 mb-6 space-y-1">
-              <li>• Profile information</li>
-              <li>• Diet and workout plans</li>
-              <li>• Progress tracking data</li>
-              <li>• Settings and preferences</li>
-            </ul>
-            <div className="flex space-x-3">
-              <button
-                onClick={() => setShowDataExport(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={exportUserData}
-                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-              >
-                Download Export
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Delete Account Confirmation Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
-            <h3 className="text-xl font-bold text-red-900 mb-4">⚠️ Delete Account</h3>
+            <h3 className="text-xl font-bold text-red-900 mb-4">⚠️ Clear Account Data</h3>
             <p className="text-gray-600 mb-4">
-              This action will permanently delete your account and all associated data. This cannot be undone.
+              This action will clear all your local fitness data including diet plans, workout plans, and progress. You will be logged out immediately.
             </p>
             <p className="text-sm text-red-600 mb-4">
               Type <strong>"DELETE MY ACCOUNT"</strong> below to confirm:
@@ -570,7 +347,7 @@ export default function SettingsContent() {
                 disabled={isLoading || deleteConfirmText !== 'DELETE MY ACCOUNT'}
                 className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading ? 'Deleting...' : 'Delete Account'}
+                {isLoading ? 'Clearing...' : 'Clear Data'}
               </button>
             </div>
           </div>
