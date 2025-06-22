@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 
 interface AppSettings {
@@ -10,6 +11,7 @@ interface AppSettings {
 
 export default function SettingsContent() {
   const { user, logout } = useAuth();
+  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   
   // State for app settings
@@ -26,20 +28,27 @@ export default function SettingsContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
-  // Load settings from localStorage on mount
+  // Load settings from localStorage on mount and sync with theme context
   useEffect(() => {
     if (user?._id) {
       const savedAppSettings = localStorage.getItem(`appSettings_${user._id}`);
 
       if (savedAppSettings) {
         try {
-          setAppSettings(JSON.parse(savedAppSettings));
+          const settings = JSON.parse(savedAppSettings);
+          setAppSettings(settings);
+          // Don't set theme here - ThemeContext handles it
         } catch (error) {
           console.error('Error loading app settings:', error);
         }
       }
     }
   }, [user?._id]);
+
+  // Sync settings with theme context
+  useEffect(() => {
+    setAppSettings(prev => ({ ...prev, theme }));
+  }, [theme]);
 
   // Save settings to localStorage
   const saveSettings = async () => {
@@ -60,6 +69,9 @@ export default function SettingsContent() {
 
   // Handle app setting changes
   const updateAppSetting = (key: keyof AppSettings, value: any) => {
+    if (key === 'theme') {
+      setTheme(value); // Use theme context for theme changes
+    }
     setAppSettings(prev => ({ ...prev, [key]: value }));
   };
 
@@ -145,16 +157,16 @@ export default function SettingsContent() {
     <div className="p-6 max-w-6xl mx-auto">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Settings</h1>
-        <p className="text-gray-600">Manage your preferences and account settings</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Settings</h1>
+        <p className="text-gray-600 dark:text-gray-400">Manage your preferences and account settings</p>
       </div>
 
       {/* Save Status */}
       {saveStatus !== 'idle' && (
         <div className={`mb-6 p-4 rounded-lg ${
-          saveStatus === 'saving' ? 'bg-blue-50 text-blue-800' :
-          saveStatus === 'saved' ? 'bg-green-50 text-green-800' :
-          'bg-red-50 text-red-800'
+          saveStatus === 'saving' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200' :
+          saveStatus === 'saved' ? 'bg-green-50 dark:bg-green-900/30 text-green-800 dark:text-green-200' :
+          'bg-red-50 dark:bg-red-900/30 text-red-800 dark:text-red-200'
         }`}>
           {saveStatus === 'saving' && '💾 Saving settings...'}
           {saveStatus === 'saved' && '✅ Settings saved successfully!'}
@@ -165,8 +177,8 @@ export default function SettingsContent() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Sidebar Navigation */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-xl shadow-lg p-4">
-            <h3 className="font-semibold text-gray-900 mb-4">Settings Categories</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Settings Categories</h3>
             <nav className="space-y-2">
               {sectionTabs.map((tab) => (
                 <button
@@ -174,8 +186,8 @@ export default function SettingsContent() {
                   onClick={() => setActiveSection(tab.id)}
                   className={`w-full flex items-center space-x-3 p-3 rounded-lg text-left transition-colors ${
                     activeSection === tab.id
-                      ? 'bg-blue-100 text-blue-800 border border-blue-200'
-                      : 'text-gray-600 hover:bg-gray-100'
+                      ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-blue-700'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
                 >
                   <span className="text-lg">{tab.icon}</span>
@@ -185,19 +197,19 @@ export default function SettingsContent() {
             </nav>
 
             {/* Quick Actions */}
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <h4 className="font-medium text-gray-900 mb-3">Quick Actions</h4>
+            <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-600">
+              <h4 className="font-medium text-gray-900 dark:text-white mb-3">Quick Actions</h4>
               <div className="space-y-2">
                 <button
                   onClick={saveSettings}
                   disabled={saveStatus === 'saving'}
-                  className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
                 >
                   💾 Save Settings
                 </button>
                 <button
                   onClick={exportUserData}
-                  className="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                  className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors"
                 >
                   📥 Export Data
                 </button>
@@ -208,51 +220,51 @@ export default function SettingsContent() {
 
         {/* Main Content Area */}
         <div className="lg:col-span-3">
-          <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
             
             {/* General Settings */}
             {activeSection === 'general' && (
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">⚙️ General Settings</h2>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">⚙️ General Settings</h2>
                 
                 <div className="space-y-6">
                   {/* Theme Selection */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Theme Preference
                     </label>
                     <select
                       value={appSettings.theme}
                       onChange={(e) => updateAppSetting('theme', e.target.value)}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     >
                       <option value="light">🌞 Light</option>
                       <option value="dark">🌙 Dark</option>
                     </select>
-                    <p className="text-sm text-gray-500 mt-1">Choose your preferred theme for the dashboard</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Choose your preferred theme for the dashboard</p>
                   </div>
 
                   {/* Units Selection */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Measurement Units
                     </label>
                     <select
                       value={appSettings.units}
                       onChange={(e) => updateAppSetting('units', e.target.value)}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     >
                       <option value="metric">📏 Metric (kg, cm)</option>
                       <option value="imperial">📐 Imperial (lbs, ft/in)</option>
                     </select>
-                    <p className="text-sm text-gray-500 mt-1">Units used for weight, height, and measurements</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Units used for weight, height, and measurements</p>
                   </div>
 
                   {/* Auto Save */}
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                     <div>
-                      <h4 className="font-medium text-gray-900">Auto-save Progress</h4>
-                      <p className="text-sm text-gray-600">Automatically save your workout and diet progress as you complete them</p>
+                      <h4 className="font-medium text-gray-900 dark:text-white">Auto-save Progress</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Automatically save your workout and diet progress as you complete them</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
@@ -261,7 +273,7 @@ export default function SettingsContent() {
                         onChange={(e) => updateAppSetting('autoSave', e.target.checked)}
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                      <div className="w-11 h-6 bg-gray-200 dark:bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                     </label>
                   </div>
                 </div>
@@ -271,13 +283,13 @@ export default function SettingsContent() {
             {/* Account Management */}
             {activeSection === 'account' && (
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">👤 Account Management</h2>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">👤 Account Management</h2>
                 
                 <div className="space-y-6">
                   {/* Account Info */}
-                  <div className="p-6 bg-blue-50 border border-blue-200 rounded-lg">
-                    <h3 className="text-lg font-semibold text-blue-900 mb-2">📋 Account Information</h3>
-                    <div className="space-y-2 text-blue-700">
+                  <div className="p-6 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg">
+                    <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-200 mb-2">📋 Account Information</h3>
+                    <div className="space-y-2 text-blue-700 dark:text-blue-300">
                       <p><strong>Username:</strong> {user?.username}</p>
                       <p><strong>Email:</strong> {user?.email}</p>
                       <p><strong>Member Since:</strong> {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</p>
@@ -285,24 +297,24 @@ export default function SettingsContent() {
                   </div>
 
                   {/* Export Data */}
-                  <div className="p-6 bg-green-50 border border-green-200 rounded-lg">
-                    <h3 className="text-lg font-semibold text-green-900 mb-2">📥 Export Your Data</h3>
-                    <p className="text-green-700 mb-4">Download a complete copy of all your fitness data, including diet plans, workout plans, and progress.</p>
+                  <div className="p-6 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 rounded-lg">
+                    <h3 className="text-lg font-semibold text-green-900 dark:text-green-200 mb-2">📥 Export Your Data</h3>
+                    <p className="text-green-700 dark:text-green-300 mb-4">Download a complete copy of all your fitness data, including diet plans, workout plans, and progress.</p>
                     <button
                       onClick={exportUserData}
-                      className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                      className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition-colors"
                     >
                       Download Data Export
                     </button>
                   </div>
 
                   {/* Delete Account */}
-                  <div className="p-6 bg-red-50 border border-red-200 rounded-lg">
-                    <h3 className="text-lg font-semibold text-red-900 mb-2">🗑️ Clear Account Data</h3>
-                    <p className="text-red-700 mb-4">This will clear all your local data including diet plans, workout plans, and progress. You will be logged out after this action.</p>
+                  <div className="p-6 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-lg">
+                    <h3 className="text-lg font-semibold text-red-900 dark:text-red-200 mb-2">🗑️ Clear Account Data</h3>
+                    <p className="text-red-700 dark:text-red-300 mb-4">This will clear all your local data including diet plans, workout plans, and progress. You will be logged out after this action.</p>
                     <button
                       onClick={() => setShowDeleteConfirm(true)}
-                      className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors"
+                      className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg transition-colors"
                     >
                       Clear My Data
                     </button>
@@ -317,12 +329,12 @@ export default function SettingsContent() {
       {/* Delete Account Confirmation Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
-            <h3 className="text-xl font-bold text-red-900 mb-4">⚠️ Clear Account Data</h3>
-            <p className="text-gray-600 mb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full mx-4">
+            <h3 className="text-xl font-bold text-red-900 dark:text-red-200 mb-4">⚠️ Clear Account Data</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
               This action will clear all your local fitness data including diet plans, workout plans, and progress. You will be logged out immediately.
             </p>
-            <p className="text-sm text-red-600 mb-4">
+            <p className="text-sm text-red-600 dark:text-red-400 mb-4">
               Type <strong>"DELETE MY ACCOUNT"</strong> below to confirm:
             </p>
             <input
@@ -330,7 +342,7 @@ export default function SettingsContent() {
               value={deleteConfirmText}
               onChange={(e) => setDeleteConfirmText(e.target.value)}
               placeholder="Type here..."
-              className="w-full p-3 border border-gray-300 rounded-lg mb-6 focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg mb-6 focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
             <div className="flex space-x-3">
               <button
@@ -338,14 +350,14 @@ export default function SettingsContent() {
                   setShowDeleteConfirm(false);
                   setDeleteConfirmText('');
                 }}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
               >
                 Cancel
               </button>
               <button
                 onClick={deleteAccount}
                 disabled={isLoading || deleteConfirmText !== 'DELETE MY ACCOUNT'}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? 'Clearing...' : 'Clear Data'}
               </button>
