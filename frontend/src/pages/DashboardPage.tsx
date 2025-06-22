@@ -8,6 +8,7 @@ import CartContent from '../components/Dashboard/CartContent';
 import PaymentContent from '../components/Dashboard/PaymentContent';
 import PaymentSuccessContent from '../components/Dashboard/PaymentSuccessContent';
 import ProfileContent from '../components/Dashboard/ProfileContent';
+import SettingsContent from '../components/Dashboard/SettingsContent';
 
 export default function DashboardPage() {
   return (
@@ -21,6 +22,7 @@ export default function DashboardPage() {
         <Route path="/payment" element={<PaymentContent />} />
         <Route path="/payment-success" element={<PaymentSuccessContent />} />
         <Route path="/profile" element={<ProfileContent />} />
+        <Route path="/settings" element={<SettingsContent />} />
       </Routes>
     </DashboardLayout>
   );
