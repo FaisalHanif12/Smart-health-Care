@@ -178,7 +178,7 @@ export default function DashboardContentSimple() {
     <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 pb-20">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold text-gray-800">Dashboard</h1>
+        <h1 className="text-2xl font-semibold text-gray-800 dark:text-gray-100">Dashboard</h1>
         <div className="flex items-center">
           <div className="relative mr-4">
             <input 
@@ -186,7 +186,7 @@ export default function DashboardContentSimple() {
               placeholder="Search sections..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             />
             <svg className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
@@ -207,12 +207,12 @@ export default function DashboardContentSimple() {
 
       {/* Search Results Info */}
       {searchQuery && (
-        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-lg">
           <div className="flex items-center space-x-2">
-            <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+            <svg className="w-5 h-5 text-blue-600 dark:text-blue-300" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
             </svg>
-            <span className="text-blue-800 font-medium">
+            <span className="text-blue-800 dark:text-blue-200 font-medium">
               {filteredSections.length > 0 
                 ? `Found ${filteredSections.length} section${filteredSections.length !== 1 ? 's' : ''} matching "${searchQuery}"`
                 : `No sections found matching "${searchQuery}"`
@@ -228,37 +228,37 @@ export default function DashboardContentSimple() {
       {/* Progress Overview Section */}
       {shouldShowSection('progress-overview') && (
         <div className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">{highlightText('Progress Overview')}</h2>
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">{highlightText('Progress Overview')}</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Diet Progress Card */}
-          <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl p-6">
+          <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900 dark:to-green-800 border border-green-200 dark:border-green-700 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-green-800">Today's Diet Progress</h3>
-              <div className="bg-green-200 rounded-full p-2">
-                <svg className="w-5 h-5 text-green-700" fill="currentColor" viewBox="0 0 20 20">
+              <h3 className="text-lg font-semibold text-green-800 dark:text-green-100">Today's Diet Progress</h3>
+              <div className="bg-green-200 dark:bg-green-700 rounded-full p-2">
+                <svg className="w-5 h-5 text-green-700 dark:text-green-200" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
                 </svg>
               </div>
             </div>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-green-700">Meals Completed</span>
-                <span className="font-semibold text-green-800">{dietProgress.completedMeals}/{dietProgress.totalMeals}</span>
+                <span className="text-sm text-green-700 dark:text-green-300">Meals Completed</span>
+                <span className="font-semibold text-green-800 dark:text-green-100">{dietProgress.completedMeals}/{dietProgress.totalMeals}</span>
               </div>
-              <div className="w-full bg-green-200 rounded-full h-2">
+              <div className="w-full bg-green-200 dark:bg-green-700 rounded-full h-2">
                 <div 
-                  className="bg-green-600 h-2 rounded-full transition-all duration-300" 
+                  className="bg-green-600 dark:bg-green-400 h-2 rounded-full transition-all duration-300" 
                   style={{ width: `${getTodaysDietProgress()}%` }}
                 ></div>
               </div>
               <div className="flex justify-between items-center text-sm">
-                <span className="text-green-700">Calories: {getCaloriesConsumed()}/{dietProgress.targetCalories}</span>
-                <span className="font-semibold text-green-800">{getTodaysDietProgress()}%</span>
+                <span className="text-green-700 dark:text-green-300">Calories: {getCaloriesConsumed()}/{dietProgress.targetCalories}</span>
+                <span className="font-semibold text-green-800 dark:text-green-100">{getTodaysDietProgress()}%</span>
               </div>
               <div className="pt-2">
                 <Link 
                   to="/dashboard/diet" 
-                  className="inline-flex items-center text-sm text-green-700 hover:text-green-800 font-medium"
+                  className="inline-flex items-center text-sm text-green-700 dark:text-green-300 hover:text-green-800 dark:hover:text-green-200 font-medium"
                 >
                   View Diet Plan →
                 </Link>
@@ -267,34 +267,34 @@ export default function DashboardContentSimple() {
           </div>
 
           {/* Workout Progress Card */}
-          <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-6">
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 border border-blue-200 dark:border-blue-700 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-blue-800">This Week's Workouts</h3>
-              <div className="bg-blue-200 rounded-full p-2">
-                <svg className="w-5 h-5 text-blue-700" fill="currentColor" viewBox="0 0 20 20">
+              <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-100">This Week's Workouts</h3>
+              <div className="bg-blue-200 dark:bg-blue-700 rounded-full p-2">
+                <svg className="w-5 h-5 text-blue-700 dark:text-blue-200" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
                 </svg>
               </div>
             </div>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-blue-700">Workouts Completed</span>
-                <span className="font-semibold text-blue-800">{workoutProgress.completedWorkouts}/{workoutProgress.totalWorkouts}</span>
+                <span className="text-sm text-blue-700 dark:text-blue-300">Workouts Completed</span>
+                <span className="font-semibold text-blue-800 dark:text-blue-100">{workoutProgress.completedWorkouts}/{workoutProgress.totalWorkouts}</span>
               </div>
-              <div className="w-full bg-blue-200 rounded-full h-2">
+              <div className="w-full bg-blue-200 dark:bg-blue-700 rounded-full h-2">
                 <div 
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                  className="bg-blue-600 dark:bg-blue-400 h-2 rounded-full transition-all duration-300" 
                   style={{ width: `${getWeeklyWorkoutProgress()}%` }}
                 ></div>
               </div>
               <div className="flex justify-between items-center text-sm">
-                <span className="text-blue-700">Exercises: {workoutProgress.completedExercises}/{workoutProgress.totalExercises}</span>
-                <span className="font-semibold text-blue-800">{getWeeklyWorkoutProgress()}%</span>
+                <span className="text-blue-700 dark:text-blue-300">Exercises: {workoutProgress.completedExercises}/{workoutProgress.totalExercises}</span>
+                <span className="font-semibold text-blue-800 dark:text-blue-100">{getWeeklyWorkoutProgress()}%</span>
               </div>
               <div className="pt-2">
                 <Link 
                   to="/dashboard/workout" 
-                  className="inline-flex items-center text-sm text-blue-700 hover:text-blue-800 font-medium"
+                  className="inline-flex items-center text-sm text-blue-700 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-200 font-medium"
                 >
                   View Workout Plan →
                 </Link>
@@ -308,15 +308,15 @@ export default function DashboardContentSimple() {
       {/* Progress Charts Section */}
       {shouldShowSection('weekly-charts') && (
         <div className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">{highlightText('Weekly Progress Charts')}</h2>
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">{highlightText('Weekly Progress Charts')}</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           
           {/* Workout Progress Chart */}
-          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">Weekly Workout Progress</h3>
-              <div className="bg-blue-100 rounded-full p-2">
-                <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Weekly Workout Progress</h3>
+              <div className="bg-blue-100 dark:bg-blue-800 rounded-full p-2">
+                <svg className="w-5 h-5 text-blue-600 dark:text-blue-300" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
               </div>
@@ -324,23 +324,23 @@ export default function DashboardContentSimple() {
             <div className="space-y-3">
               {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => (
                 <div key={day} className="flex items-center space-x-3">
-                  <span className="text-sm font-medium text-gray-600 w-8">{day}</span>
-                  <div className="flex-1 bg-gray-200 rounded-full h-3 relative">
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-300 w-8">{day}</span>
+                  <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-3 relative">
                     <div 
-                      className="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-500 ease-out"
+                      className="bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-400 dark:to-blue-500 h-3 rounded-full transition-all duration-500 ease-out"
                       style={{ width: `${weeklyProgress[index] || 0}%` }}
                     ></div>
                   </div>
-                  <span className="text-sm text-gray-600 w-10 text-right">
+                  <span className="text-sm text-gray-600 dark:text-gray-300 w-10 text-right">
                     {weeklyProgress[index] || 0}%
                   </span>
                 </div>
               ))}
             </div>
-            <div className="mt-4 pt-4 border-t border-gray-100">
+            <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Average Completion</span>
-                <span className="font-semibold text-blue-600">
+                <span className="text-gray-600 dark:text-gray-300">Average Completion</span>
+                <span className="font-semibold text-blue-600 dark:text-blue-400">
                   {weeklyProgress.length > 0 ? Math.round(weeklyProgress.reduce((a, b) => a + b, 0) / weeklyProgress.length) : 0}%
                 </span>
               </div>
@@ -348,11 +348,11 @@ export default function DashboardContentSimple() {
           </div>
 
           {/* Calorie Intake Chart */}
-          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">Daily Calorie Intake</h3>
-              <div className="bg-green-100 rounded-full p-2">
-                <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Daily Calorie Intake</h3>
+              <div className="bg-green-100 dark:bg-green-800 rounded-full p-2">
+                <svg className="w-5 h-5 text-green-600 dark:text-green-300" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
                 </svg>
               </div>
@@ -365,27 +365,27 @@ export default function DashboardContentSimple() {
                 
                 return (
                   <div key={day} className="flex flex-col items-center flex-1">
-                    <div className="w-full bg-gray-100 rounded-t flex items-end justify-center relative" style={{ height: '120px' }}>
+                    <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-t flex items-end justify-center relative" style={{ height: '120px' }}>
                       <div 
-                        className="w-full bg-gradient-to-t from-green-500 to-green-400 rounded-t transition-all duration-500 ease-out flex items-end justify-center"
+                        className="w-full bg-gradient-to-t from-green-500 to-green-400 dark:from-green-400 dark:to-green-300 rounded-t transition-all duration-500 ease-out flex items-end justify-center"
                         style={{ height: `${height}%` }}
                       >
                         {calories > 0 && (
-                          <span className="text-xs text-white font-medium mb-1">
+                          <span className="text-xs text-white dark:text-gray-900 font-medium mb-1">
                             {calories}
                           </span>
                         )}
                       </div>
                     </div>
-                    <span className="text-xs text-gray-600 mt-2 font-medium">{day}</span>
+                    <span className="text-xs text-gray-600 dark:text-gray-300 mt-2 font-medium">{day}</span>
                   </div>
                 );
               })}
             </div>
-            <div className="mt-4 pt-4 border-t border-gray-100">
+            <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Daily Average</span>
-                <span className="font-semibold text-green-600">
+                <span className="text-gray-600 dark:text-gray-300">Daily Average</span>
+                <span className="font-semibold text-green-600 dark:text-green-400">
                   {dailyCalories.length > 0 ? Math.round(dailyCalories.reduce((a, b) => a + b, 0) / dailyCalories.length) : 0} cal
                 </span>
               </div>

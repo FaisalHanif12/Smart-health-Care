@@ -51,19 +51,43 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   useEffect(() => {
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
+      document.body.classList.add('dark');
+      // Force styles with inline CSS as backup
+      document.documentElement.style.backgroundColor = 'rgb(17, 24, 39)';
+      document.documentElement.style.color = 'rgb(243, 244, 246)';
+      document.body.style.backgroundColor = 'rgb(17, 24, 39)';
+      document.body.style.color = 'rgb(243, 244, 246)';
     } else {
       document.documentElement.classList.remove('dark');
+      document.body.classList.remove('dark');
+      // Remove inline styles
+      document.documentElement.style.backgroundColor = '';
+      document.documentElement.style.color = '';
+      document.body.style.backgroundColor = '';
+      document.body.style.color = '';
     }
   }, [theme]);
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
     
-    // Immediately apply to document
+    // Immediately apply to document and body
     if (newTheme === 'dark') {
       document.documentElement.classList.add('dark');
+      document.body.classList.add('dark');
+      // Force styles with inline CSS as backup
+      document.documentElement.style.backgroundColor = 'rgb(17, 24, 39)';
+      document.documentElement.style.color = 'rgb(243, 244, 246)';
+      document.body.style.backgroundColor = 'rgb(17, 24, 39)';
+      document.body.style.color = 'rgb(243, 244, 246)';
     } else {
       document.documentElement.classList.remove('dark');
+      document.body.classList.remove('dark');
+      // Remove inline styles
+      document.documentElement.style.backgroundColor = '';
+      document.documentElement.style.color = '';
+      document.body.style.backgroundColor = '';
+      document.body.style.color = '';
     }
     
     // Update localStorage settings

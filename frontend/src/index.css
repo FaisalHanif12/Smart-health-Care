@@ -2,6 +2,77 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Force dark mode styles with high specificity */
+.dark {
+  color-scheme: dark !important;
+}
+
+.dark,
+.dark body,
+html.dark,
+html.dark body {
+  background-color: rgb(17 24 39) !important;
+  color: rgb(243 244 246) !important;
+}
+
+/* Force all child elements to inherit dark mode */
+html.dark *,
+.dark * {
+  color: inherit !important;
+}
+
+/* Override any white backgrounds in dark mode */
+html.dark .bg-white,
+.dark .bg-white {
+  background-color: rgb(17 24 39) !important;
+}
+
+/* Override any gray backgrounds in dark mode */
+html.dark .bg-gray-50,
+.dark .bg-gray-50 {
+  background-color: rgb(31 41 55) !important;
+}
+
+html.dark .bg-gray-100,
+.dark .bg-gray-100 {
+  background-color: rgb(55 65 81) !important;
+}
+
+/* Override text colors in dark mode */
+html.dark .text-gray-900,
+.dark .text-gray-900 {
+  color: rgb(243 244 246) !important;
+}
+
+html.dark .text-gray-800,
+.dark .text-gray-800 {
+  color: rgb(229 231 235) !important;
+}
+
+html.dark .text-gray-700,
+.dark .text-gray-700 {
+  color: rgb(209 213 219) !important;
+}
+
+html.dark .text-gray-600,
+.dark .text-gray-600 {
+  color: rgb(156 163 175) !important;
+}
+
+/* Force dark mode on main containers */
+html.dark .min-h-screen,
+.dark .min-h-screen {
+  background-color: rgb(17 24 39) !important;
+}
+
+/* Ensure borders work in dark mode */
+html.dark .border,
+.dark .border,
+html.dark .border-gray-200,
+.dark .border-gray-200 {
+  border-color: rgb(75 85 99) !important;
+}
+
 /* Confetti animation for payment success page */
 .confetti-container {
   position: absolute;
