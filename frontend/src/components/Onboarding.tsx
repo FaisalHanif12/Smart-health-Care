@@ -197,7 +197,7 @@ export default function Onboarding() {
     const error = validationErrors[fieldName];
     if (error) {
       return (
-        <p className="mt-1 text-sm text-red-600">
+        <p className="mt-1 text-sm text-red-600 dark:text-red-400">
           {error}
         </p>
       );
@@ -207,13 +207,13 @@ export default function Onboarding() {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-[url('/Gym.jpg')] bg-cover bg-center bg-no-repeat">
-      <div className="max-w-md w-full space-y-8 p-8 bg-white/30 backdrop-blur-md rounded-xl shadow-lg border border-white/20">
+      <div className="max-w-md w-full space-y-8 p-8 bg-white/30 dark:bg-gray-900/80 backdrop-blur-md rounded-xl shadow-lg border border-white/20 dark:border-gray-700/20">
         <div className="text-center">
-          <h2 className="text-3xl font-extrabold text-gray-900">Complete Your Profile</h2>
-          <p className="mt-2 text-gray-600">Step {step} of 3</p>
+          <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white">Complete Your Profile</h2>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">Step {step} of 3</p>
           
           {/* Progress bar */}
-          <div className="mt-4 w-full bg-gray-200 rounded-full h-2">
+          <div className="mt-4 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
             <div 
               className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
               style={{ width: `${(step / 3) * 100}%` }}
@@ -222,7 +222,7 @@ export default function Onboarding() {
         </div>
 
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <div className="bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-200 px-4 py-3 rounded relative" role="alert">
             <span className="block sm:inline">{error}</span>
           </div>
         )}
@@ -231,7 +231,7 @@ export default function Onboarding() {
           {step === 1 && (
             <div className="space-y-4">
               <div>
-                <label htmlFor="age" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="age" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Age <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -243,15 +243,15 @@ export default function Onboarding() {
                   min="13"
                   max="120"
                   placeholder="Enter your age"
-                  className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
-                    validationErrors.age ? 'border-red-300' : 'border-gray-300'
+                  className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 ${
+                    validationErrors.age ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
                   }`}
                 />
                 {renderFieldError('age')}
               </div>
               
               <div>
-                <label htmlFor="gender" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="gender" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Gender <span className="text-red-500">*</span>
                 </label>
                 <select
@@ -259,8 +259,8 @@ export default function Onboarding() {
                   name="gender"
                   value={profile.gender}
                   onChange={handleInputChange}
-                  className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
-                    validationErrors.gender ? 'border-red-300' : 'border-gray-300'
+                  className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
+                    validationErrors.gender ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
                   }`}
                 >
                   <option value="">Select your gender</option>
@@ -276,7 +276,7 @@ export default function Onboarding() {
           {step === 2 && (
             <div className="space-y-4">
               <div>
-                <label htmlFor="height" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="height" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Height (cm) <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -289,16 +289,16 @@ export default function Onboarding() {
                   max="250"
                   step="0.1"
                   placeholder="e.g., 175.5"
-                  className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
-                    validationErrors.height ? 'border-red-300' : 'border-gray-300'
+                  className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 ${
+                    validationErrors.height ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
                   }`}
                 />
-                <p className="mt-1 text-xs text-gray-500">Enter height in centimeters (e.g., 175.5 cm)</p>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Enter height in centimeters (e.g., 175.5 cm)</p>
                 {renderFieldError('height')}
               </div>
               
               <div>
-                <label htmlFor="weight" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="weight" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Weight (kg) <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -311,11 +311,11 @@ export default function Onboarding() {
                   max="300"
                   step="0.1"
                   placeholder="e.g., 70.5"
-                  className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
-                    validationErrors.weight ? 'border-red-300' : 'border-gray-300'
+                  className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 ${
+                    validationErrors.weight ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
                   }`}
                 />
-                <p className="mt-1 text-xs text-gray-500">Enter weight in kilograms (e.g., 70.5 kg)</p>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Enter weight in kilograms (e.g., 70.5 kg)</p>
                 {renderFieldError('weight')}
               </div>
             </div>
@@ -324,28 +324,28 @@ export default function Onboarding() {
           {step === 3 && (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Health Conditions <span className="text-red-500">*</span>
                 </label>
                 <div className="space-y-2 max-h-40 overflow-y-auto">
                   {healthConditionOptions.map(condition => (
-                    <label key={condition} className="flex items-center p-2 hover:bg-white/20 rounded transition-colors">
+                    <label key={condition} className="flex items-center p-2 hover:bg-white/20 dark:hover:bg-gray-700/30 rounded transition-colors">
                       <input
                         type="checkbox"
                         checked={profile.healthConditions.includes(condition)}
                         onChange={() => handleHealthConditionChange(condition)}
-                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded"
                       />
-                      <span className="ml-2 text-gray-700">{condition}</span>
+                      <span className="ml-2 text-gray-700 dark:text-gray-300">{condition}</span>
                     </label>
                   ))}
                 </div>
-                <p className="mt-1 text-xs text-gray-500">Select all that apply. Choose "None" if no conditions apply.</p>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Select all that apply. Choose "None" if no conditions apply.</p>
                 {renderFieldError('healthConditions')}
               </div>
               
               <div>
-                <label htmlFor="fitnessGoal" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="fitnessGoal" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Fitness Goal <span className="text-red-500">*</span>
                 </label>
                 <select
@@ -353,8 +353,8 @@ export default function Onboarding() {
                   name="fitnessGoal"
                   value={profile.fitnessGoal}
                   onChange={handleInputChange}
-                  className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
-                    validationErrors.fitnessGoal ? 'border-red-300' : 'border-gray-300'
+                  className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
+                    validationErrors.fitnessGoal ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
                   }`}
                 >
                   <option value="">Select your primary goal</option>

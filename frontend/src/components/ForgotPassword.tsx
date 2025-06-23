@@ -54,19 +54,19 @@ export default function ForgotPassword() {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-[url('/Gym.jpg')] bg-cover bg-center bg-no-repeat">
-      <div className="max-w-md w-full space-y-8 p-8 bg-white/30 backdrop-blur-md rounded-xl shadow-lg border border-white/20">
+      <div className="max-w-md w-full space-y-8 p-8 bg-white/30 dark:bg-gray-900/80 backdrop-blur-md rounded-xl shadow-lg border border-white/20 dark:border-gray-700/20">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
             Reset your password
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
             Enter your email address and we'll send you a link to reset your password.
           </p>
         </div>
 
         {/* Status Message */}
         {statusMessage && !error && !success && (
-          <div className="border px-4 py-4 rounded-lg relative bg-blue-50 border-blue-300 text-blue-800" role="alert">
+          <div className="border px-4 py-4 rounded-lg relative bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 text-blue-800 dark:text-blue-200" role="alert">
             <div className="flex items-start space-x-3">
               <div className="flex-shrink-0">
                 <svg className="animate-spin h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24">
@@ -83,7 +83,7 @@ export default function ForgotPassword() {
 
         {/* Error Message */}
         {error && (
-          <div className="border px-4 py-4 rounded-lg relative bg-red-100 border-red-400 text-red-700" role="alert">
+          <div className="border px-4 py-4 rounded-lg relative bg-red-100 dark:bg-red-900/30 border-red-400 dark:border-red-700 text-red-700 dark:text-red-200" role="alert">
             <div className="flex items-start space-x-3">
               <div className="flex-shrink-0">
                 <svg className="h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
@@ -99,7 +99,7 @@ export default function ForgotPassword() {
 
         {/* Success Message */}
         {success && (
-          <div className="border px-4 py-6 rounded-lg relative bg-green-50 border-green-300 text-green-800" role="alert">
+          <div className="border px-4 py-6 rounded-lg relative bg-green-50 dark:bg-green-900/30 border-green-300 dark:border-green-700 text-green-800 dark:text-green-200" role="alert">
             <div className="flex items-start space-x-3">
               <div className="flex-shrink-0">
                 <svg className="h-6 w-6 text-green-500" fill="currentColor" viewBox="0 0 20 20">
@@ -178,7 +178,7 @@ export default function ForgotPassword() {
                 type="email"
                 autoComplete="email"
                 required
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-700 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}

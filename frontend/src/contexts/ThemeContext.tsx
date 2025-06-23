@@ -29,6 +29,12 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
           const settings = JSON.parse(savedAppSettings);
           if (settings.theme) {
             setThemeState(settings.theme);
+            // Immediately apply to document
+            if (settings.theme === 'dark') {
+              document.documentElement.classList.add('dark');
+            } else {
+              document.documentElement.classList.remove('dark');
+            }
           }
         } catch (error) {
           console.error('Error loading theme:', error);
@@ -37,6 +43,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     } else {
       // Reset to default when no user
       setThemeState('light');
+      document.documentElement.classList.remove('dark');
     }
   }, [user?._id]);
 
@@ -51,6 +58,13 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
+    
+    // Immediately apply to document
+    if (newTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
     
     // Update localStorage settings
     if (user?._id) {

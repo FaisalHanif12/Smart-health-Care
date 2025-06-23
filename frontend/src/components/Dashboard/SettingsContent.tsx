@@ -15,7 +15,7 @@ export default function SettingsContent() {
   
   // State for app settings
   const [appSettings, setAppSettings] = useState<AppSettings>({
-    theme: 'dark',
+    theme: theme,
     units: 'metric'
   });
 
@@ -23,7 +23,6 @@ export default function SettingsContent() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
   // Load settings from localStorage on mount and sync with theme context
   useEffect(() => {
@@ -46,31 +45,18 @@ export default function SettingsContent() {
     setAppSettings(prev => ({ ...prev, theme }));
   }, [theme]);
 
-  // Save settings to localStorage
-  const saveSettings = async () => {
-    if (!user?._id) return;
 
-    setSaveStatus('saving');
-    try {
-      localStorage.setItem(`appSettings_${user._id}`, JSON.stringify(appSettings));
-      
-      setSaveStatus('saved');
-      setTimeout(() => setSaveStatus('idle'), 2000);
-    } catch (error) {
-      console.error('Error saving settings:', error);
-      setSaveStatus('error');
-      setTimeout(() => setSaveStatus('idle'), 3000);
-    }
-  };
 
   // Handle app setting changes
   const updateAppSetting = (key: keyof AppSettings, value: any) => {
     if (key === 'theme') {
-      setTheme(value); // Use theme context for theme changes
+      setTheme(value); // Use theme context for theme changes - this handles localStorage too
+      return; // Don't duplicate localStorage saving
     }
+    
     setAppSettings(prev => ({ ...prev, [key]: value }));
     
-    // Auto-save when theme or units change
+    // Auto-save for non-theme changes
     if (user?._id) {
       const newSettings = { ...appSettings, [key]: value };
       localStorage.setItem(`appSettings_${user._id}`, JSON.stringify(newSettings));
@@ -159,18 +145,7 @@ export default function SettingsContent() {
           <p className="text-lg text-gray-600 dark:text-gray-400">Manage your preferences and account</p>
         </div>
 
-        {/* Save Status */}
-        {saveStatus !== 'idle' && (
-          <div className={`mb-8 p-4 rounded-xl text-center font-medium ${
-            saveStatus === 'saving' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200' :
-            saveStatus === 'saved' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' :
-            'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200'
-          }`}>
-            {saveStatus === 'saving' && '💾 Saving settings...'}
-            {saveStatus === 'saved' && '✅ Settings saved successfully!'}
-            {saveStatus === 'error' && '❌ Error saving settings. Please try again.'}
-          </div>
-        )}
+
 
         {/* Settings Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -194,7 +169,7 @@ export default function SettingsContent() {
                 <label
                   key={themeOption}
                   className={`flex items-center p-4 rounded-xl cursor-pointer transition-all ${
-                    appSettings.theme === themeOption
+                    theme === themeOption
                       ? 'bg-blue-50 dark:bg-blue-900/30 border-2 border-blue-500'
                       : 'bg-gray-50 dark:bg-gray-700 border-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600'
                   }`}
@@ -203,7 +178,7 @@ export default function SettingsContent() {
                     type="radio"
                     name="theme"
                     value={themeOption}
-                    checked={appSettings.theme === themeOption}
+                    checked={theme === themeOption}
                     onChange={(e) => updateAppSetting('theme', e.target.value)}
                     className="sr-only"
                   />
@@ -215,7 +190,7 @@ export default function SettingsContent() {
                       {themeOption}
                     </span>
                   </div>
-                  {appSettings.theme === themeOption && (
+                  {theme === themeOption && (
                     <svg className="w-5 h-5 text-blue-500 ml-auto" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
