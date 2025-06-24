@@ -81,8 +81,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 className="w-10 h-10 rounded-lg"
               />
               <h1 className="text-xl font-bold text-yellow-400">
-                <span className="hidden lg:inline">HEALTH TRACKER</span>
-                <span className="lg:hidden">HEALTH</span>
+                <span className="hidden lg:inline">SMART TRACKER</span>
+               
               </h1>
             </div>
             

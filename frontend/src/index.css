@@ -38,3 +38,30 @@ html.dark body {
     transform: translateY(100vh) rotate(360deg);
   }
 }
+
+/* Optimized Background Image Preloading */
+.auth-background {
+  background-color: #1f2937; /* Gray-800 fallback */
+  background-image: url('/Gym.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  /* Optimize for immediate rendering */
+  will-change: background-image;
+  transform: translateZ(0); /* Force hardware acceleration */
+}
+
+/* Preload the gym image immediately */
+body::before {
+  content: '';
+  position: fixed;
+  top: -1px;
+  left: -1px;
+  width: 1px;
+  height: 1px;
+  background-image: url('/Gym.jpg');
+  opacity: 0;
+  pointer-events: none;
+  z-index: -1;
+}
