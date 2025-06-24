@@ -37,7 +37,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     <div className="min-h-screen bg-white dark:bg-gray-900">
       <div className="flex">
         {/* Mobile Header */}
-        <div className="md:hidden bg-gray-900 dark:bg-gray-800 p-4 flex justify-between items-center w-full fixed top-0 z-40">
+        <div className="md:hidden bg-gray-900 dark:bg-gray-800 p-4 flex justify-between items-center w-full fixed top-0 z-50">
           <div className="flex items-center">
             <img 
               src="/fitness tracker.webp" 
@@ -70,7 +70,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         )}
         
         {/* Sidebar Navigation */}
-        <div className={`w-64 bg-gray-900 dark:bg-gray-800 min-h-screen fixed md:relative left-0 top-0 z-40 md:z-auto transform transition-transform duration-300 ease-in-out ${
+        <div className={`w-64 bg-gray-900 dark:bg-gray-800 h-screen sticky top-0 fixed md:sticky left-0 md:left-auto z-40 md:z-auto transform transition-transform duration-300 ease-in-out overflow-y-auto ${
           isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         } md:translate-x-0 md:block`}>
           <div className="p-4">
@@ -189,7 +189,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 w-full md:ml-0 pt-16 md:pt-0 bg-white dark:bg-gray-900">
+        <div className="flex-1 w-full pt-16 md:pt-0 bg-white dark:bg-gray-900 min-h-screen">
           {children}
         </div>
       </div>
