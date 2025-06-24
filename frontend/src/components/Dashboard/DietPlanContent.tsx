@@ -28,6 +28,7 @@ export default function DietPlanContent() {
   const { archiveCurrentProgress, clearDietProgress } = useProgress();
   const [dietPlan, setDietPlan] = useState<DietDay[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
   const [showPromptDialog, setShowPromptDialog] = useState(false);
   const [customPrompt, setCustomPrompt] = useState('');
   const [generatedPrompt, setGeneratedPrompt] = useState('');
@@ -131,17 +132,21 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
     }
 
     setIsLoading(true);
+    setLoadingMessage('🤖 Initializing AI Diet Generator...');
     
     try {
       // Try backend service first (GPT-4), fallback to frontend service (GPT-3.5)
       let dietData;
       
       try {
+        setLoadingMessage('🔄 Generating your personalized AI-based diet plan...');
         console.log('🔄 Attempting to generate diet plan with Backend AI Service (GPT-4)...');
         const backendService = new BackendAIService();
         dietData = await backendService.generateDietPlan(promptToUse);
         console.log('✅ Backend AI Service (GPT-4) successful!');
+        setLoadingMessage('✅ AI diet plan generated! Formatting your meals...');
       } catch (backendError) {
+        setLoadingMessage('🔄 Trying alternative AI service for your diet plan...');
         console.warn('⚠️ Backend AI Service failed, trying Frontend OpenAI Service (GPT-3.5)...', backendError);
         
         const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
@@ -151,6 +156,7 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
         const openaiService = new OpenAIService(apiKey);
         dietData = await openaiService.generateDietPlan(promptToUse);
         console.log('✅ Frontend OpenAI Service (GPT-4) successful!');
+        setLoadingMessage('✅ AI diet plan generated! Formatting your meals...');
       }
       
       // Convert the AI response to our format - Generate 7 days (Monday through Sunday)
@@ -208,6 +214,7 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
         };
       });
 
+      setLoadingMessage('💾 Saving your personalized diet plan...');
       saveDietPlan(convertedPlan);
       
       // Initialize plan metadata for auto-renewal system
@@ -216,12 +223,16 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
       const totalWeeks = planDuration.includes('3') ? 12 : planDuration.includes('6') ? 24 : 52;
       renewalService.initializePlanMetadata('diet', totalWeeks, user?._id);
       
+      setLoadingMessage('🎉 Your AI diet plan is ready! Enjoy your journey!');
       setShowPromptDialog(false);
     } catch (error) {
       console.error('❌ Error generating diet plan:', error);
       alert(`Failed to generate diet plan: ${error instanceof Error ? error.message : 'Unknown error'}. Please check your API configuration.`);
     } finally {
-      setIsLoading(false);
+      setTimeout(() => {
+        setIsLoading(false);
+        setLoadingMessage('');
+      }, 1000); // Brief delay to show final success message
     }
   };
 
@@ -471,9 +482,16 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
             <button
               onClick={() => generateDietPlan(false)}
               disabled={isLoading}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
             >
-              {isLoading ? 'Generating with AI...' : '🤖 Create Plan with AI'}
+              {isLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                  <span>Generating AI Diet Plan...</span>
+                </>
+              ) : (
+                <>🤖 Create Plan with AI</>
+              )}
             </button>
             <button 
               onClick={() => setShowPromptDialog(true)}
@@ -566,6 +584,41 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
               >
                 Confirm
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Generation Loading Modal */}
+      {isLoading && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-md w-full shadow-2xl">
+            <div className="text-center">
+              <div className="bg-blue-100 dark:bg-blue-900/30 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+                <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-600 border-t-transparent"></div>
+              </div>
+              
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                Creating Your Diet Plan
+              </h3>
+              
+              <div className="mb-6">
+                <div className="text-lg text-blue-600 dark:text-blue-400 font-medium mb-2">
+                  {loadingMessage}
+                </div>
+                <div className="text-gray-600 dark:text-gray-400 text-sm">
+                  Our AI is analyzing your profile and creating a personalized nutrition plan just for you...
+                </div>
+              </div>
+              
+              {/* Progress Animation */}
+              <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-4">
+                <div className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full animate-pulse" style={{width: '75%'}}></div>
+              </div>
+              
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                This usually takes 10-20 seconds...
+              </div>
             </div>
           </div>
         </div>

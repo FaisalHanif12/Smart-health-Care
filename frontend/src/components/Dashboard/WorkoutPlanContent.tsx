@@ -26,6 +26,7 @@ export default function WorkoutPlanContent() {
   const { archiveCurrentProgress, clearWorkoutProgress } = useProgress();
   const [workoutPlan, setWorkoutPlan] = useState<WorkoutDay[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
   const [generatedPrompt, setGeneratedPrompt] = useState('');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [showPromptDialog, setShowPromptDialog] = useState(false);
@@ -121,17 +122,21 @@ Please ensure exercises are safe, effective, and specifically designed for my go
     }
 
     setIsLoading(true);
+    setLoadingMessage('🏋️ Initializing AI Workout Generator...');
     
     try {
       // Try backend service first (GPT-4), fallback to frontend service (GPT-3.5)
       let workoutData;
       
       try {
+        setLoadingMessage('🔥 Generating your personalized AI-based workout plan...');
         console.log('🔄 Attempting to generate workout plan with Backend AI Service (GPT-4)...');
         const backendService = new BackendAIService();
         workoutData = await backendService.generateWorkoutPlan(promptToUse);
         console.log('✅ Backend AI Service (GPT-4) successful!');
+        setLoadingMessage('✅ AI workout plan generated! Organizing your exercises...');
       } catch (backendError) {
+        setLoadingMessage('🔄 Trying alternative AI service for your workout plan...');
         console.warn('⚠️ Backend AI Service failed, trying Frontend OpenAI Service (GPT-3.5)...', backendError);
         
         const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
@@ -141,6 +146,7 @@ Please ensure exercises are safe, effective, and specifically designed for my go
         const openaiService = new OpenAIService(apiKey);
         workoutData = await openaiService.generateWorkoutPlan(promptToUse);
         console.log('✅ Frontend OpenAI Service (GPT-4) successful!');
+        setLoadingMessage('✅ AI workout plan generated! Organizing your exercises...');
       }
       
       // Convert the AI response to our format
@@ -156,6 +162,7 @@ Please ensure exercises are safe, effective, and specifically designed for my go
         })) || []
       }));
 
+      setLoadingMessage('💾 Saving your personalized workout plan...');
       saveWorkoutPlan(convertedPlan);
       
       // Initialize plan metadata for auto-renewal system
@@ -163,11 +170,16 @@ Please ensure exercises are safe, effective, and specifically designed for my go
       const planDuration = localStorage.getItem(`planDuration_${user?._id}`) || '3 months';
       const totalWeeks = planDuration.includes('3') ? 12 : planDuration.includes('6') ? 24 : 52;
       renewalService.initializePlanMetadata('workout', totalWeeks, user?._id);
+      
+      setLoadingMessage('🎉 Your AI workout plan is ready! Time to get strong!');
     } catch (error) {
       console.error('❌ Error generating workout plan:', error);
       alert(`Failed to generate workout plan: ${error instanceof Error ? error.message : 'Unknown error'}. Please check your API configuration.`);
     } finally {
-      setIsLoading(false);
+      setTimeout(() => {
+        setIsLoading(false);
+        setLoadingMessage('');
+      }, 1000); // Brief delay to show final success message
     }
   };
 
@@ -459,9 +471,16 @@ Please ensure exercises are safe, effective, and specifically designed for my go
             <button
               onClick={() => generateWorkoutPlan()}
               disabled={isLoading}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
             >
-              {isLoading ? 'Generating with AI...' : '🤖 Create Your Plan with AI'}
+              {isLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                  <span>Generating AI Workout Plan...</span>
+                </>
+              ) : (
+                <>🤖 Create Your Plan with AI</>
+              )}
             </button>
             
             <button
@@ -565,6 +584,41 @@ Please ensure exercises are safe, effective, and specifically designed for my go
                   '🤖 Generate with Custom Prompt'
                 )}
               </button>
+            </div>
+          </div>
+        </div>
+              )}
+
+      {/* AI Generation Loading Modal */}
+      {isLoading && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-md w-full shadow-2xl">
+            <div className="text-center">
+              <div className="bg-blue-100 dark:bg-blue-900/30 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+                <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-600 border-t-transparent"></div>
+              </div>
+              
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                Creating Your Workout Plan
+              </h3>
+              
+              <div className="mb-6">
+                <div className="text-lg text-blue-600 dark:text-blue-400 font-medium mb-2">
+                  {loadingMessage}
+                </div>
+                <div className="text-gray-600 dark:text-gray-400 text-sm">
+                  Our AI is analyzing your fitness goals and creating a personalized exercise routine...
+                </div>
+              </div>
+              
+              {/* Progress Animation */}
+              <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-4">
+                <div className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full animate-pulse" style={{width: '75%'}}></div>
+              </div>
+              
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                This usually takes 10-20 seconds...
+              </div>
             </div>
           </div>
         </div>

@@ -105,8 +105,8 @@ class OpenAIService {
               Make sure foods include specific portions (e.g., "1 cup oatmeal with berries", "150g grilled chicken breast").`
             }
           ],
-          max_tokens: 1200,
-          temperature: 0.7,
+          max_tokens: 800,
+          temperature: 0.2,
         }),
       });
 
@@ -207,8 +207,8 @@ class OpenAIService {
               Provide complete workout plans for all 6 days. Include specific exercise names, proper rep ranges, and realistic rest times.`
             }
           ],
-          max_tokens: 2500,
-          temperature: 0.7,
+          max_tokens: 1500,
+          temperature: 0.2,
         }),
       });
 

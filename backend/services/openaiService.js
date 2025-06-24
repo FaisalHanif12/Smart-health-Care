@@ -124,8 +124,8 @@ class OpenAIService {
             - Complete workout plans for all 6 days with goal-specific programming`
           }
         ],
-        max_tokens: 2500,
-        temperature: 0.3
+        max_tokens: 2000,
+        temperature: 0.2
       });
 
       let content = completion.choices[0].message.content.trim();
@@ -273,8 +273,8 @@ class OpenAIService {
             - Goal-specific nutrition tips and meal timing recommendations`
           }
         ],
-        max_tokens: 4000,
-        temperature: 0.3
+        max_tokens: 1500,
+        temperature: 0.2
       });
 
       let content = completion.choices[0].message.content.trim();
