@@ -38,7 +38,17 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <div className="flex">
         {/* Mobile Header */}
         <div className="md:hidden bg-gray-900 dark:bg-gray-800 p-4 flex justify-between items-center w-full fixed top-0 z-40">
-          <h1 className="text-xl font-bold text-white">Health Tracker</h1>
+          <div className="flex items-center space-x-2">
+            <img 
+              src="/fitness tracker.webp" 
+              alt="Health Tracker" 
+              className="w-8 h-8 rounded-lg"
+            />
+            <h1 className="text-lg font-bold text-white">
+              <span className="hidden sm:inline">Health Tracker</span>
+              <span className="sm:hidden">Health</span>
+            </h1>
+          </div>
           <button 
             className="text-white" 
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -68,7 +78,17 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         } md:translate-x-0 md:block`}>
           <div className="p-4">
-            <h1 className="text-xl font-bold text-yellow-400 mb-8 mt-4 md:mt-0">HEALTH TRACKER</h1>
+            <div className="flex items-center space-x-3 mb-8 mt-4 md:mt-0">
+              <img 
+                src="/fitness tracker.webp" 
+                alt="Health Tracker" 
+                className="w-10 h-10 rounded-lg"
+              />
+              <h1 className="text-xl font-bold text-yellow-400">
+                <span className="hidden lg:inline">HEALTH TRACKER</span>
+                <span className="lg:hidden">HEALTH</span>
+              </h1>
+            </div>
             
             {/* Navigation Buttons */}
             <div className="space-y-2">

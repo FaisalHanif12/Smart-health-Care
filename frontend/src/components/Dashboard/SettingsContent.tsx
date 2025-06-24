@@ -25,7 +25,7 @@ export default function SettingsContent() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  
+
   // Notification states
   const [notificationPermission, setNotificationPermission] = useState<'granted' | 'denied' | 'default'>('default');
   const [notificationSupported, setNotificationSupported] = useState(false);
@@ -458,7 +458,7 @@ export default function SettingsContent() {
                       <p className="text-xs text-purple-700 dark:text-purple-200">
                         🔔 Next reminder: {appSettings.workoutTime} {new Date().toLocaleDateString()}
                       </p>
-                    </div>
+                  </div>
                   )}
                 </div>
               )}
@@ -523,41 +523,41 @@ export default function SettingsContent() {
               {/* Measurement Units */}
               <div>
                 <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-3">📏 Measurement Units</h4>
-                <div className="space-y-3">
-                  {[
-                    { value: 'metric', label: 'Metric', desc: 'kg, cm, liters', icon: '📏' },
-                    { value: 'imperial', label: 'Imperial', desc: 'lbs, ft/in, oz', icon: '📐' }
-                  ].map((unit) => (
-                    <label
-                      key={unit.value}
+            <div className="space-y-3">
+              {[
+                { value: 'metric', label: 'Metric', desc: 'kg, cm, liters', icon: '📏' },
+                { value: 'imperial', label: 'Imperial', desc: 'lbs, ft/in, oz', icon: '📐' }
+              ].map((unit) => (
+                <label
+                  key={unit.value}
                       className={`flex items-center p-3 rounded-lg cursor-pointer transition-all ${
-                        appSettings.units === unit.value
-                          ? 'bg-green-50 dark:bg-green-900/30 border-2 border-green-500'
-                          : 'bg-gray-50 dark:bg-gray-700 border-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="units"
-                        value={unit.value}
-                        checked={appSettings.units === unit.value}
-                        onChange={(e) => updateAppSetting('units', e.target.value)}
-                        className="sr-only"
-                      />
-                      <div className="flex items-center flex-1">
+                    appSettings.units === unit.value
+                      ? 'bg-green-50 dark:bg-green-900/30 border-2 border-green-500'
+                      : 'bg-gray-50 dark:bg-gray-700 border-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="units"
+                    value={unit.value}
+                    checked={appSettings.units === unit.value}
+                    onChange={(e) => updateAppSetting('units', e.target.value)}
+                    className="sr-only"
+                  />
+                  <div className="flex items-center flex-1">
                         <span className="text-xl mr-3">{unit.icon}</span>
-                        <div>
-                          <div className="font-medium text-gray-900 dark:text-white">{unit.label}</div>
+                    <div>
+                      <div className="font-medium text-gray-900 dark:text-white">{unit.label}</div>
                           <div className="text-xs text-gray-500 dark:text-gray-400">{unit.desc}</div>
-                        </div>
-                      </div>
-                      {appSettings.units === unit.value && (
+                    </div>
+                  </div>
+                  {appSettings.units === unit.value && (
                         <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                    </label>
-                  ))}
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                </label>
+              ))}
                 </div>
               </div>
 
