@@ -278,7 +278,7 @@ Focus on:
           </h3>
           <p className="text-gray-600 dark:text-gray-300">Personalized insights based on your progress</p>
         </div>
-        <div className="text-right">
+        <div className="text-center">
           <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getProgressColor(analysis.overall)}`}>
             {analysis.overall.charAt(0).toUpperCase() + analysis.overall.slice(1)} Progress
           </div>

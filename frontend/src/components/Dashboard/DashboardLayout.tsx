@@ -38,16 +38,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <div className="flex">
         {/* Mobile Header */}
         <div className="md:hidden bg-gray-900 dark:bg-gray-800 p-4 flex justify-between items-center w-full fixed top-0 z-40">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center">
             <img 
               src="/fitness tracker.webp" 
               alt="Health Tracker" 
               className="w-8 h-8 rounded-lg"
             />
-            <h1 className="text-lg font-bold text-white">
-              <span className="hidden sm:inline">Health Tracker</span>
-              <span className="sm:hidden">Health</span>
-            </h1>
           </div>
           <button 
             className="text-white" 
