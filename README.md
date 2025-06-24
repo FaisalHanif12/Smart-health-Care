@@ -65,13 +65,6 @@
 
 Experience the full application: **[Smart Health Tracker](https://smart-health-care-git-main-faisal-hanifs-projects.vercel.app/)**
 
-### 🔑 **Test Credentials**
-```
-Email: demo@healthtracker.com
-Password: demo123
-```
-
----
 
 ## 🛠️ **Technology Stack**
 
