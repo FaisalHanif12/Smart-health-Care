@@ -338,6 +338,37 @@ const resetPassword = asyncHandler(async (req, res, next) => {
   sendTokenResponse(user, 200, res, 'Password reset successful');
 });
 
+// @desc    Delete user account
+// @route   DELETE /api/auth/deleteaccount
+// @access  Private
+const deleteAccount = asyncHandler(async (req, res, next) => {
+  // Get the user ID from the authenticated request
+  const userId = req.user.id;
+
+  try {
+    // Find and delete the user
+    const user = await User.findByIdAndDelete(userId);
+
+    if (!user) {
+      return next(new ErrorResponse('User not found', 404));
+    }
+
+    // Clear the token cookie
+    res.cookie('token', 'none', {
+      expires: new Date(Date.now() + 10 * 1000),
+      httpOnly: true,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Account has been permanently deleted',
+      data: {}
+    });
+  } catch (error) {
+    return next(new ErrorResponse('Error deleting account', 500));
+  }
+});
+
 // @desc    Get user stats (Admin only)
 // @route   GET /api/auth/stats
 // @access  Private/Admin
@@ -360,5 +391,6 @@ module.exports = {
   updatePassword,
   forgotPassword,
   resetPassword,
+  deleteAccount,
   getUserStats,
 }; 

@@ -9,6 +9,7 @@ const {
   updatePassword,
   forgotPassword,
   resetPassword,
+  deleteAccount,
   getUserStats,
 } = require('../controllers/authController');
 
@@ -39,6 +40,7 @@ router.get('/me', getMe);
 router.put('/updatedetails', validateUpdateDetails, updateDetails);
 router.put('/updateprofile', validateUpdateProfile, updateProfile);
 router.put('/updatepassword', validateUpdatePassword, updatePassword);
+router.delete('/deleteaccount', deleteAccount);
 
 // Admin only routes
 router.get('/stats', authorize('admin'), getUserStats);

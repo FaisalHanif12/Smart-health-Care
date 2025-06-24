@@ -293,6 +293,30 @@ export const authAPI = {
 
     return response.json();
   },
+
+  // Delete account
+  deleteAccount: async (): Promise<ApiResponse> => {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
+    const response = await fetch(`${API_BASE_URL}/auth/deleteaccount`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to delete account');
+    }
+
+    return response.json();
+  },
 };
 
 // Utility functions

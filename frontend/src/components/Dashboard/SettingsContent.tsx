@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { authAPI } from '../../utils/api';
 
 interface AppSettings {
   workoutReminders: boolean;
@@ -304,15 +305,19 @@ export default function SettingsContent() {
     URL.revokeObjectURL(url);
   };
 
-  // Delete account (clears local data and logs out)
+  // Delete account from database
   const deleteAccount = async () => {
     if (deleteConfirmText !== 'DELETE MY ACCOUNT') {
-      alert('Please type "DELETE MY ACCOUNT" exactly to confirm.');
+      // Custom alert for wrong input
+      showCustomAlert('Please type "DELETE MY ACCOUNT" exactly to confirm.', 'error');
       return;
     }
 
     setIsLoading(true);
     try {
+      // Call backend API to delete account from database
+      await authAPI.deleteAccount();
+      
       // Clear all local data for this user
       if (user?._id) {
         const keys = [
@@ -336,15 +341,67 @@ export default function SettingsContent() {
       
       // Logout the user
       await logout();
-      navigate('/login');
-      alert('Your local account data has been cleared. You will be redirected to the login page.');
+      
+      // Show custom success message and redirect
+      showCustomAlert('Your account has been permanently deleted from our database. You will be redirected to the login page.', 'success');
+      
+      // Redirect after 3 seconds
+      setTimeout(() => {
+        navigate('/login');
+      }, 3000);
+      
     } catch (error) {
       console.error('Error deleting account:', error);
-      alert('There was an error clearing your data. Please try again.');
+      showCustomAlert('There was an error deleting your account. Please try again.', 'error');
     } finally {
       setIsLoading(false);
       setShowDeleteConfirm(false);
       setDeleteConfirmText('');
+    }
+  };
+
+  // Custom alert function
+  const showCustomAlert = (message: string, type: 'success' | 'error') => {
+    // Create custom alert overlay
+    const alertOverlay = document.createElement('div');
+    alertOverlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    
+    const alertBox = document.createElement('div');
+    alertBox.className = `bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl border-2 ${
+      type === 'success' ? 'border-green-500' : 'border-red-500'
+    }`;
+    
+    alertBox.innerHTML = `
+      <div class="text-center">
+        <div class="${type === 'success' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'} rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+            ${type === 'success' 
+              ? '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />'
+              : '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L10 10.586l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />'
+            }
+          </svg>
+        </div>
+        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">${type === 'success' ? 'Account Deleted' : 'Error'}</h3>
+        <p class="text-gray-600 dark:text-gray-400 mb-6">${message}</p>
+        ${type === 'error' ? '<button id="closeAlert" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-medium transition-colors">OK</button>' : ''}
+      </div>
+    `;
+    
+    alertOverlay.appendChild(alertBox);
+    document.body.appendChild(alertOverlay);
+    
+    // Auto remove after 3 seconds or on click for error
+    if (type === 'error') {
+      const closeButton = alertBox.querySelector('#closeAlert');
+      closeButton?.addEventListener('click', () => {
+        document.body.removeChild(alertOverlay);
+      });
+    } else {
+      setTimeout(() => {
+        if (document.body.contains(alertOverlay)) {
+          document.body.removeChild(alertOverlay);
+        }
+      }, 3000);
     }
   };
 
@@ -625,16 +682,16 @@ export default function SettingsContent() {
           </div>
           
           <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-6 border border-red-200 dark:border-red-800">
-            <h4 className="font-bold text-red-800 dark:text-red-300 mb-2">Clear Account Data</h4>
+            <h4 className="font-bold text-red-800 dark:text-red-300 mb-2">Delete Account</h4>
             <p className="text-red-700 dark:text-red-400 mb-6 leading-relaxed">
-              This will permanently remove all your local data including diet plans, workout plans, and progress. You will be logged out immediately.
+              This will permanently delete your account from our database including all your data, diet plans, workout plans, and progress. This action cannot be undone.
             </p>
             
             <button
               onClick={() => setShowDeleteConfirm(true)}
               className="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-8 rounded-xl transition-all duration-300 transform hover:scale-105"
             >
-              🗑️ Clear My Data
+              🗑️ Delete My Account
             </button>
           </div>
         </div>
@@ -651,9 +708,9 @@ export default function SettingsContent() {
                   <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Clear Account Data</h3>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Delete Account</h3>
               <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                This action will clear all your local fitness data and log you out immediately.
+                This action will permanently delete your account from our database and cannot be undone.
               </p>
             </div>
             
@@ -685,7 +742,7 @@ export default function SettingsContent() {
                 disabled={isLoading || deleteConfirmText !== 'DELETE MY ACCOUNT'}
                 className="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {isLoading ? 'Clearing...' : 'Clear Data'}
+                {isLoading ? 'Deleting...' : 'Delete Account'}
               </button>
             </div>
           </div>
