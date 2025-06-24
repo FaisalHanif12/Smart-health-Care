@@ -79,7 +79,7 @@ export default function DashboardContentSimple() {
         setWeeklyProgress([]);
       }
     }
-  }, [user?._id]); // Changed dependency to user._id to ensure it resets when user changes
+  }, [user?._id, dietProgress, workoutProgress]); // React to progress changes when plans are cleared
 
   const updateWaterIntake = (increment: boolean) => {
     if (!user?._id) return; // Don't update if no user
@@ -136,7 +136,7 @@ export default function DashboardContentSimple() {
       // No saved data for this user, reset to default
       setWaterIntake({ value: 0, max: 8, percentage: 0 });
     }
-  }, [user?._id]); // Changed dependency to user._id to ensure it resets when user changes
+  }, [user?._id]); // Keep water intake separate from progress changes
 
   // Search functionality
   const searchableContent = [

@@ -44,6 +44,9 @@ interface ProgressContextType {
   getCompletedWorkoutsThisWeek: () => number;
   resetDailyProgress: () => void;
   archiveCurrentProgress: () => void;
+  clearDietProgress: () => void;
+  clearWorkoutProgress: () => void;
+  clearAllProgress: () => void;
 }
 
 const ProgressContext = createContext<ProgressContextType | undefined>(undefined);
@@ -435,6 +438,68 @@ export const ProgressProvider: React.FC<ProgressProviderProps> = ({ children }) 
     console.log('✅ Progress archived successfully');
   };
 
+  const clearDietProgress = () => {
+    if (!user?._id) return;
+    
+    const today = new Date().toDateString();
+    const currentWeekStart = getWeekStart(new Date()).toDateString();
+    
+    // Reset all diet-related progress
+    setDietProgress({
+      date: today,
+      completedMeals: 0,
+      totalMeals: 0,
+      caloriesConsumed: 0,
+      targetCalories: 2000,
+      proteinConsumed: 0,
+      carbsConsumed: 0,
+      fatsConsumed: 0,
+      weeklyCompletedMeals: 0,
+      weeklyTotalMeals: 0,
+      weeklyCaloriesConsumed: 0,
+      weekStart: currentWeekStart,
+    });
+    
+    // Remove diet progress from localStorage
+    localStorage.removeItem(`dietProgress_${user._id}`);
+    
+    console.log('✅ Diet progress cleared successfully');
+  };
+
+  const clearWorkoutProgress = () => {
+    if (!user?._id) return;
+    
+    const currentWeekStart = getWeekStart(new Date()).toDateString();
+    
+    // Reset all workout-related progress
+    setWorkoutProgress({
+      weekStart: currentWeekStart,
+      completedWorkouts: 0,
+      totalWorkouts: 0,
+      completedExercises: 0,
+      totalExercises: 0,
+      workoutDays: {},
+    });
+    
+    // Remove workout progress from localStorage
+    localStorage.removeItem(`workoutProgress_${user._id}`);
+    
+    console.log('✅ Workout progress cleared successfully');
+  };
+
+  const clearAllProgress = () => {
+    if (!user?._id) return;
+    
+    // Archive current progress before clearing everything
+    archiveCurrentProgress();
+    
+    // Clear both diet and workout progress
+    clearDietProgress();
+    clearWorkoutProgress();
+    
+    console.log('✅ All progress cleared and archived successfully');
+  };
+
   const value: ProgressContextType = useMemo(() => ({
     dietProgress,
     workoutProgress,
@@ -446,6 +511,9 @@ export const ProgressProvider: React.FC<ProgressProviderProps> = ({ children }) 
     getCompletedWorkoutsThisWeek,
     resetDailyProgress,
     archiveCurrentProgress,
+    clearDietProgress,
+    clearWorkoutProgress,
+    clearAllProgress,
   }), [dietProgress, workoutProgress]);
 
   return (

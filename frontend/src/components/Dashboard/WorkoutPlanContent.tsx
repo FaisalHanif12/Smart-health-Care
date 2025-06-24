@@ -23,7 +23,7 @@ interface WorkoutDay {
 
 export default function WorkoutPlanContent() {
   const { user } = useAuth();
-  const { archiveCurrentProgress } = useProgress();
+  const { archiveCurrentProgress, clearWorkoutProgress } = useProgress();
   const [workoutPlan, setWorkoutPlan] = useState<WorkoutDay[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [generatedPrompt, setGeneratedPrompt] = useState('');
@@ -193,7 +193,13 @@ Please ensure exercises are safe, effective, and specifically designed for my go
     // Archive current progress before clearing
     archiveCurrentProgress();
     
+    // Clear the workout plan from localStorage
     localStorage.removeItem(`workoutPlan_${user._id}`);
+    
+    // Clear all workout-related progress from dashboard
+    clearWorkoutProgress();
+    
+    // Reset local component state
     setWorkoutPlan([]);
     setWeeklyStats({ totalWorkouts: 0, completedWorkouts: 0, completionRate: 0 });
     setShowClearConfirm(false);

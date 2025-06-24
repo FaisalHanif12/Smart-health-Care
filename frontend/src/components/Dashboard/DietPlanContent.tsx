@@ -25,7 +25,7 @@ interface DietDay {
 
 export default function DietPlanContent() {
   const { user } = useAuth();
-  const { archiveCurrentProgress } = useProgress();
+  const { archiveCurrentProgress, clearDietProgress } = useProgress();
   const [dietPlan, setDietPlan] = useState<DietDay[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showPromptDialog, setShowPromptDialog] = useState(false);
@@ -247,7 +247,13 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
     // Archive current progress before clearing
     archiveCurrentProgress();
     
+    // Clear the diet plan from localStorage
     localStorage.removeItem(`dietPlan_${user._id}`);
+    
+    // Clear all diet-related progress from dashboard
+    clearDietProgress();
+    
+    // Reset local component state
     setDietPlan([]);
     setWeeklyStats({ totalDays: 0, completedDays: 0, avgCalories: 0, completionRate: 0 });
     setShowClearConfirm(false);
