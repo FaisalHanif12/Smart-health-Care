@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import NotificationService from '../services/notificationService';
+import notificationService from '../services/notificationService';
 
 interface NotificationHookReturn {
-  notificationService: NotificationService;
+  notificationService: typeof notificationService;
   isSupported: boolean;
   permission: NotificationPermission;
   requestPermission: () => Promise<boolean>;
@@ -14,14 +14,13 @@ interface NotificationHookReturn {
 
 export const useNotifications = (): NotificationHookReturn => {
   const { user } = useAuth();
-  const [notificationService] = useState(() => NotificationService.getInstance());
   const [permission, setPermission] = useState<NotificationPermission>('default');
 
   useEffect(() => {
     if (notificationService.isSupported()) {
       setPermission(Notification.permission);
     }
-  }, [notificationService]);
+  }, []);
 
   const requestPermission = async (): Promise<boolean> => {
     const granted = await notificationService.requestPermission();
