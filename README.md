@@ -2,8 +2,6 @@
 
 <div align="center">
 
-![Health Tracker Logo](frontend/public/fitness%20tracker.webp)
-
 **Your Complete AI-Powered Fitness Companion**
 
 
@@ -67,13 +65,6 @@
 
 Experience the full application: **[Smart Health Tracker](https://smart-health-care-git-main-faisal-hanifs-projects.vercel.app/)**
 
-### 🔑 **Test Credentials**
-```
-Email: demo@healthtracker.com
-Password: demo123
-```
-
----
 
 ## 🛠️ **Technology Stack**
 
