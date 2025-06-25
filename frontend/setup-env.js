@@ -21,7 +21,7 @@ rl.question('Enter your OpenAI API key (starts with sk-): ', (apiKey) => {
 VITE_OPENAI_API_KEY=${apiKey}
 
 # Optional: Backend URL (if different from default)
-# VITE_BACKEND_URL=http://localhost:5000
+# VITE_API_BASE_URL=http://localhost:5000/api
 `;
 
   const envPath = path.join(__dirname, '.env');

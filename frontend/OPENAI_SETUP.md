@@ -74,7 +74,7 @@ npm run dev
 VITE_OPENAI_API_KEY=sk-proj-your-actual-key-here
 
 # Optional: Backend URL (if different)
-VITE_BACKEND_URL=http://localhost:5000
+VITE_API_BASE_URL=http://localhost:5000/api
 ```
 
 ## 💡 Tips

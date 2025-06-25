@@ -14,7 +14,7 @@ The frontend `.env` file was missing, causing the app to use placeholder API key
 - Required content format:
 ```
 VITE_OPENAI_API_KEY=[YOUR_OPENAI_API_KEY]
-VITE_BACKEND_URL=http://localhost:5000
+VITE_API_BASE_URL=http://localhost:5000/api
 ```
 
 **Note:** Copy the same API key from your `backend/.env` file

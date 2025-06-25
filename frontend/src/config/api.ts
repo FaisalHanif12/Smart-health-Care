@@ -6,10 +6,10 @@ export const API_CONFIG = {
   OPENAI_API_KEY: import.meta.env.VITE_OPENAI_API_KEY || '',
   
   // Backend API URL - Use environment variable with fallback
-  // Set VITE_BACKEND_URL in your .env file or environment
-  // Production: https://smart-health-care-8isu.onrender.com
-  // Development: http://localhost:5000
-  BACKEND_URL: import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000',
+  // Set VITE_API_BASE_URL in your .env file or environment
+  // Production: https://smart-health-care-8isu.onrender.com/api
+  // Development: http://localhost:5000/api
+  BACKEND_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api',
   
   // OpenAI API settings
   OPENAI: {
@@ -21,7 +21,7 @@ export const API_CONFIG = {
 
 // Helper function to get the API base URL
 export const getAPIBaseURL = (): string => {
-  return `${API_CONFIG.BACKEND_URL}/api`;
+  return API_CONFIG.BACKEND_URL;
 };
 
 // Helper function to check if OpenAI API key is configured
