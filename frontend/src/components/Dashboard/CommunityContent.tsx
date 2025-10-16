@@ -22,7 +22,11 @@ export default function CommunityContent() {
   const fetchPosts = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch(`${API}/posts`, { credentials: 'include' });
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API}/posts`, {
+        credentials: 'include',
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
       const json = await res.json();
       if (json.success) setPosts(json.data);
     } finally {
@@ -38,7 +42,13 @@ export default function CommunityContent() {
     const form = new FormData();
     form.append('image', image);
     form.append('caption', caption);
-    const res = await fetch(`${API}/posts`, { method: 'POST', body: form, credentials: 'include' });
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${API}/posts`, {
+      method: 'POST',
+      body: form,
+      credentials: 'include',
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    });
     const json = await res.json();
     setIsSubmitting(false);
     if (json.success) {
@@ -50,7 +60,12 @@ export default function CommunityContent() {
   };
 
   const toggleLike = async (id: string) => {
-    const res = await fetch(`${API}/posts/${id}/like`, { method: 'POST', credentials: 'include' });
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${API}/posts/${id}/like`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    });
     const json = await res.json();
     if (json.success) {
       setPosts((prev) => prev.map((p) => (p._id === id ? { ...p, likes: json.data.likes } : p)));
@@ -58,7 +73,10 @@ export default function CommunityContent() {
   };
 
   const addComment = async (id: string, text: string) => {
-    const res = await fetch(`${API}/posts/${id}/comments`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }), credentials: 'include' });
+    const token = localStorage.getItem('token');
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (token) headers.Authorization = `Bearer ${token}`;
+    const res = await fetch(`${API}/posts/${id}/comments`, { method: 'POST', headers, body: JSON.stringify({ text }), credentials: 'include' });
     const json = await res.json();
     if (json.success) {
       setPosts((prev) => prev.map((p) => (p._id === id ? { ...p, comments: [...p.comments, json.data] } : p)));
