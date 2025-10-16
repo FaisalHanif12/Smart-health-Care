@@ -9,6 +9,7 @@ import PaymentContent from '../components/Dashboard/PaymentContent';
 import PaymentSuccessContent from '../components/Dashboard/PaymentSuccessContent';
 import ProfileContent from '../components/Dashboard/ProfileContent';
 import SettingsContent from '../components/Dashboard/SettingsContent';
+import CommunityContent from '../components/Dashboard/CommunityContent';
 
 export default function DashboardPage() {
   return (
@@ -18,6 +19,7 @@ export default function DashboardPage() {
         <Route path="/workout" element={<WorkoutPlanContent />} />
         <Route path="/diet" element={<DietPlanContent />} />
         <Route path="/store" element={<StoreContent />} />
+        <Route path="/community" element={<CommunityContent />} />
         <Route path="/cart" element={<CartContent />} />
         <Route path="/payment" element={<PaymentContent />} />
         <Route path="/payment-success" element={<PaymentSuccessContent />} />

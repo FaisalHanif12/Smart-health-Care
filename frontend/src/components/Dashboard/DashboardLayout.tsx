@@ -131,6 +131,21 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               </button>
 
               <button
+                onClick={() => goTo('/dashboard/community')}
+                className={`w-full flex items-center space-x-3 p-3 rounded-lg text-left transition-colors ${
+                  isActive('/dashboard/community') 
+                    ? 'bg-gray-800 dark:bg-gray-700 text-yellow-400' 
+                    : 'text-gray-300 hover:text-yellow-400 hover:bg-gray-800 dark:hover:bg-gray-700'
+                }`}
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M13 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path fillRule="evenodd" d="M2 13.5A4.5 4.5 0 016.5 9h7A4.5 4.5 0 0118 13.5V16a2 2 0 01-2 2H4a2 2 0 01-2-2v-2.5z" clipRule="evenodd" />
+                </svg>
+                <span>Community</span>
+              </button>
+
+              <button
                 onClick={() => goTo('/dashboard/store')}
                 className={`w-full flex items-center space-x-3 p-3 rounded-lg text-left transition-colors ${
                   isActive('/dashboard/store') 
