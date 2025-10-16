@@ -3,6 +3,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
+const cookieParser = require('cookie-parser');
 
 // Configure dotenv with explicit path
 const dotenvResult = require('dotenv').config({ path: path.join(__dirname, '.env') });
@@ -69,6 +70,7 @@ app.use(cors({
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(cookieParser());
 
 // API routes
 app.use('/api/auth', authRoutes);
