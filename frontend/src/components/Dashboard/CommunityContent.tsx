@@ -17,6 +17,7 @@ export default function CommunityContent() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const API = getAPIBaseURL();
+  const ORIGIN = useMemo(() => API.replace(/\/api$/, ''), [API]);
 
   const fetchPosts = async () => {
     setIsLoading(true);
@@ -110,7 +111,7 @@ export default function CommunityContent() {
               <article key={p._id} className="group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
                 <div className="relative">
                   {p.imageUrl && (
-                    <img src={p.imageUrl} alt={p.caption || 'Post image'} className="w-full h-64 object-cover" />
+                    <img src={`${p.imageUrl.startsWith('http') ? p.imageUrl : ORIGIN + p.imageUrl}`} alt={p.caption || 'Post image'} className="w-full h-64 object-cover" />
                   )}
                 </div>
                 <div className="p-4">
