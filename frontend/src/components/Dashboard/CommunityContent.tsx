@@ -15,9 +15,19 @@ export default function CommunityContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [dragActive, setDragActive] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'yours' | 'others'>('yours');
+  const [showDeleteModal, setShowDeleteModal] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const API = getAPIBaseURL();
-  const ORIGIN = useMemo(() => API.replace(/\/api$/, ''), [API]);
+  const BACKEND_ORIGIN = useMemo(() => {
+    try {
+      // Robustly extract protocol+host even if API contains paths like /api or query params
+      return new URL(API).origin;
+    } catch {
+      return API.replace(/\/api\/?$/, '');
+    }
+  }, [API]);
+  const myUserId = user?._id;
 
   const fetchPosts = async () => {
     setIsLoading(true);
@@ -83,109 +93,401 @@ export default function CommunityContent() {
     }
   };
 
+  const deletePost = async (id: string) => {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${API}/posts/${id}`, {
+      method: 'DELETE',
+      credentials: 'include',
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    });
+    const json = await res.json();
+    if (json.success) {
+      setPosts((prev) => prev.filter((p) => p._id !== id));
+      setShowDeleteModal(null);
+    }
+  };
+
+  const myPosts = useMemo(() => posts.filter((p) => (p.user && p.user._id) === myUserId), [posts, myUserId]);
+  const otherPosts = useMemo(() => posts.filter((p) => (p.user && p.user._id) !== myUserId), [posts, myUserId]);
+  const displayPosts = activeTab === 'yours' ? myPosts : otherPosts;
+
   return (
-    <main className="max-w-6xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-      <div className="mb-6">
-        <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white">Community</h1>
-        <p className="text-gray-600 dark:text-gray-300">Share your transformation and cheer on others.</p>
+    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen">
+      <div className="max-w-5xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Community</h1>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">Share your transformation journey and connect with others</p>
       </div>
 
-      {/* Uploader */}
-      <div className="mb-10">
-        <div
-          className={`relative rounded-2xl border-2 ${dragActive ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/20' : 'border-dashed border-gray-300 dark:border-gray-600'} p-5 sm:p-6 bg-white/60 dark:bg-gray-800/60 backdrop-blur shadow-sm`}
+        {/* Create Post Card */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm mb-8 overflow-hidden">
+          <div className="p-6">
+            <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Create a Post</h2>
+            <div 
+              className={`border-2 ${dragActive ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-dashed border-gray-300 dark:border-gray-700'} rounded-lg p-4 transition-all`}
           onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
           onDragLeave={() => setDragActive(false)}
-          onDrop={(e) => { e.preventDefault(); setDragActive(false); const f = e.dataTransfer.files?.[0]; if (f) { setImage(f); setPreviewUrl(URL.createObjectURL(f)); } }}
-        >
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-            <button onClick={() => inputRef.current?.click()} className="shrink-0 inline-flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-md hover:bg-black/80">
-              <span>Upload</span>
+              onDrop={(e) => { 
+                e.preventDefault(); 
+                setDragActive(false); 
+                const f = e.dataTransfer.files?.[0]; 
+                if (f) { 
+                  setImage(f); 
+                  setPreviewUrl(URL.createObjectURL(f)); 
+                } 
+              }}
+            >
+              <div className="flex flex-col space-y-4">
+                <div className="flex items-center space-x-4">
+                  <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                    <span className="text-blue-600 dark:text-blue-300 font-medium">
+                      {user?.email?.charAt(0).toUpperCase() || 'U'}
+                    </span>
+                  </div>
+                  <input 
+                    value={caption} 
+                    onChange={(e) => setCaption(e.target.value)} 
+                    placeholder="What's on your mind?" 
+                    className="flex-1 bg-transparent border-none focus:ring-0 text-gray-700 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400"
+                  />
+                </div>
+                
+                {previewUrl && (
+                  <div className="relative mt-2">
+                    <img 
+                      src={previewUrl} 
+                      alt="Preview" 
+                      className="rounded-lg max-h-80 mx-auto object-contain"
+                    />
+                    <button 
+                      onClick={() => { setPreviewUrl(null); setImage(null); }} 
+                      className="absolute top-2 right-2 bg-gray-800/70 text-white rounded-full p-1 hover:bg-gray-900"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                  </div>
+                )}
+                
+                <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <button 
+                    onClick={() => inputRef.current?.click()} 
+                    className="flex items-center text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                    </svg>
+                    Photo
+                    <input 
+                      ref={inputRef} 
+                      type="file" 
+                      accept="image/*" 
+                      className="hidden" 
+                      onChange={(e) => { 
+                        const f = e.target.files?.[0] || null; 
+                        setImage(f); 
+                        setPreviewUrl(f ? URL.createObjectURL(f) : null); 
+                      }} 
+                    />
             </button>
-            <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0] || null; setImage(f); setPreviewUrl(f ? URL.createObjectURL(f) : null); }} />
-            <input value={caption} onChange={(e) => setCaption(e.target.value)} placeholder="Add a caption" className="flex-1 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm" />
-            <button onClick={onUpload} disabled={!image || isSubmitting} className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white px-4 py-2 rounded-md shadow">
+                  <button 
+                    onClick={onUpload} 
+                    disabled={!image || isSubmitting} 
+                    className={`px-4 py-2 rounded-lg font-medium ${!image || isSubmitting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'} text-white transition-colors`}
+                  >
               {isSubmitting ? 'Posting...' : 'Post'}
             </button>
           </div>
-          {previewUrl && (
-            <div className="mt-4">
-              <img src={previewUrl} alt="Preview" className="h-36 w-auto rounded-md object-cover border border-gray-200 dark:border-gray-700" />
+              </div>
             </div>
-          )}
+          </div>
+        </div>
+        
+        {/* Tabs */}
+        <div className="flex justify-center mb-6">
+          <div className="bg-white dark:bg-gray-800 rounded-full p-1 shadow-sm">
+            <div className="flex space-x-1">
+              <button
+                onClick={() => setActiveTab('yours')}
+                className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
+                  activeTab === 'yours'
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                }`}
+              >
+                Your Posts {myPosts.length > 0 && `(${myPosts.length})`}
+              </button>
+              <button
+                onClick={() => setActiveTab('others')}
+                className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
+                  activeTab === 'others'
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                }`}
+              >
+                Community {otherPosts.length > 0 && `(${otherPosts.length})`}
+              </button>
+            </div>
         </div>
       </div>
 
-      {/* Feed */}
+        {/* Posts */}
       {isLoading ? (
-        <FeedSkeleton />
-      ) : posts.length === 0 ? (
-        <div className="text-center text-gray-600 dark:text-gray-300">No posts yet. Be the first to share your journey!</div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {posts.map((p) => {
-            const liked = user && p.likes.some((id) => id === user._id);
-            return (
-              <article key={p._id} className="group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
-                <div className="relative">
-                  {p.imageUrl && (
-                    <img src={`${p.imageUrl.startsWith('http') ? p.imageUrl : ORIGIN + p.imageUrl}`} alt={p.caption || 'Post image'} className="w-full h-64 object-cover" />
+          <div className="grid grid-cols-1 gap-6 md:gap-8">
+            {[1, 2, 3].map((i) => (
+              <PostSkeleton key={i} />
+            ))}
+          </div>
+        ) : displayPosts.length === 0 ? (
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-12 text-center">
+            <div className="mx-auto w-24 h-24 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">
+              {activeTab === 'yours' ? 'No posts yet' : 'No community posts yet'}
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400">
+              {activeTab === 'yours' 
+                ? 'Share your fitness journey by creating your first post above!' 
+                : 'Be the first to share and inspire others in the community!'}
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-6 md:gap-8">
+            {displayPosts.map((post) => (
+              <PostCard 
+                key={post._id} 
+                post={post} 
+                currentUserId={myUserId || ''} 
+                ORIGIN={BACKEND_ORIGIN} 
+                onLike={toggleLike} 
+                onComment={addComment}
+                onDelete={activeTab === 'yours' ? () => setShowDeleteModal(post._id) : undefined}
+              />
+            ))}
+          </div>
                   )}
                 </div>
-                <div className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm font-medium text-gray-800 dark:text-gray-100">{p.user?.name || p.user?.email}</div>
-                    <div className="text-xs text-gray-400">{new Date(p.createdAt).toLocaleString()}</div>
-                  </div>
-                  {p.caption && <p className="mt-2 text-gray-700 dark:text-gray-200">{p.caption}</p>}
-                  <div className="mt-3 flex items-center gap-4">
-                    <button onClick={() => toggleLike(p._id)} className={`flex items-center gap-2 text-sm px-3 py-1.5 rounded-full border ${liked ? 'border-red-200 text-red-600 bg-red-50' : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}>
-                      <span>❤</span>
-                      <span>{p.likes.length}</span>
+      
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Delete Post</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">Are you sure you want to delete this post? This action cannot be undone.</p>
+            <div className="flex justify-end space-x-4">
+              <button 
+                onClick={() => setShowDeleteModal(null)} 
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => deletePost(showDeleteModal)} 
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"
+              >
+                Delete
                     </button>
-                    <span className="text-xs text-gray-400">{p.comments.length} comments</span>
                   </div>
-                  <div className="mt-3 space-y-2 max-h-32 overflow-y-auto pr-1">
-                    {p.comments.map((c) => (
-                      <div key={c._id} className="text-sm text-gray-700 dark:text-gray-200"><span className="font-medium">{c.user?.name || 'User'}:</span> {c.text}</div>
-                    ))}
-                  </div>
-                  <CommentBox onSubmit={(text) => addComment(p._id, text)} />
                 </div>
-              </article>
-            );
-          })}
         </div>
       )}
-    </main>
-  );
-}
-
-function CommentBox({ onSubmit }: { onSubmit: (text: string) => void }) {
-  const [text, setText] = useState('');
-  return (
-    <div className="mt-3 flex items-center gap-2">
-      <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Write a comment" className="flex-1 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm" />
-      <button onClick={() => { if (text.trim()) { onSubmit(text.trim()); setText(''); } }} className="text-sm bg-gray-900 dark:bg-gray-700 text-white px-3 py-2 rounded-md">Comment</button>
     </div>
   );
 }
 
-function FeedSkeleton() {
+function PostCard({ 
+  post, 
+  currentUserId, 
+  ORIGIN, 
+  onLike, 
+  onComment,
+  onDelete 
+}: { 
+  post: PostItem; 
+  currentUserId: string; 
+  ORIGIN: string; 
+  onLike: (id: string) => void; 
+  onComment: (id: string, text: string) => void;
+  onDelete?: () => void;
+}) {
+  const [showComments, setShowComments] = useState(false);
+  const [commentText, setCommentText] = useState('');
+  const liked = !!currentUserId && post.likes.some((id) => id === currentUserId);
+  const src = post.imageUrl ? (post.imageUrl.startsWith('http') ? post.imageUrl : ORIGIN + post.imageUrl) : '';
+  const isOwnPost = post.user?._id === currentUserId;
+  
+  // Format date nicely
+  const formattedDate = useMemo(() => {
+    const date = new Date(post.createdAt);
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric'
+    }).format(date);
+  }, [post.createdAt]);
+  
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
-      {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700">
-          <div className="h-64 bg-gray-200 dark:bg-gray-700" />
-          <div className="p-4 space-y-3">
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
-            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
-            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
+      {/* Post Header */}
+      <div className="p-4 flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-medium">
+            {(post.user?.email || 'U').charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <div className="font-medium text-gray-900 dark:text-white">
+              {post.user?.email?.split('@')[0] || 'User'}
+            </div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">{formattedDate}</div>
           </div>
         </div>
-      ))}
+        {isOwnPost && onDelete && (
+          <button 
+            onClick={onDelete}
+            className="text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+          </button>
+        )}
+      </div>
+      
+      {/* Caption */}
+      {post.caption && (
+        <div className="px-4 pb-3">
+          <p className="text-gray-800 dark:text-gray-200">{post.caption}</p>
+        </div>
+      )}
+      
+      {/* Image */}
+      {src && (
+        <div className="relative bg-gray-100 dark:bg-gray-900">
+          <img 
+            src={src} 
+            alt={post.caption || 'Post image'} 
+            className="w-full object-contain max-h-[500px]" 
+          />
+        </div>
+      )}
+      
+      {/* Actions */}
+      <div className="p-4 border-t border-gray-100 dark:border-gray-700">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <button 
+              onClick={() => onLike(post._id)} 
+              className={`flex items-center space-x-1 ${liked ? 'text-red-500' : 'text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400'}`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill={liked ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={liked ? 0 : 2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+              <span>{post.likes.length}</span>
+            </button>
+            <button 
+              onClick={() => setShowComments(!showComments)} 
+              className="flex items-center space-x-1 text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+              <span>{post.comments.length}</span>
+            </button>
+          </div>
+        </div>
+        
+        {/* Comments Section */}
+        {showComments && (
+          <div className="mt-4 space-y-4">
+            <div className="max-h-60 overflow-y-auto space-y-3 pr-2">
+              {post.comments.length > 0 ? (
+                post.comments.map((comment) => (
+                  <div key={comment._id} className="flex space-x-2">
+                    <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-medium text-gray-600 dark:text-gray-300">
+                      {(comment.user?.email || 'U').charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex-1">
+                      <div className="bg-gray-100 dark:bg-gray-700 rounded-2xl px-3 py-2">
+                        <div className="font-medium text-sm text-gray-900 dark:text-white">
+                          {comment.user?.email?.split('@')[0] || 'User'}
+                        </div>
+                        <p className="text-gray-800 dark:text-gray-200 text-sm">{comment.text}</p>
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1 ml-2">
+                        {new Date(comment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center text-gray-500 dark:text-gray-400 py-2">No comments yet</div>
+              )}
+            </div>
+            
+            {/* Add Comment */}
+            <div className="flex items-center space-x-2 mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+              <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                <span className="text-blue-600 dark:text-blue-400 text-xs font-medium">
+                  {(currentUserId ? currentUserId.charAt(0) : 'G').toUpperCase()}
+                </span>
+              </div>
+              <input
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                placeholder="Add a comment..."
+                className="flex-1 bg-gray-100 dark:bg-gray-700 rounded-full px-4 py-2 text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && commentText.trim()) {
+                    onComment(post._id, commentText.trim());
+                    setCommentText('');
+                  }
+                }}
+              />
+              <button
+                onClick={() => {
+                  if (commentText.trim()) {
+                    onComment(post._id, commentText.trim());
+                    setCommentText('');
+                  }
+                }}
+                disabled={!commentText.trim()}
+                className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-full p-2 transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
-
+function PostSkeleton() {
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden animate-pulse">
+      <div className="p-4 flex items-center space-x-3">
+        <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+        <div className="space-y-2">
+          <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          <div className="h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
+        </div>
+          </div>
+      <div className="h-64 bg-gray-200 dark:bg-gray-700"></div>
+      <div className="p-4">
+        <div className="flex space-x-4">
+          <div className="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          <div className="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
+        </div>
+      </div>
+    </div>
+  );
+}

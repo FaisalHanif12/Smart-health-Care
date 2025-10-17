@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs');
 const Post = require('../models/Post');
 const asyncHandler = require('../utils/asyncHandler');
 const ErrorResponse = require('../utils/errorResponse');
@@ -52,4 +53,33 @@ exports.addComment = asyncHandler(async (req, res, next) => {
   res.status(201).json({ success: true, data: post.comments[post.comments.length - 1] });
 });
 
-
+// DELETE /api/posts/:id
+exports.deletePost = asyncHandler(async (req, res, next) => {
+  const post = await Post.findById(req.params.id);
+  
+  if (!post) {
+    return next(new ErrorResponse('Post not found', 404));
+  }
+  
+  // Check if user owns the post
+  if (post.user.toString() !== req.user.id) {
+    return next(new ErrorResponse('Not authorized to delete this post', 401));
+  }
+  
+  // Delete image file if it exists
+  if (post.imageUrl) {
+    try {
+      const imagePath = path.join(__dirname, '..', post.imageUrl);
+      if (fs.existsSync(imagePath)) {
+        fs.unlinkSync(imagePath);
+      }
+    } catch (err) {
+      console.error('Error deleting image file:', err);
+      // Continue with post deletion even if image deletion fails
+    }
+  }
+  
+  await post.deleteOne();
+  
+  res.status(200).json({ success: true, data: {} });
+});

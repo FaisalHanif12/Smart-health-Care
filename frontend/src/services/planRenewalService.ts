@@ -49,6 +49,31 @@ export class PlanRenewalService {
   }
 
   /**
+   * Attempt to infer total program duration in weeks from an AI response object.
+   * Looks for common fields like programDurationWeeks, durationWeeks, totalWeeks, or a
+   * duration string (e.g., "12 weeks", "3 months"). Falls back to defaultWeeks if unknown.
+   */
+  public static extractDurationWeeks(aiResponse: any, defaultWeeks: number = 12): number {
+    if (!aiResponse) return defaultWeeks;
+    const candidates: Array<number | undefined> = [
+      Number(aiResponse?.programDurationWeeks),
+      Number(aiResponse?.durationWeeks),
+      Number(aiResponse?.totalWeeks),
+    ].filter((v) => !Number.isNaN(v)) as number[];
+    if (candidates.length && typeof candidates[0] === 'number' && candidates[0]! > 0) {
+      return candidates[0] as number;
+    }
+    const durationStr: string | undefined = aiResponse?.duration || aiResponse?.programDuration || aiResponse?.planDuration;
+    if (typeof durationStr === 'string') {
+      const weeksMatch = durationStr.match(/(\d+)\s*weeks?/i);
+      if (weeksMatch) return parseInt(weeksMatch[1], 10);
+      const monthsMatch = durationStr.match(/(\d+)\s*months?/i);
+      if (monthsMatch) return parseInt(monthsMatch[1], 10) * 4; // approximate weeks
+    }
+    return defaultWeeks;
+  }
+
+  /**
    * Initialize plan metadata when a new plan is created
    */
   public initializePlanMetadata(planType: 'diet' | 'workout', totalWeeks: number = 12, userId?: string): void {
@@ -160,6 +185,8 @@ export class PlanRenewalService {
       this.archiveCurrentPlan('diet', metadata, userId);
       
       localStorage.setItem(`dietPlan_${userId}`, JSON.stringify(convertedPlan));
+      // Wipe previous week's diet progress so the new week starts clean
+      localStorage.removeItem(`dietProgress_${userId}`);
       
       const now = new Date();
       const nextRenewalDate = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000));
@@ -203,6 +230,8 @@ export class PlanRenewalService {
       this.archiveCurrentPlan('workout', metadata, userId);
       
       localStorage.setItem(`workoutPlan_${userId}`, JSON.stringify(convertedPlan));
+      // Wipe previous week's workout progress so the new week starts clean
+      localStorage.removeItem(`workoutProgress_${userId}`);
       
       const now = new Date();
       const nextRenewalDate = new Date(now.getTime() + (6 * 24 * 60 * 60 * 1000));
@@ -275,7 +304,7 @@ Please ensure meals are progressively optimized for Week ${week} of the program 
       progressiveAdjustments = `This is Week ${week} (Advanced Phase): Peak performance and specialization with high intensity. Sets: 3-5, Reps: 6-10, Rest: 2-3 minutes.`;
     }
 
-    return `Create a personalized 6-day workout plan for Week ${week} of my ${totalWeeks}-week program:
+    return `Create a personalized 7-day workout plan for Week ${week} of my ${totalWeeks}-week program:
 
 Personal Information:
 - Age: ${age} years old
@@ -297,11 +326,53 @@ Week ${week} Requirements:
 Please ensure workouts are progressively more challenging than Week ${week - 1} and include new exercises.`;
   }
 
-  private convertDietPlanToAppFormat(dietResponse: any, week: number): DietDay[] {
+  /**
+   * Get ordered days of the week starting from the current day
+   * For example, if today is Wednesday, return [Wednesday, Thursday, Friday, Saturday, Sunday, Monday, Tuesday]
+   */
+  private getOrderedDaysOfWeek(): string[] {
     const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const today = new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
+    
+    // Convert to our format (0 = Monday)
+    const todayIndex = today === 0 ? 6 : today - 1;
+    
+    // Reorder days starting from today
+    const orderedDays = [
+      ...daysOfWeek.slice(todayIndex),
+      ...daysOfWeek.slice(0, todayIndex)
+    ];
+    
+    return orderedDays;
+  }
+
+  /**
+   * Get the current day name
+   */
+  public getCurrentDayName(): string {
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    return days[new Date().getDay()];
+  }
+
+  /**
+   * Check if a given day is accessible (today or past days in the current week)
+   */
+  public isDayAccessible(dayName: string): boolean {
+    const today = this.getCurrentDayName();
+    const orderedDays = this.getOrderedDaysOfWeek();
+    const todayIndex = orderedDays.indexOf(today);
+    const dayIndex = orderedDays.indexOf(dayName);
+    
+    // Day is accessible if it's today or a past day in the current week
+    return dayIndex <= todayIndex;
+  }
+
+  private convertDietPlanToAppFormat(dietResponse: any, week: number): DietDay[] {
+    // Get days of week starting from today
+    const orderedDays = this.getOrderedDaysOfWeek();
     const variations = ['', ' with herbs', ' variation', ' special', ' deluxe', ' premium', ' enhanced'];
     
-    return daysOfWeek.map((dayName, index) => {
+    return orderedDays.map((dayName, index) => {
       const dayData = dietResponse[dayName] || {};
       
       const breakfastFoods = dayData.breakfast?.foods || ['Healthy breakfast option'];
@@ -314,7 +385,7 @@ Please ensure workouts are progressively more challenging than Week ${week - 1} 
       const totalCalories = breakfastCalories + lunchCalories + dinnerCalories;
       
       return {
-        day: `${dayName} (Week ${week})`,
+        day: dayName,
         totalCalories: totalCalories + (index * 50),
         meals: [
           {
@@ -324,7 +395,7 @@ Please ensure workouts are progressively more challenging than Week ${week - 1} 
             carbs: `${Math.round((dietResponse.macros?.carbs || 150) * 0.3) + (index * 2) + (week * 3)}g`,
             fats: `${Math.round((dietResponse.macros?.fats || 50) * 0.25) + index + week}g`,
             completed: false,
-            notes: `${dayData.breakfast?.time || '8:00 AM'} - Week ${week} optimized`
+            notes: `${dayData.breakfast?.time || '8:00 AM'} - Week ${week}`
           },
           {
             name: `Lunch: ${lunchFoods.join(', ')}${variations[index] || ''}`,
@@ -333,7 +404,7 @@ Please ensure workouts are progressively more challenging than Week ${week - 1} 
             carbs: `${Math.round((dietResponse.macros?.carbs || 150) * 0.4) + (index * 3) + (week * 3)}g`,
             fats: `${Math.round((dietResponse.macros?.fats || 50) * 0.35) + index + week}g`,
             completed: false,
-            notes: `${dayData.lunch?.time || '12:00 PM'} - Week ${week} progression`
+            notes: `${dayData.lunch?.time || '12:00 PM'} - Week ${week}`
           },
           {
             name: `Dinner: ${dinnerFoods.join(', ')}${variations[index] || ''}`,
@@ -342,7 +413,7 @@ Please ensure workouts are progressively more challenging than Week ${week - 1} 
             carbs: `${Math.round((dietResponse.macros?.carbs || 150) * 0.3) + (index * 2) + (week * 2)}g`,
             fats: `${Math.round((dietResponse.macros?.fats || 50) * 0.4) + (index * 2) + week}g`,
             completed: false,
-            notes: `${dayData.dinner?.time || '6:00 PM'} - Week ${week} specialized`
+            notes: `${dayData.dinner?.time || '6:00 PM'} - Week ${week}`
           }
         ],
         completed: false
@@ -351,16 +422,18 @@ Please ensure workouts are progressively more challenging than Week ${week - 1} 
   }
 
   private convertWorkoutPlanToAppFormat(workoutResponse: any, week: number): WorkoutDay[] {
-    const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    // Get days of week starting from today
+    const orderedDays = this.getOrderedDaysOfWeek();
     
-    return daysOfWeek.map(dayName => {
+    // For workout plans, we typically use 6 days a week, so limit to first 6 days
+    return orderedDays.slice(0, 6).map(dayName => {
       const dayData = workoutResponse[dayName] || {};
       const exercises = dayData.exercises || [];
       
       return {
-        day: `${dayName} (Week ${week})`,
+        day: dayName,
         exercises: exercises.map((exercise: any) => ({
-          name: `${exercise.name} - Week ${week} intensity`,
+          name: `${exercise.name}`,
           sets: exercise.sets || 3,
           reps: exercise.reps || 12,
           restTime: exercise.restTime || '60 seconds',
@@ -435,4 +508,4 @@ Please ensure workouts are progressively more challenging than Week ${week - 1} 
       await Notification.requestPermission();
     }
   }
-} 
+}

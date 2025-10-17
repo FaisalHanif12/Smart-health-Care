@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useProgress } from '../../contexts/ProgressContext';
 // Import both services
@@ -159,6 +159,9 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
         setLoadingMessage('✅ AI diet plan generated! Formatting your meals...');
       }
       
+      // Determine total program duration in weeks from AI response
+      const inferredWeeks = PlanRenewalService.extractDurationWeeks(dietData, 12);
+
       // Convert the AI response to our format - Generate 7 days (Monday through Sunday)
       const totalCalories = (dietData as any).dailyCalories || (dietData as any).totalCalories || 2000;
       const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -219,9 +222,7 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
       
       // Initialize plan metadata for auto-renewal system
       const renewalService = PlanRenewalService.getInstance();
-      const planDuration = localStorage.getItem(`planDuration_${user?._id}`) || '3 months';
-      const totalWeeks = planDuration.includes('3') ? 12 : planDuration.includes('6') ? 24 : 52;
-      renewalService.initializePlanMetadata('diet', totalWeeks, user?._id);
+      renewalService.initializePlanMetadata('diet', inferredWeeks, user?._id);
       
       setLoadingMessage('🎉 Your AI diet plan is ready! Enjoy your journey!');
       setShowPromptDialog(false);
@@ -237,6 +238,12 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
   };
 
   const toggleMealComplete = (dayIndex: number, mealIndex: number) => {
+    // Check if day is accessible before allowing toggle
+    const dayName = extractDayName(dietPlan[dayIndex].day);
+    if (!isDayAccessible(dayName)) {
+      return; // Don't allow toggling for future days
+    }
+    
     const updatedPlan = [...dietPlan];
     updatedPlan[dayIndex].meals[mealIndex].completed = 
       !updatedPlan[dayIndex].meals[mealIndex].completed;
@@ -245,6 +252,7 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
     const allMealsComplete = updatedPlan[dayIndex].meals.every(meal => meal.completed);
     updatedPlan[dayIndex].completed = allMealsComplete;
     
+    // Save diet plan - this will trigger the useEffect that updates the progress context
     saveDietPlan(updatedPlan);
   };
 
@@ -284,6 +292,20 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
     }
   };
 
+  // Get current day and plan renewal service
+  const renewalService = useMemo(() => PlanRenewalService.getInstance(), []);
+  const currentDayName = useMemo(() => renewalService.getCurrentDayName(), []);
+
+  // Function to check if a day is accessible (today or past days)
+  const isDayAccessible = (dayName: string) => {
+    return renewalService.isDayAccessible(dayName);
+  };
+
+  // Function to extract day name from the full day string (e.g., "Monday" from "Monday (Week 1)")
+  const extractDayName = (fullDayName: string) => {
+    return fullDayName.split(' ')[0];
+  };
+
   return (
     <div className="p-6 max-w-6xl mx-auto">
       {/* Header */}
@@ -292,6 +314,9 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
         <p className="text-gray-600">
           Your personalized nutrition journey starts here. Track your meals and reach your goals!
         </p>
+        <div className="mt-2 text-sm bg-blue-50 text-blue-800 p-2 rounded-md">
+          <span className="font-semibold">Today is {currentDayName}:</span> You can only access and complete today's meals and previous days from this week.
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -370,11 +395,34 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
           <div className="space-y-6">
             {dietPlan.map((day, dayIndex) => (
               <div key={dayIndex} className="bg-white rounded-xl shadow-lg border border-gray-200">
-                <div className={`p-6 border-b border-gray-200 ${day.completed ? 'bg-green-50' : 'bg-gray-50'}`}>
+                <div className={`p-6 border-b border-gray-200 ${
+                  day.completed 
+                    ? 'bg-green-50' 
+                    : extractDayName(day.day) === currentDayName
+                      ? 'bg-blue-50'
+                      : isDayAccessible(extractDayName(day.day))
+                        ? 'bg-gray-50'
+                        : 'bg-gray-100'
+                }`}>
                   <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-xl font-bold text-gray-900">{day.day}</h3>
-                      <p className="text-sm text-gray-600">{day.totalCalories} total calories</p>
+                    <div className="flex flex-col sm:flex-row sm:items-center">
+                      <div className="flex items-center">
+                        <h3 className="text-xl font-bold text-gray-900">{day.day}</h3>
+                        {extractDayName(day.day) === currentDayName && (
+                          <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                            Today
+                          </span>
+                        )}
+                        {!isDayAccessible(extractDayName(day.day)) && (
+                          <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
+                            <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                            </svg>
+                            Locked
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-600 mt-1 sm:mt-0 sm:ml-3">{day.totalCalories} total calories</p>
                     </div>
                     {day.completed && (
                       <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
@@ -395,7 +443,9 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
                         className={`p-4 rounded-lg border-2 transition-colors ${
                           meal.completed 
                             ? 'border-green-200 bg-green-50' 
-                            : 'border-gray-200 bg-white hover:border-gray-300'
+                            : isDayAccessible(extractDayName(day.day))
+                              ? 'border-gray-200 bg-white hover:border-gray-300'
+                              : 'border-gray-200 bg-gray-50 opacity-75'
                         }`}
                       >
                         <div className="flex items-start justify-between">
@@ -403,18 +453,32 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
                             <div className="flex items-center mb-2">
                               <button
                                 onClick={() => toggleMealComplete(dayIndex, mealIndex)}
+                                disabled={!isDayAccessible(extractDayName(day.day))}
                                 className={`mr-3 p-1 rounded-full transition-colors ${
                                   meal.completed 
                                     ? 'bg-green-600 text-white' 
-                                    : 'bg-gray-200 text-gray-400 hover:bg-gray-300'
+                                    : isDayAccessible(extractDayName(day.day))
+                                      ? 'bg-gray-200 text-gray-400 hover:bg-gray-300'
+                                      : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                                 }`}
                               >
                                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                 </svg>
                               </button>
-                              <h4 className={`text-lg font-semibold ${meal.completed ? 'text-green-800 line-through' : 'text-gray-900'}`}>
+                              <h4 className={`text-lg font-semibold ${
+                                meal.completed 
+                                  ? 'text-green-800 line-through' 
+                                  : isDayAccessible(extractDayName(day.day))
+                                    ? 'text-gray-900'
+                                    : 'text-gray-500'
+                              }`}>
                                 {meal.name}
+                                {!isDayAccessible(extractDayName(day.day)) && 
+                                  <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">
+                                    Locked
+                                  </span>
+                                }
                               </h4>
                             </div>
                             

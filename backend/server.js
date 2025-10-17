@@ -50,7 +50,15 @@ const app = express();
 connectDB();
 
 // Security middleware
-app.use(helmet());
+app.use(
+  helmet({
+    // Allow images and other static assets under /uploads to be displayed by the frontend origin
+    // Helmet v8 enables Cross-Origin-Resource-Policy: same-origin by default which blocks <img> from other origins
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+    // Disable COEP since we don't need it and it can block cross-origin assets in some browsers
+    crossOriginEmbedderPolicy: false,
+  })
+);
 
 // Rate limiting
 const limiter = rateLimit({
