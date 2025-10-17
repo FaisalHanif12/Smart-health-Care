@@ -2,7 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const { protect } = require('../middleware/auth');
-const { listPosts, createPost, toggleLike, addComment } = require('../controllers/postController');
+const { listPosts, createPost, toggleLike, addComment, deletePost } = require('../controllers/postController');
 
 const router = express.Router();
 
@@ -30,7 +30,6 @@ router.get('/', protect, listPosts);
 router.post('/', protect, upload.single('image'), createPost);
 router.post('/:id/like', protect, toggleLike);
 router.post('/:id/comments', protect, addComment);
+router.delete('/:id', protect, deletePost);
 
 module.exports = router;
-
-
