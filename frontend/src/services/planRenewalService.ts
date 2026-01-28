@@ -355,7 +355,9 @@ Please ensure workouts are progressively more challenging than Week ${week - 1} 
   }
 
   /**
-   * Check if a given day is accessible (today or past days in the current week)
+   * Check if a given day is accessible.
+   * Current behavior: only the actual current calendar day is accessible;
+   * all other days (past or future) are locked from interaction.
    */
   public isDayAccessible(dayName: string): boolean {
     const today = this.getCurrentDayName();

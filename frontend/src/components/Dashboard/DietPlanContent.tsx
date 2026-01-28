@@ -309,7 +309,7 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
   const renewalService = useMemo(() => PlanRenewalService.getInstance(), []);
   const currentDayName = useMemo(() => renewalService.getCurrentDayName(), []);
 
-  // Function to check if a day is accessible (today or past days)
+  // Function to check if a day is accessible (today only)
   const isDayAccessible = (dayName: string) => {
     return renewalService.isDayAccessible(dayName);
   };
@@ -328,7 +328,7 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
           Your personalized nutrition journey starts here. Track your meals and reach your goals!
         </p>
         <div className="mt-2 text-sm bg-indigo-50 text-indigo-800 p-2 rounded-md">
-          <span className="font-semibold">Today is {currentDayName}:</span> You can only access and complete today's meals and previous days from this week.
+          <span className="font-semibold">Today is {currentDayName}:</span> You can only access and complete <span className="font-semibold">today&apos;s</span> meals. All other days remain locked.
         </div>
       </div>
 
