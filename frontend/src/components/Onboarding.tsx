@@ -39,6 +39,100 @@ export default function Onboarding() {
   const healthConditionOptions = ['Diabetes', 'PCOS', 'High Blood Pressure', 'Heart Disease', 'Thyroid Issues', 'None'];
   const fitnessGoalOptions = ['Muscle Building', 'Fat Burning', 'Weight Gain', 'General Fitness', 'Endurance Training', 'Strength Training'];
 
+  const setFieldError = (field: keyof ValidationErrors, message?: string) => {
+    setValidationErrors(prev => ({
+      ...prev,
+      [field]: message
+    }));
+  };
+
+  const validateField = (field: keyof UserProfile): boolean => {
+    // Validate individual fields so we can show errors onBlur / onChange
+    if (field === 'age') {
+      if (!profile.age.trim()) {
+        setFieldError('age', 'Age is required (13–120).');
+        return false;
+      }
+      const ageNum = parseInt(profile.age, 10);
+      if (Number.isNaN(ageNum) || ageNum < 13 || ageNum > 120) {
+        setFieldError('age', 'Please enter a valid age between 13 and 120.');
+        return false;
+      }
+      setFieldError('age', undefined);
+      return true;
+    }
+
+    if (field === 'gender') {
+      const allowed = new Set(['male', 'female', 'other']);
+      if (!profile.gender) {
+        setFieldError('gender', 'Please select your gender.');
+        return false;
+      }
+      if (!allowed.has(profile.gender)) {
+        setFieldError('gender', 'Invalid gender selection. Please choose from the list.');
+        return false;
+      }
+      setFieldError('gender', undefined);
+      return true;
+    }
+
+    if (field === 'height') {
+      if (!profile.height.trim()) {
+        setFieldError('height', 'Height is required (100–250 cm).');
+        return false;
+      }
+      const heightNum = parseFloat(profile.height);
+      if (Number.isNaN(heightNum) || heightNum < 100 || heightNum > 250) {
+        setFieldError('height', 'Please enter a valid height between 100 and 250 cm.');
+        return false;
+      }
+      setFieldError('height', undefined);
+      return true;
+    }
+
+    if (field === 'weight') {
+      if (!profile.weight.trim()) {
+        setFieldError('weight', 'Weight is required (30–300 kg).');
+        return false;
+      }
+      const weightNum = parseFloat(profile.weight);
+      if (Number.isNaN(weightNum) || weightNum < 30 || weightNum > 300) {
+        setFieldError('weight', 'Please enter a valid weight between 30 and 300 kg.');
+        return false;
+      }
+      setFieldError('weight', undefined);
+      return true;
+    }
+
+    if (field === 'healthConditions') {
+      if (profile.healthConditions.length === 0) {
+        setFieldError('healthConditions', 'Select at least one option (choose "None" if you have no conditions).');
+        return false;
+      }
+      if (profile.healthConditions.includes('None') && profile.healthConditions.length > 1) {
+        setFieldError('healthConditions', 'If you select "None", you cannot select any other condition.');
+        return false;
+      }
+      setFieldError('healthConditions', undefined);
+      return true;
+    }
+
+    if (field === 'fitnessGoal') {
+      if (!profile.fitnessGoal) {
+        setFieldError('fitnessGoal', 'Please select your fitness goal.');
+        return false;
+      }
+      if (!fitnessGoalOptions.includes(profile.fitnessGoal)) {
+        setFieldError('fitnessGoal', 'Invalid goal selection. Please choose from the list.');
+        return false;
+      }
+      setFieldError('fitnessGoal', undefined);
+      return true;
+    }
+
+    return true;
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     
@@ -62,12 +156,26 @@ export default function Onboarding() {
       }));
     }
 
-    setProfile(prev => ({
-      ...prev,
-      healthConditions: prev.healthConditions.includes(condition)
-        ? prev.healthConditions.filter(c => c !== condition)
-        : [...prev.healthConditions, condition]
-    }));
+    setProfile(prev => {
+      const currentlySelected = prev.healthConditions;
+
+      // Toggle off
+      if (currentlySelected.includes(condition)) {
+        return { ...prev, healthConditions: currentlySelected.filter(c => c !== condition) };
+      }
+
+      // Enforce exclusive "None" selection
+      if (condition === 'None') {
+        return { ...prev, healthConditions: ['None'] };
+      }
+
+      // Selecting any real condition should remove "None" if it was selected
+      const withoutNone = currentlySelected.filter(c => c !== 'None');
+      return { ...prev, healthConditions: [...withoutNone, condition] };
+    });
+
+    // Re-validate after change so the user gets immediate feedback
+    setTimeout(() => validateField('healthConditions'), 0);
   };
 
   const validateStep = (stepNumber: number): boolean => {
@@ -76,62 +184,32 @@ export default function Onboarding() {
 
     if (stepNumber === 1) {
       // Validate age
-      if (!profile.age.trim()) {
-        errors.age = 'Please enter your age';
-        isValid = false;
-      } else {
-        const ageNum = parseInt(profile.age);
-        if (isNaN(ageNum) || ageNum < 13 || ageNum > 120) {
-          errors.age = 'Please enter a valid age between 13 and 120';
-          isValid = false;
-        }
-      }
+      if (!validateField('age')) isValid = false;
+      if (validationErrors.age) errors.age = validationErrors.age;
 
       // Validate gender
-      if (!profile.gender) {
-        errors.gender = 'Please select your gender';
-        isValid = false;
-      }
+      if (!validateField('gender')) isValid = false;
+      if (validationErrors.gender) errors.gender = validationErrors.gender;
     }
 
     if (stepNumber === 2) {
       // Validate height
-      if (!profile.height.trim()) {
-        errors.height = 'Please enter your height';
-        isValid = false;
-      } else {
-        const heightNum = parseFloat(profile.height);
-        if (isNaN(heightNum) || heightNum < 100 || heightNum > 250) {
-          errors.height = 'Please enter a valid height between 100-250 cm';
-          isValid = false;
-        }
-      }
+      if (!validateField('height')) isValid = false;
+      if (validationErrors.height) errors.height = validationErrors.height;
 
       // Validate weight
-      if (!profile.weight.trim()) {
-        errors.weight = 'Please enter your weight';
-        isValid = false;
-      } else {
-        const weightNum = parseFloat(profile.weight);
-        if (isNaN(weightNum) || weightNum < 30 || weightNum > 300) {
-          errors.weight = 'Please enter a valid weight between 30-300 kg';
-          isValid = false;
-        }
-      }
+      if (!validateField('weight')) isValid = false;
+      if (validationErrors.weight) errors.weight = validationErrors.weight;
     }
 
     if (stepNumber === 3) {
-      // Validate health conditions (at least one must be selected)
-      if (profile.healthConditions.length === 0) {
-        errors.healthConditions = 'Please select at least one option (select "None" if no conditions apply)';
-        isValid = false;
-      }
+      // Validate health conditions
+      if (!validateField('healthConditions')) isValid = false;
+      if (validationErrors.healthConditions) errors.healthConditions = validationErrors.healthConditions;
 
       // Validate fitness goal
-      if (!profile.fitnessGoal) {
-        errors.fitnessGoal = 'Please select your fitness goal';
-        isValid = false;
-      }
+      if (!validateField('fitnessGoal')) isValid = false;
+      if (validationErrors.fitnessGoal) errors.fitnessGoal = validationErrors.fitnessGoal;
     }
 
     setValidationErrors(errors);
@@ -240,6 +318,7 @@ export default function Onboarding() {
                   name="age"
                   value={profile.age}
                   onChange={handleInputChange}
+                  onBlur={() => validateField('age')}
                   min="13"
                   max="120"
                   placeholder="Enter your age"
@@ -259,6 +338,7 @@ export default function Onboarding() {
                   name="gender"
                   value={profile.gender}
                   onChange={handleInputChange}
+                  onBlur={() => validateField('gender')}
                   className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
                     validationErrors.gender ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
                   }`}
@@ -285,6 +365,7 @@ export default function Onboarding() {
                   name="height"
                   value={profile.height}
                   onChange={handleInputChange}
+                  onBlur={() => validateField('height')}
                   min="100"
                   max="250"
                   step="0.1"
@@ -307,6 +388,7 @@ export default function Onboarding() {
                   name="weight"
                   value={profile.weight}
                   onChange={handleInputChange}
+                  onBlur={() => validateField('weight')}
                   min="30"
                   max="300"
                   step="0.1"
@@ -353,6 +435,7 @@ export default function Onboarding() {
                   name="fitnessGoal"
                   value={profile.fitnessGoal}
                   onChange={handleInputChange}
+                  onBlur={() => validateField('fitnessGoal')}
                   className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
                     validationErrors.fitnessGoal ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
                   }`}
