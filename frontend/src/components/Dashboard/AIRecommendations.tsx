@@ -245,17 +245,17 @@ Focus on:
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'high': return 'border-red-200 dark:border-red-700 bg-red-50 dark:bg-red-900/30';
-      case 'medium': return 'border-yellow-200 dark:border-yellow-700 bg-yellow-50 dark:bg-yellow-900/30';
-      case 'low': return 'border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/30';
+      case 'medium': return 'border-indigo-200 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-900/30';
+      case 'low': return 'border-indigo-200 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-900/30';
       default: return 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50';
     }
   };
 
   const getProgressColor = (overall: string) => {
     switch (overall) {
-      case 'excellent': return 'text-green-600 dark:text-green-200 bg-green-100 dark:bg-green-800/50';
-      case 'good': return 'text-blue-600 dark:text-blue-200 bg-blue-100 dark:bg-blue-800/50';
-      case 'fair': return 'text-yellow-600 dark:text-yellow-200 bg-yellow-100 dark:bg-yellow-800/50';
+      case 'excellent': return 'text-indigo-600 dark:text-indigo-200 bg-indigo-100 dark:bg-indigo-800/50';
+      case 'good': return 'text-indigo-600 dark:text-indigo-200 bg-indigo-100 dark:bg-indigo-800/50';
+      case 'fair': return 'text-indigo-600 dark:text-indigo-200 bg-indigo-100 dark:bg-indigo-800/50';
       case 'poor': return 'text-red-600 dark:text-red-200 bg-red-100 dark:bg-red-800/50';
       default: return 'text-gray-600 dark:text-gray-200 bg-gray-100 dark:bg-gray-800/50';
     }
@@ -270,7 +270,7 @@ Focus on:
           <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
             🤖 AI Health Coach
             {isLoading && (
-              <svg className="animate-spin h-5 w-5 text-blue-500 dark:text-blue-400" fill="none" viewBox="0 0 24 24">
+              <svg className="animate-spin h-5 w-5 text-indigo-500 dark:text-indigo-400" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
@@ -290,27 +290,27 @@ Focus on:
 
       {/* Progress Summary */}
       <div className="grid grid-cols-2 gap-4 mb-6">
-        <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700/50 p-4 rounded-lg">
+        <div className="bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-700/50 p-4 rounded-lg">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-green-700 dark:text-green-200">Diet Compliance</span>
-            <span className="text-lg font-bold text-green-900 dark:text-green-100">{analysis.dietCompliance.toFixed(0)}%</span>
+            <span className="text-sm font-medium text-indigo-700 dark:text-indigo-200">Diet Compliance</span>
+            <span className="text-lg font-bold text-indigo-900 dark:text-indigo-100">{analysis.dietCompliance.toFixed(0)}%</span>
           </div>
-          <div className="w-full bg-green-200 dark:bg-green-800/60 rounded-full h-2 mt-2">
+          <div className="w-full bg-indigo-200 dark:bg-indigo-800/60 rounded-full h-2 mt-2">
             <div 
-              className="bg-green-600 dark:bg-green-400 h-2 rounded-full transition-all duration-300" 
+              className="bg-indigo-600 dark:bg-indigo-400 h-2 rounded-full transition-all duration-300" 
               style={{ width: `${analysis.dietCompliance}%` }}
             ></div>
           </div>
         </div>
 
-        <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700/50 p-4 rounded-lg">
+        <div className="bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-700/50 p-4 rounded-lg">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-blue-700 dark:text-blue-200">Workout Compliance</span>
-            <span className="text-lg font-bold text-blue-900 dark:text-blue-100">{analysis.workoutCompliance.toFixed(0)}%</span>
+            <span className="text-sm font-medium text-indigo-700 dark:text-indigo-200">Workout Compliance</span>
+            <span className="text-lg font-bold text-indigo-900 dark:text-indigo-100">{analysis.workoutCompliance.toFixed(0)}%</span>
           </div>
-          <div className="w-full bg-blue-200 dark:bg-blue-800/60 rounded-full h-2 mt-2">
+          <div className="w-full bg-indigo-200 dark:bg-indigo-800/60 rounded-full h-2 mt-2">
             <div 
-              className="bg-blue-600 dark:bg-blue-400 h-2 rounded-full transition-all duration-300" 
+              className="bg-indigo-600 dark:bg-indigo-400 h-2 rounded-full transition-all duration-300" 
               style={{ width: `${analysis.workoutCompliance}%` }}
             ></div>
           </div>
@@ -330,8 +330,8 @@ Focus on:
               </div>
               <span className={`text-xs px-2 py-1 rounded-full font-medium ${
                 rec.priority === 'high' ? 'bg-red-100 dark:bg-red-800 text-red-700 dark:text-red-200' :
-                rec.priority === 'medium' ? 'bg-yellow-100 dark:bg-yellow-800 text-yellow-700 dark:text-yellow-200' :
-                'bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-200'
+                rec.priority === 'medium' ? 'bg-indigo-100 dark:bg-indigo-800 text-indigo-700 dark:text-indigo-200' :
+                'bg-indigo-100 dark:bg-indigo-800 text-indigo-700 dark:text-indigo-200'
               }`}>
                 {rec.priority}
               </span>
@@ -360,7 +360,7 @@ Focus on:
               setAnalysis(newAnalysis);
               generateAIRecommendations(newAnalysis);
             }}
-            className="text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded px-2 py-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded px-2 py-1 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
           >
             <option value="3 months">3 Months</option>
             <option value="6 months">6 Months</option>

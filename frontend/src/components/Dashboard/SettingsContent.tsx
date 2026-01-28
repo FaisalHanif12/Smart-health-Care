@@ -368,12 +368,12 @@ export default function SettingsContent() {
     
     const alertBox = document.createElement('div');
     alertBox.className = `bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl border-2 ${
-      type === 'success' ? 'border-green-500' : 'border-red-500'
+      type === 'success' ? 'border-indigo-500' : 'border-red-500'
     }`;
     
     alertBox.innerHTML = `
       <div class="text-center">
-        <div class="${type === 'success' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'} rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+        <div class="${type === 'success' ? 'bg-indigo-100 text-indigo-600' : 'bg-red-100 text-red-600'} rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
           <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
             ${type === 'success' 
               ? '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />'
@@ -422,7 +422,7 @@ export default function SettingsContent() {
           {/* Workout Reminders Card */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-gray-700 hover:shadow-2xl transition-all duration-300">
             <div className="flex items-center mb-6">
-              <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-full p-3 mr-4">
+              <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-full p-3 mr-4">
                 <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
                 </svg>
@@ -438,10 +438,10 @@ export default function SettingsContent() {
               {notificationSupported && (
                 <div className={`p-3 rounded-lg border ${
                   notificationPermission === 'granted' 
-                    ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-700' 
+                    ? 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-200 dark:border-indigo-700' 
                     : notificationPermission === 'denied'
                     ? 'bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-700'
-                    : 'bg-yellow-50 dark:bg-yellow-900/30 border-yellow-200 dark:border-yellow-700'
+                    : 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-200 dark:border-indigo-700'
                 }`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
@@ -452,20 +452,20 @@ export default function SettingsContent() {
                       <div>
                         <span className={`font-medium ${
                           notificationPermission === 'granted' 
-                            ? 'text-green-800 dark:text-green-200' 
+                            ? 'text-indigo-800 dark:text-indigo-200' 
                             : notificationPermission === 'denied'
                             ? 'text-red-800 dark:text-red-200'
-                            : 'text-yellow-800 dark:text-yellow-200'
+                            : 'text-indigo-800 dark:text-indigo-200'
                         }`}>
                           {notificationPermission === 'granted' ? 'Notifications Enabled' : 
                            notificationPermission === 'denied' ? 'Notifications Blocked' : 'Permission Required'}
                         </span>
                         <p className={`text-xs ${
                           notificationPermission === 'granted' 
-                            ? 'text-green-600 dark:text-green-300' 
+                            ? 'text-indigo-600 dark:text-indigo-300' 
                             : notificationPermission === 'denied'
                             ? 'text-red-600 dark:text-red-300'
-                            : 'text-yellow-600 dark:text-yellow-300'
+                            : 'text-indigo-600 dark:text-indigo-300'
                         }`}>
                           {notificationPermission === 'granted' ? 'You will receive workout reminders' : 
                            notificationPermission === 'denied' ? 'Enable in browser settings to receive reminders' : 
@@ -491,28 +491,28 @@ export default function SettingsContent() {
                     onChange={(e) => updateAppSetting('workoutReminders', e.target.checked)}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 dark:peer-focus:ring-purple-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-purple-600"></div>
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
                 </label>
               </div>
 
               {/* Time Picker */}
               {appSettings.workoutReminders && (
-                <div className="p-4 bg-purple-50 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-700/50 rounded-xl">
-                  <label className="block text-sm font-medium text-purple-800 dark:text-purple-200 mb-2">
+                <div className="p-4 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-700/50 rounded-xl">
+                  <label className="block text-sm font-medium text-indigo-800 dark:text-indigo-200 mb-2">
                     🕐 Reminder Time
                   </label>
                   <input
                     type="time"
                     value={appSettings.workoutTime}
                     onChange={(e) => updateAppSetting('workoutTime', e.target.value)}
-                    className="w-full p-3 border border-purple-300 dark:border-purple-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className="w-full p-3 border border-indigo-300 dark:border-indigo-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
-                  <p className="text-xs text-purple-600 dark:text-purple-300 mt-2">
+                  <p className="text-xs text-indigo-600 dark:text-indigo-300 mt-2">
                     💡 You'll receive a reminder at this time every day
                   </p>
                   {notificationPermission === 'granted' && (
-                    <div className="mt-3 p-2 bg-purple-100 dark:bg-purple-800/50 rounded-lg">
-                      <p className="text-xs text-purple-700 dark:text-purple-200">
+                    <div className="mt-3 p-2 bg-indigo-100 dark:bg-indigo-800/50 rounded-lg">
+                      <p className="text-xs text-indigo-700 dark:text-indigo-200">
                         🔔 Next reminder: {appSettings.workoutTime} {new Date().toLocaleDateString()}
                       </p>
                   </div>
@@ -533,7 +533,7 @@ export default function SettingsContent() {
           {/* Account Information Card */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-gray-700 hover:shadow-2xl transition-all duration-300">
             <div className="flex items-center mb-6">
-              <div className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full p-3 mr-4">
+              <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-full p-3 mr-4">
                 <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                 </svg>
@@ -565,7 +565,7 @@ export default function SettingsContent() {
           {/* App Preferences Card */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-gray-700 hover:shadow-2xl transition-all duration-300">
             <div className="flex items-center mb-6">
-              <div className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-full p-3 mr-4">
+              <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-full p-3 mr-4">
                 <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
                 </svg>
@@ -589,7 +589,7 @@ export default function SettingsContent() {
                   key={unit.value}
                       className={`flex items-center p-3 rounded-lg cursor-pointer transition-all ${
                     appSettings.units === unit.value
-                      ? 'bg-green-50 dark:bg-green-900/30 border-2 border-green-500'
+                      ? 'bg-indigo-50 dark:bg-indigo-900/30 border-2 border-indigo-500'
                       : 'bg-gray-50 dark:bg-gray-700 border-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600'
                   }`}
                 >
@@ -609,7 +609,7 @@ export default function SettingsContent() {
                     </div>
                   </div>
                   {appSettings.units === unit.value && (
-                        <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                        <svg className="w-4 h-4 text-indigo-500" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                   )}
@@ -632,7 +632,7 @@ export default function SettingsContent() {
                       onChange={(e) => updateAppSetting('autoSave', e.target.checked)}
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 dark:peer-focus:ring-green-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-600"></div>
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
                   </label>
                 </div>
               </div>

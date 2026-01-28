@@ -92,7 +92,7 @@ export default function ResetPassword() {
                 <div className="mt-4">
                   <Link 
                     to="/forgot-password" 
-                    className="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-sm font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 group"
+                    className="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white text-sm font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 group"
                   >
                     Request New Reset Link
                   </Link>
@@ -133,10 +133,10 @@ export default function ResetPassword() {
         )}
 
         {success && (
-          <div className="border px-4 py-4 rounded-lg relative bg-green-50 border-green-300 text-green-800" role="alert">
+          <div className="border px-4 py-4 rounded-lg relative bg-indigo-50 border-indigo-300 text-indigo-800" role="alert">
             <div className="flex items-start space-x-3">
               <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="h-5 w-5 text-indigo-500" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
               </div>

@@ -57,14 +57,14 @@ export default function PlanRenewalStatus() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Diet Plan Status */}
         {renewalStatus.diet && (
-          <div className="bg-green-50 p-4 rounded-lg">
+          <div className="bg-indigo-50 p-4 rounded-lg">
             <div className="flex items-center justify-between mb-2">
-              <h4 className="font-medium text-green-800">🥗 Diet Plan</h4>
-              <span className="text-sm text-green-600 font-medium">
+              <h4 className="font-medium text-indigo-800">🥗 Diet Plan</h4>
+              <span className="text-sm text-indigo-600 font-medium">
                 Week {renewalStatus.diet.currentWeek} / {renewalStatus.diet.totalWeeks}
               </span>
             </div>
-            <div className="text-sm text-green-700">
+            <div className="text-sm text-indigo-700">
               {renewalStatus.diet.daysUntilRenewal > 0 ? (
                 <p>
                   Next renewal in <span className="font-semibold">{renewalStatus.diet.daysUntilRenewal} days</span>
@@ -79,9 +79,9 @@ export default function PlanRenewalStatus() {
                 </p>
               )}
             </div>
-            <div className="mt-2 bg-green-200 rounded-full h-2">
+            <div className="mt-2 bg-indigo-200 rounded-full h-2">
               <div 
-                className="bg-green-600 h-2 rounded-full transition-all duration-300"
+                className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
                 style={{ 
                   width: `${(renewalStatus.diet.currentWeek / renewalStatus.diet.totalWeeks) * 100}%` 
                 }}
@@ -92,14 +92,14 @@ export default function PlanRenewalStatus() {
 
         {/* Workout Plan Status */}
         {renewalStatus.workout && (
-          <div className="bg-blue-50 p-4 rounded-lg">
+          <div className="bg-indigo-50 p-4 rounded-lg">
             <div className="flex items-center justify-between mb-2">
-              <h4 className="font-medium text-blue-800">💪 Workout Plan</h4>
-              <span className="text-sm text-blue-600 font-medium">
+              <h4 className="font-medium text-indigo-800">💪 Workout Plan</h4>
+              <span className="text-sm text-indigo-600 font-medium">
                 Week {renewalStatus.workout.currentWeek} / {renewalStatus.workout.totalWeeks}
               </span>
             </div>
-            <div className="text-sm text-blue-700">
+            <div className="text-sm text-indigo-700">
               {renewalStatus.workout.daysUntilRenewal > 0 ? (
                 <p>
                   Next renewal in <span className="font-semibold">{renewalStatus.workout.daysUntilRenewal} days</span>
@@ -114,9 +114,9 @@ export default function PlanRenewalStatus() {
                 </p>
               )}
             </div>
-            <div className="mt-2 bg-blue-200 rounded-full h-2">
+            <div className="mt-2 bg-indigo-200 rounded-full h-2">
               <div 
-                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
                 style={{ 
                   width: `${(renewalStatus.workout.currentWeek / renewalStatus.workout.totalWeeks) * 100}%` 
                 }}
@@ -134,17 +134,17 @@ export default function PlanRenewalStatus() {
             {notifications.map((notification) => (
               <div 
                 key={notification.id}
-                className="flex items-start justify-between p-3 bg-yellow-50 border border-yellow-200 rounded-lg"
+                className="flex items-start justify-between p-3 bg-indigo-50 border border-indigo-200 rounded-lg"
               >
                 <div className="flex-1">
-                  <p className="text-sm text-yellow-800">{notification.message}</p>
-                  <p className="text-xs text-yellow-600 mt-1">
+                  <p className="text-sm text-indigo-800">{notification.message}</p>
+                  <p className="text-xs text-indigo-600 mt-1">
                     {new Date(notification.timestamp).toLocaleString()}
                   </p>
                 </div>
                 <button
                   onClick={() => markNotificationAsRead(notification.id)}
-                  className="ml-2 text-yellow-600 hover:text-yellow-800 transition-colors"
+                  className="ml-2 text-indigo-600 hover:text-indigo-800 transition-colors"
                   title="Mark as read"
                 >
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">

@@ -20,6 +20,12 @@ const register = asyncHandler(async (req, res, next) => {
   const { username, email, password } = req.body;
 
   try {
+    // Check if MongoDB is connected
+    if (require('mongoose').connection.readyState !== 1) {
+      console.error('❌ MongoDB is not connected. Connection state:', require('mongoose').connection.readyState);
+      return next(new ErrorResponse('Database connection error. Please try again later.', 503));
+    }
+
     // Create user
     const user = await User.create({
       username,
@@ -30,6 +36,7 @@ const register = asyncHandler(async (req, res, next) => {
     // Send token response
     sendTokenResponse(user, 201, res, 'User registered successfully');
   } catch (error) {
+    console.error('❌ Registration error:', error);
     // Handle duplicate key errors (email or username already exists)
     if (error.code === 11000) {
       const field = Object.keys(error.keyValue)[0];

@@ -66,10 +66,10 @@ export default function ForgotPassword() {
 
         {/* Status Message */}
         {statusMessage && !error && !success && (
-          <div className="border px-4 py-4 rounded-lg relative bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 text-blue-800 dark:text-blue-200" role="alert">
+          <div className="border px-4 py-4 rounded-lg relative bg-indigo-50 dark:bg-indigo-900/30 border-indigo-300 dark:border-indigo-700 text-indigo-800 dark:text-indigo-200" role="alert">
             <div className="flex items-start space-x-3">
               <div className="flex-shrink-0">
-                <svg className="animate-spin h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24">
+                <svg className="animate-spin h-5 w-5 text-indigo-500" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
@@ -99,22 +99,22 @@ export default function ForgotPassword() {
 
         {/* Success Message */}
         {success && (
-          <div className="border px-4 py-6 rounded-lg relative bg-green-50 dark:bg-green-900/30 border-green-300 dark:border-green-700 text-green-800 dark:text-green-200" role="alert">
+          <div className="border px-4 py-6 rounded-lg relative bg-indigo-50 dark:bg-indigo-900/30 border-indigo-300 dark:border-indigo-700 text-indigo-800 dark:text-indigo-200" role="alert">
             <div className="flex items-start space-x-3">
               <div className="flex-shrink-0">
-                <svg className="h-6 w-6 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="h-6 w-6 text-indigo-500" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-bold text-green-800 mb-2">📧 Reset Link Sent Successfully!</h3>
+                <h3 className="text-lg font-bold text-indigo-800 mb-2">📧 Reset Link Sent Successfully!</h3>
                 <p className="text-sm mb-3">
-                  A password reset link has been sent to <span className="font-semibold bg-green-100 px-2 py-1 rounded">{email}</span>
+                  A password reset link has been sent to <span className="font-semibold bg-indigo-100 px-2 py-1 rounded">{email}</span>
                 </p>
                 
-                <div className="bg-white border border-green-200 rounded-lg p-4 mb-3">
-                  <h4 className="font-semibold text-green-700 mb-2">📋 Next Steps:</h4>
-                  <ol className="text-sm text-green-700 space-y-1">
+                <div className="bg-white border border-indigo-200 rounded-lg p-4 mb-3">
+                  <h4 className="font-semibold text-indigo-700 mb-2">📋 Next Steps:</h4>
+                  <ol className="text-sm text-indigo-700 space-y-1">
                     <li>1. Check your email inbox for a message from Smart Health Care</li>
                     <li>2. Click the "Reset My Password" button in the email</li>
                     <li>3. Create a new secure password</li>
@@ -122,9 +122,9 @@ export default function ForgotPassword() {
                   </ol>
                 </div>
 
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-800">
+                <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-3 text-xs text-indigo-800">
                   <div className="flex items-start space-x-2">
-                    <svg className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="h-4 w-4 text-indigo-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                     </svg>
                     <div>
@@ -154,7 +154,7 @@ export default function ForgotPassword() {
                   </button>
                   <Link 
                     to="/login" 
-                    className="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white text-sm font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 group"
+                    className="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white text-sm font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 group"
                   >
                     <svg className="w-4 h-4 mr-2 group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14" />

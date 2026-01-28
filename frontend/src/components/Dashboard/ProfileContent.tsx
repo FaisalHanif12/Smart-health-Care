@@ -121,9 +121,9 @@ export default function ProfileContent() {
 
   const getBMICategory = (bmi: string) => {
     const bmiValue = parseFloat(bmi);
-    if (bmiValue < 18.5) return { category: 'Underweight', color: 'text-blue-600' };
-    if (bmiValue < 25) return { category: 'Normal', color: 'text-green-600' };
-    if (bmiValue < 30) return { category: 'Overweight', color: 'text-yellow-600' };
+    if (bmiValue < 18.5) return { category: 'Underweight', color: 'text-indigo-600' };
+    if (bmiValue < 25) return { category: 'Normal', color: 'text-indigo-600' };
+    if (bmiValue < 30) return { category: 'Overweight', color: 'text-indigo-600' };
     return { category: 'Obese', color: 'text-red-600' };
   };
 
@@ -161,7 +161,7 @@ export default function ProfileContent() {
               <div className="relative inline-block">
                 <div
                   className={`w-24 h-24 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl font-bold text-white ${
-                    profile.profileImage ? 'bg-cover bg-center' : 'bg-gradient-to-r from-blue-500 to-purple-600'
+                    profile.profileImage ? 'bg-cover bg-center' : 'bg-gradient-to-r from-indigo-500 to-indigo-600'
                   } ${isEditing ? 'cursor-pointer hover:opacity-80' : ''}`}
                   style={profile.profileImage ? { backgroundImage: `url(${profile.profileImage})` } : {}}
                   onClick={handleImageClick}
@@ -169,7 +169,7 @@ export default function ProfileContent() {
                   {!profile.profileImage && (profile.username?.charAt(0)?.toUpperCase() || 'U')}
                 </div>
                 {isEditing && (
-                  <div className="absolute bottom-0 right-0 bg-blue-500 rounded-full p-1">
+                  <div className="absolute bottom-0 right-0 bg-indigo-500 rounded-full p-1">
                     <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                     </svg>
@@ -222,7 +222,7 @@ export default function ProfileContent() {
               {!isEditing ? (
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
                 >
                   Edit Profile
                 </button>
@@ -250,7 +250,7 @@ export default function ProfileContent() {
                     value={profile.username}
                     onChange={handleInputChange}
                     disabled={!isEditing}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100"
                   />
                 </div>
 
@@ -264,7 +264,7 @@ export default function ProfileContent() {
                     value={profile.age}
                     onChange={handleInputChange}
                     disabled={!isEditing}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100"
                   />
                 </div>
 
@@ -277,7 +277,7 @@ export default function ProfileContent() {
                     value={profile.gender}
                     onChange={handleInputChange}
                     disabled={!isEditing}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100"
                   >
                     <option value="male">Male</option>
                     <option value="female">Female</option>
@@ -295,7 +295,7 @@ export default function ProfileContent() {
                     value={profile.height}
                     onChange={handleInputChange}
                     disabled={!isEditing}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100"
                   />
                 </div>
 
@@ -309,7 +309,7 @@ export default function ProfileContent() {
                     value={profile.weight}
                     onChange={handleInputChange}
                     disabled={!isEditing}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100"
                   />
                 </div>
 
@@ -322,7 +322,7 @@ export default function ProfileContent() {
                     value={profile.fitnessGoal}
                     onChange={handleInputChange}
                     disabled={!isEditing}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100"
                   >
                     {fitnessGoalOptions.map((goal) => (
                       <option key={goal} value={goal}>
@@ -345,7 +345,7 @@ export default function ProfileContent() {
                         checked={profile.healthConditions.includes(condition)}
                         onChange={() => handleHealthConditionChange(condition)}
                         disabled={!isEditing}
-                        className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50"
+                        className="mr-2 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded disabled:opacity-50"
                       />
                       <span className="text-sm text-gray-700">{condition}</span>
                     </label>
@@ -358,7 +358,7 @@ export default function ProfileContent() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                    className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
                   >
                     {loading ? 'Saving...' : 'Save Changes'}
                   </button>
@@ -392,7 +392,7 @@ export default function ProfileContent() {
             <div className="flex justify-end space-x-2">
               <button
                 onClick={copyPromptToClipboard}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
               >
                 Copy to Clipboard
               </button>

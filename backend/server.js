@@ -18,7 +18,12 @@ if (dotenvResult.error) {
 
 // Fallback environment variables if .env doesn't load properly
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
-process.env.MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://mehrfaisal111:q5V8kT2NjcWH9nyf@smart-health-care.kjxomvs.mongodb.net/?retryWrites=true&w=majority&appName=Smart-Health-Care';
+// Don't set fallback for MONGODB_URI - require it to be in .env file
+if (!process.env.MONGODB_URI) {
+  console.error('❌ CRITICAL: MONGODB_URI is not set in .env file!');
+  console.error('❌ Please add MONGODB_URI to your .env file');
+  process.exit(1);
+}
 process.env.JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_jwt_key_here_make_it_long_and_complex_12345678';
 process.env.JWT_EXPIRE = process.env.JWT_EXPIRE || '7d';
 process.env.JWT_COOKIE_EXPIRE = process.env.JWT_COOKIE_EXPIRE || '7';
@@ -28,7 +33,14 @@ process.env.FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 // Debug: Check if environment variables are loaded
 console.log('🔧 Environment Debug:');
 console.log('NODE_ENV:', process.env.NODE_ENV);
-console.log('MONGODB_URI:', process.env.MONGODB_URI ? 'Set' : 'Not Set');
+if (process.env.MONGODB_URI) {
+  const uriPreview = process.env.MONGODB_URI.trim().substring(0, 30);
+  const startsWith = process.env.MONGODB_URI.trim().startsWith('mongodb');
+  console.log('MONGODB_URI: Set (starts with mongodb:', startsWith + ')');
+  console.log('MONGODB_URI Preview:', uriPreview + '...');
+} else {
+  console.log('MONGODB_URI: Not Set');
+}
 console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'Set' : 'Not Set');
 console.log('EMAIL_FROM:', process.env.EMAIL_FROM ? 'Set (' + process.env.EMAIL_FROM + ')' : 'Not Set');
 console.log('EMAIL_PASSWORD:', process.env.EMAIL_PASSWORD ? 'Set (****)' : 'Not Set');
@@ -140,4 +152,4 @@ process.on('unhandledRejection', (err, promise) => {
   });
 });
 
-module.exports = app; 
+module.exports = app;
