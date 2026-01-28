@@ -277,7 +277,28 @@ export const ProgressProvider: React.FC<ProgressProviderProps> = ({ children }) 
     const checkPlanRenewals = async () => {
       if (user?.profile) {
         const renewalService = PlanRenewalService.getInstance();
+
+        // Capture metadata before potential renewal so we can detect a week change
+        const beforeStatus = renewalService.getRenewalStatus(user._id);
+        const beforeDietWeek = beforeStatus.diet?.currentWeek;
+        const beforeWorkoutWeek = beforeStatus.workout?.currentWeek;
+
         await renewalService.checkAndRenewPlans(user.profile, user._id);
+
+        // Read metadata again after renewal check
+        const afterStatus = renewalService.getRenewalStatus(user._id);
+        const afterDietWeek = afterStatus.diet?.currentWeek;
+        const afterWorkoutWeek = afterStatus.workout?.currentWeek;
+
+        const dietRenewed = beforeDietWeek && afterDietWeek && afterDietWeek > beforeDietWeek;
+        const workoutRenewed = beforeWorkoutWeek && afterWorkoutWeek && afterWorkoutWeek > beforeWorkoutWeek;
+
+        // If either plan advanced to a new week, archive and reset progress so the new week starts clean
+        if (dietRenewed || workoutRenewed) {
+          archiveCurrentProgress();
+          clearDietProgress();
+          clearWorkoutProgress();
+        }
         
         // Request notification permission on first load
         await renewalService.requestNotificationPermission();

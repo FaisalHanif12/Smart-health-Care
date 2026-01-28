@@ -320,7 +320,7 @@ Please ensure exercises are safe, effective, and specifically designed for my go
   const renewalService = useMemo(() => PlanRenewalService.getInstance(), []);
   const currentDayName = useMemo(() => renewalService.getCurrentDayName(), []);
 
-  // Function to check if a day is accessible (today or past days)
+  // Function to check if a day is accessible (today only)
   const isDayAccessible = (dayName: string) => {
     return renewalService.isDayAccessible(dayName);
   };
@@ -339,7 +339,7 @@ Please ensure exercises are safe, effective, and specifically designed for my go
           Your personalized fitness journey starts here. Track your progress and stay consistent!
         </p>
         <div className="mt-2 text-sm bg-indigo-50 text-indigo-800 p-2 rounded-md">
-          <span className="font-semibold">Today is {currentDayName}:</span> You can only access and complete today's workout and previous days from this week.
+          <span className="font-semibold">Today is {currentDayName}:</span> You can only access and complete <span className="font-semibold">today&apos;s</span> workout. All other days remain locked.
         </div>
       </div>
 
