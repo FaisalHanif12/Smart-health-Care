@@ -231,7 +231,7 @@ export default function StoreContent() {
         {/* Cart Button */}
         <button
           onClick={handleViewCart}
-          className="relative bg-yellow-600 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg hover:bg-yellow-700 transition-colors flex items-center justify-center space-x-2 w-full sm:w-auto"
+          className="relative bg-indigo-600 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center space-x-2 w-full sm:w-auto"
         >
           <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
             <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
@@ -255,7 +255,7 @@ export default function StoreContent() {
               onClick={() => handleCategoryFilter(category)}
               className={`px-3 py-2 sm:px-4 sm:py-2 rounded-full text-sm font-medium transition-colors ${
                 selectedCategory === category
-                  ? 'bg-yellow-600 text-white'
+                  ? 'bg-indigo-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -267,12 +267,12 @@ export default function StoreContent() {
 
       {/* Cart Summary */}
       {cartItemCount > 0 && (
-        <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <div className="mb-6 p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-2 sm:space-y-0">
-            <span className="text-yellow-800 text-sm sm:text-base">
+            <span className="text-indigo-800 text-sm sm:text-base">
               {cartItemCount} item{cartItemCount !== 1 ? 's' : ''} in cart
             </span>
-            <span className="text-green-800 font-semibold text-sm sm:text-base">
+            <span className="text-indigo-800 font-semibold text-sm sm:text-base">
               Total: ${cartTotal.toFixed(2)}
             </span>
           </div>
@@ -300,13 +300,13 @@ export default function StoreContent() {
               </div>
               
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-2 sm:space-y-0">
-                <span className="text-lg sm:text-xl font-bold text-yellow-600">${product.price}</span>
+                <span className="text-lg sm:text-xl font-bold text-indigo-600">${product.price}</span>
                 <button
                   onClick={() => isInCart(product.id) ? removeFromCart(product.id) : addToCart(product.id)}
                   className={`px-3 py-2 sm:px-4 sm:py-2 rounded-lg transition-colors text-sm sm:text-base w-full sm:w-auto ${
                     isInCart(product.id)
                       ? 'bg-red-600 text-white hover:bg-red-700'
-                      : 'bg-yellow-600 text-white hover:bg-yellow-700'
+                      : 'bg-indigo-600 text-white hover:bg-indigo-700'
                   }`}
                 >
                   {isInCart(product.id) ? 'Remove' : 'Add to Cart'}
@@ -322,7 +322,7 @@ export default function StoreContent() {
         <div className="text-center mt-6 sm:mt-8">
           <button
             onClick={handleLoadMore}
-            className="bg-yellow-600 text-white px-6 py-2 sm:px-8 sm:py-3 rounded-lg hover:bg-yellow-700 transition-colors text-sm sm:text-base w-full sm:w-auto"
+            className="bg-indigo-600 text-white px-6 py-2 sm:px-8 sm:py-3 rounded-lg hover:bg-indigo-700 transition-colors text-sm sm:text-base w-full sm:w-auto"
           >
             Load More Items
           </button>

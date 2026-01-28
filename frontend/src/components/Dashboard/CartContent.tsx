@@ -258,7 +258,7 @@ export default function CartContent() {
           <div className="mt-6">
             <button
               onClick={handleContinueShopping}
-              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
+              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
             >
               Continue Shopping
             </button>
@@ -287,7 +287,7 @@ export default function CartContent() {
                         </div>
                       </div>
                       <div className="flex items-center space-x-4">
-                        <span className="text-lg font-bold text-green-600">${product.price.toFixed(2)}</span>
+                        <span className="text-lg font-bold text-indigo-600">${product.price.toFixed(2)}</span>
                         <button
                           onClick={() => removeFromCart(product.id)}
                           className="text-red-600 hover:text-red-800 text-sm font-medium"
@@ -321,14 +321,14 @@ export default function CartContent() {
                   <div className="border-t border-gray-200 pt-3">
                     <div className="flex justify-between">
                       <span className="text-lg font-medium text-gray-900">Total</span>
-                      <span className="text-lg font-bold text-green-600">${totalPrice.toFixed(2)}</span>
+                      <span className="text-lg font-bold text-indigo-600">${totalPrice.toFixed(2)}</span>
                     </div>
                   </div>
                 </div>
                 <div className="mt-6">
                   <button
                     onClick={handleCheckout}
-                    className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                    className="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors"
                   >
                     Checkout
                   </button>
@@ -336,7 +336,7 @@ export default function CartContent() {
                 <div className="mt-3 text-center">
                   <button
                     onClick={handleContinueShopping}
-                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                    className="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
                   >
                     or Continue Shopping →
                   </button>

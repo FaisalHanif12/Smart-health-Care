@@ -89,7 +89,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 alt="Health Tracker" 
                 className="w-10 h-10 rounded-lg"
               />
-              <h1 className="text-xl font-bold text-yellow-400">
+              <h1 className="text-xl font-bold text-indigo-400">
                 <span className="hidden lg:inline">SMART TRACKER</span>
               </h1>
             </div>
@@ -100,8 +100,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 onClick={() => goTo('/dashboard')}
                 className={`w-full flex items-center space-x-3 p-3 rounded-lg text-left transition-colors ${
                   isActive('/dashboard') 
-                    ? 'bg-gray-800 dark:bg-gray-700 text-yellow-400' 
-                    : 'text-gray-300 hover:text-yellow-400 hover:bg-gray-800 dark:hover:bg-gray-700'
+                    ? 'bg-gray-800 dark:bg-gray-700 text-indigo-400' 
+                    : 'text-gray-300 hover:text-indigo-400 hover:bg-gray-800 dark:hover:bg-gray-700'
                 }`}
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -114,8 +114,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 onClick={() => goTo('/dashboard/workout')}
                 className={`w-full flex items-center space-x-3 p-3 rounded-lg text-left transition-colors ${
                   isActive('/dashboard/workout') 
-                    ? 'bg-gray-800 dark:bg-gray-700 text-yellow-400' 
-                    : 'text-gray-300 hover:text-yellow-400 hover:bg-gray-800 dark:hover:bg-gray-700'
+                    ? 'bg-gray-800 dark:bg-gray-700 text-indigo-400' 
+                    : 'text-gray-300 hover:text-indigo-400 hover:bg-gray-800 dark:hover:bg-gray-700'
                 }`}
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -128,8 +128,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 onClick={() => goTo('/dashboard/diet')}
                 className={`w-full flex items-center space-x-3 p-3 rounded-lg text-left transition-colors ${
                   isActive('/dashboard/diet') 
-                    ? 'bg-gray-800 dark:bg-gray-700 text-yellow-400' 
-                    : 'text-gray-300 hover:text-yellow-400 hover:bg-gray-800 dark:hover:bg-gray-700'
+                    ? 'bg-gray-800 dark:bg-gray-700 text-indigo-400' 
+                    : 'text-gray-300 hover:text-indigo-400 hover:bg-gray-800 dark:hover:bg-gray-700'
                 }`}
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -142,8 +142,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 onClick={() => goTo('/dashboard/community')}
                 className={`w-full flex items-center space-x-3 p-3 rounded-lg text-left transition-colors ${
                   isActive('/dashboard/community') 
-                    ? 'bg-gray-800 dark:bg-gray-700 text-yellow-400' 
-                    : 'text-gray-300 hover:text-yellow-400 hover:bg-gray-800 dark:hover:bg-gray-700'
+                    ? 'bg-gray-800 dark:bg-gray-700 text-indigo-400' 
+                    : 'text-gray-300 hover:text-indigo-400 hover:bg-gray-800 dark:hover:bg-gray-700'
                 }`}
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -157,8 +157,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 onClick={() => goTo('/dashboard/store')}
                 className={`w-full flex items-center space-x-3 p-3 rounded-lg text-left transition-colors ${
                   isActive('/dashboard/store') 
-                    ? 'bg-gray-800 dark:bg-gray-700 text-yellow-400' 
-                    : 'text-gray-300 hover:text-yellow-400 hover:bg-gray-800 dark:hover:bg-gray-700'
+                    ? 'bg-gray-800 dark:bg-gray-700 text-indigo-400' 
+                    : 'text-gray-300 hover:text-indigo-400 hover:bg-gray-800 dark:hover:bg-gray-700'
                 }`}
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -171,8 +171,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 onClick={() => goTo('/dashboard/profile')}
                 className={`w-full flex items-center space-x-3 p-3 rounded-lg text-left transition-colors ${
                   isActive('/dashboard/profile') 
-                    ? 'bg-gray-800 dark:bg-gray-700 text-yellow-400' 
-                    : 'text-gray-300 hover:text-yellow-400 hover:bg-gray-800 dark:hover:bg-gray-700'
+                    ? 'bg-gray-800 dark:bg-gray-700 text-indigo-400' 
+                    : 'text-gray-300 hover:text-indigo-400 hover:bg-gray-800 dark:hover:bg-gray-700'
                 }`}
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -185,8 +185,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 onClick={() => goTo('/dashboard/settings')}
                 className={`w-full flex items-center space-x-3 p-3 rounded-lg text-left transition-colors ${
                   isActive('/dashboard/settings') 
-                    ? 'bg-gray-800 dark:bg-gray-700 text-yellow-400' 
-                    : 'text-gray-300 hover:text-yellow-400 hover:bg-gray-800 dark:hover:bg-gray-700'
+                    ? 'bg-gray-800 dark:bg-gray-700 text-indigo-400' 
+                    : 'text-gray-300 hover:text-indigo-400 hover:bg-gray-800 dark:hover:bg-gray-700'
                 }`}
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -199,7 +199,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               <div className="pt-4 mt-4 border-t border-gray-800 dark:border-gray-700">
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center space-x-3 p-3 rounded-lg text-left transition-colors text-gray-300 hover:bg-gray-800 dark:hover:bg-gray-700 hover:text-yellow-400"
+                  className="w-full flex items-center space-x-3 p-3 rounded-lg text-left transition-colors text-gray-300 hover:bg-gray-800 dark:hover:bg-gray-700 hover:text-indigo-400"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V4a1 1 0 00-1-1H3zm3 6V7a1 1 0 012 0v2h2a1 1 0 110 2H8v2a1 1 0 11-2 0v-2H4a1 1 0 110-2h2z" clipRule="evenodd" />

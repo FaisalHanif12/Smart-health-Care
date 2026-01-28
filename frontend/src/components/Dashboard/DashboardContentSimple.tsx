@@ -148,7 +148,7 @@ export default function DashboardContentSimple() {
         {!isAuthenticated && (
           <button
             onClick={() => navigate('/register')}
-            className="px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors shadow-md hover:shadow-lg"
+            className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors shadow-md hover:shadow-lg"
           >
             Sign Up
           </button>
@@ -163,34 +163,34 @@ export default function DashboardContentSimple() {
         <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">Progress Overview</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Diet Progress Card */}
-          <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/80 dark:to-green-800/80 border border-green-200 dark:border-green-500 rounded-xl p-6 dark:shadow-lg dark:shadow-green-900/20">
+          <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/80 dark:to-indigo-800/80 border border-indigo-200 dark:border-indigo-500 rounded-xl p-6 dark:shadow-lg dark:shadow-indigo-900/20">
                           <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-yellow-800 dark:text-white">Today's Diet Progress</h3>
-                <div className="bg-yellow-200 dark:bg-yellow-600 rounded-full p-2">
-                  <svg className="w-5 h-5 text-yellow-700 dark:text-yellow-100" fill="currentColor" viewBox="0 0 20 20">
+                <h3 className="text-lg font-semibold text-indigo-800 dark:text-white">Today's Diet Progress</h3>
+                <div className="bg-indigo-200 dark:bg-indigo-600 rounded-full p-2">
+                  <svg className="w-5 h-5 text-indigo-700 dark:text-indigo-100" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
                   </svg>
                 </div>
               </div>
                           <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-yellow-700 dark:text-yellow-50">Meals Completed</span>
-                  <span className="font-semibold text-yellow-800 dark:text-white">{dietProgress.completedMeals}/{dietProgress.totalMeals}</span>
+                  <span className="text-sm text-indigo-700 dark:text-indigo-50">Meals Completed</span>
+                  <span className="font-semibold text-indigo-800 dark:text-white">{dietProgress.completedMeals}/{dietProgress.totalMeals}</span>
                 </div>
-                <div className="w-full bg-yellow-200 dark:bg-yellow-700/70 rounded-full h-2">
+                <div className="w-full bg-indigo-200 dark:bg-indigo-700/70 rounded-full h-2">
                   <div 
-                    className="bg-yellow-600 dark:bg-yellow-300 h-2 rounded-full transition-all duration-300" 
+                    className="bg-indigo-600 dark:bg-indigo-300 h-2 rounded-full transition-all duration-300" 
                     style={{ width: `${getTodaysDietProgress()}%` }}
                   ></div>
                 </div>
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-yellow-700 dark:text-yellow-50">Calories: {getCaloriesConsumed()}/{dietProgress.targetCalories}</span>
-                  <span className="font-semibold text-yellow-800 dark:text-white">{getTodaysDietProgress()}%</span>
+                  <span className="text-indigo-700 dark:text-indigo-50">Calories: {getCaloriesConsumed()}/{dietProgress.targetCalories}</span>
+                  <span className="font-semibold text-indigo-800 dark:text-white">{getTodaysDietProgress()}%</span>
                 </div>
                 <div className="pt-2">
                   <Link 
                     to="/dashboard/diet" 
-                    className="inline-flex items-center text-sm text-yellow-700 dark:text-yellow-100 hover:text-yellow-800 dark:hover:text-white font-medium"
+                    className="inline-flex items-center text-sm text-indigo-700 dark:text-indigo-100 hover:text-indigo-800 dark:hover:text-white font-medium"
                   >
                     View Diet Plan →
                   </Link>
@@ -199,34 +199,34 @@ export default function DashboardContentSimple() {
           </div>
 
           {/* Workout Progress Card */}
-          <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/80 dark:to-blue-800/80 border border-blue-200 dark:border-blue-500 rounded-xl p-6 dark:shadow-lg dark:shadow-blue-900/20">
+          <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/80 dark:to-indigo-800/80 border border-indigo-200 dark:border-indigo-500 rounded-xl p-6 dark:shadow-lg dark:shadow-indigo-900/20">
                           <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-purple-800 dark:text-white">This Week's Workouts</h3>
-                <div className="bg-purple-200 dark:bg-purple-600 rounded-full p-2">
-                  <svg className="w-5 h-5 text-purple-700 dark:text-purple-100" fill="currentColor" viewBox="0 0 20 20">
+                <h3 className="text-lg font-semibold text-indigo-800 dark:text-white">This Week's Workouts</h3>
+                <div className="bg-indigo-200 dark:bg-indigo-600 rounded-full p-2">
+                  <svg className="w-5 h-5 text-indigo-700 dark:text-indigo-100" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
                   </svg>
                 </div>
               </div>
                           <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-purple-700 dark:text-purple-50">Workouts Completed</span>
-                  <span className="font-semibold text-purple-800 dark:text-white">{workoutProgress.completedWorkouts}/{workoutProgress.totalWorkouts}</span>
+                  <span className="text-sm text-indigo-700 dark:text-indigo-50">Workouts Completed</span>
+                  <span className="font-semibold text-indigo-800 dark:text-white">{workoutProgress.completedWorkouts}/{workoutProgress.totalWorkouts}</span>
                 </div>
-                <div className="w-full bg-purple-200 dark:bg-purple-700/70 rounded-full h-2">
+                <div className="w-full bg-indigo-200 dark:bg-indigo-700/70 rounded-full h-2">
                   <div 
-                    className="bg-purple-600 dark:bg-purple-300 h-2 rounded-full transition-all duration-300" 
+                    className="bg-indigo-600 dark:bg-indigo-300 h-2 rounded-full transition-all duration-300" 
                     style={{ width: `${getWeeklyWorkoutProgress()}%` }}
                   ></div>
                 </div>
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-purple-700 dark:text-purple-50">Exercises: {workoutProgress.completedExercises}/{workoutProgress.totalExercises}</span>
-                  <span className="font-semibold text-purple-800 dark:text-white">{getWeeklyWorkoutProgress()}%</span>
+                  <span className="text-indigo-700 dark:text-indigo-50">Exercises: {workoutProgress.completedExercises}/{workoutProgress.totalExercises}</span>
+                  <span className="font-semibold text-indigo-800 dark:text-white">{getWeeklyWorkoutProgress()}%</span>
                 </div>
                 <div className="pt-2">
                   <Link 
                     to="/dashboard/workout" 
-                    className="inline-flex items-center text-sm text-purple-700 dark:text-purple-100 hover:text-purple-800 dark:hover:text-white font-medium"
+                    className="inline-flex items-center text-sm text-indigo-700 dark:text-indigo-100 hover:text-indigo-800 dark:hover:text-white font-medium"
                   >
                     View Workout Plan →
                   </Link>
@@ -245,8 +245,8 @@ export default function DashboardContentSimple() {
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Weekly Workout Progress</h3>
-              <div className="bg-purple-100 dark:bg-purple-800 rounded-full p-2">
-                <svg className="w-5 h-5 text-purple-600 dark:text-purple-300" fill="currentColor" viewBox="0 0 20 20">
+              <div className="bg-indigo-100 dark:bg-indigo-800 rounded-full p-2">
+                <svg className="w-5 h-5 text-indigo-600 dark:text-indigo-300" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
               </div>
@@ -257,7 +257,7 @@ export default function DashboardContentSimple() {
                   <span className="text-sm font-medium text-gray-600 dark:text-gray-200 w-8">{day}</span>
                   <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-3 relative">
                     <div 
-                      className="bg-gradient-to-r from-purple-500 to-purple-600 dark:from-purple-400 dark:to-purple-500 h-3 rounded-full transition-all duration-500 ease-out"
+                      className="bg-gradient-to-r from-indigo-500 to-indigo-600 dark:from-indigo-400 dark:to-indigo-500 h-3 rounded-full transition-all duration-500 ease-out"
                       style={{ width: `${weeklyProgress[index] || 0}%` }}
                     ></div>
                   </div>
@@ -270,7 +270,7 @@ export default function DashboardContentSimple() {
             <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600 dark:text-gray-200">Average Completion</span>
-                <span className="font-semibold text-purple-600 dark:text-purple-400">
+                <span className="font-semibold text-indigo-600 dark:text-indigo-400">
                   {weeklyProgress.length > 0 ? Math.round(weeklyProgress.reduce((a, b) => a + b, 0) / weeklyProgress.length) : 0}%
                 </span>
               </div>
@@ -281,8 +281,8 @@ export default function DashboardContentSimple() {
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Daily Calorie Intake</h3>
-              <div className="bg-yellow-100 dark:bg-yellow-800 rounded-full p-2">
-                <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-300" fill="currentColor" viewBox="0 0 20 20">
+              <div className="bg-indigo-100 dark:bg-indigo-800 rounded-full p-2">
+                <svg className="w-5 h-5 text-indigo-600 dark:text-indigo-300" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
                 </svg>
               </div>
@@ -297,7 +297,7 @@ export default function DashboardContentSimple() {
                   <div key={day} className="flex flex-col items-center flex-1">
                     <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-t flex items-end justify-center relative" style={{ height: '120px' }}>
                       <div 
-                        className="w-full bg-gradient-to-t from-green-500 to-green-400 dark:from-green-400 dark:to-green-300 rounded-t transition-all duration-500 ease-out flex items-end justify-center"
+                        className="w-full bg-gradient-to-t from-indigo-500 to-indigo-400 dark:from-indigo-400 dark:to-indigo-300 rounded-t transition-all duration-500 ease-out flex items-end justify-center"
                         style={{ height: `${height}%` }}
                       >
                         {calories > 0 && (
@@ -315,7 +315,7 @@ export default function DashboardContentSimple() {
             <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600 dark:text-gray-200">Daily Average</span>
-                <span className="font-semibold text-yellow-600 dark:text-yellow-400">
+                <span className="font-semibold text-indigo-600 dark:text-indigo-400">
                   {dailyCalories.length > 0 ? Math.round(dailyCalories.reduce((a, b) => a + b, 0) / dailyCalories.length) : 0} cal
                 </span>
               </div>
@@ -331,8 +331,8 @@ export default function DashboardContentSimple() {
           <div className="px-4 py-5 sm:p-6">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-medium text-gray-500 dark:text-gray-200">Daily Calorie Goal</h3>
-              <div className="bg-yellow-100 dark:bg-yellow-700 rounded-full p-1.5">
-                <svg className="h-4 w-4 text-yellow-600 dark:text-yellow-200" fill="currentColor" viewBox="0 0 20 20">
+              <div className="bg-indigo-100 dark:bg-indigo-700 rounded-full p-1.5">
+                <svg className="h-4 w-4 text-indigo-600 dark:text-indigo-200" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
               </div>
@@ -342,7 +342,7 @@ export default function DashboardContentSimple() {
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">{dietProgress.targetCalories}</p>
                 <p className="text-xs text-gray-500 dark:text-gray-300">Target</p>
               </div>
-              <div className="text-sm text-yellow-500 dark:text-yellow-300 font-medium">
+              <div className="text-sm text-indigo-500 dark:text-indigo-300 font-medium">
                 {getTodaysDietProgress()}%
               </div>
             </div>
@@ -365,7 +365,7 @@ export default function DashboardContentSimple() {
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">{getCaloriesConsumed()}</p>
                 <p className="text-xs text-gray-500 dark:text-gray-300">Consumed</p>
               </div>
-              <div className="text-sm text-yellow-500 dark:text-yellow-300 font-medium">
+              <div className="text-sm text-indigo-500 dark:text-indigo-300 font-medium">
                 {dietProgress.completedMeals}/{dietProgress.totalMeals}
               </div>
             </div>
@@ -377,8 +377,8 @@ export default function DashboardContentSimple() {
           <div className="px-4 py-5 sm:p-6">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-medium text-gray-500 dark:text-gray-200">Workouts This Week</h3>
-              <div className="bg-purple-100 dark:bg-purple-700 rounded-full p-1.5">
-                <svg className="h-4 w-4 text-purple-600 dark:text-purple-200" fill="currentColor" viewBox="0 0 20 20">
+              <div className="bg-indigo-100 dark:bg-indigo-700 rounded-full p-1.5">
+                <svg className="h-4 w-4 text-indigo-600 dark:text-indigo-200" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
               </div>
@@ -388,7 +388,7 @@ export default function DashboardContentSimple() {
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">{getCompletedWorkoutsThisWeek()}</p>
                 <p className="text-xs text-gray-500 dark:text-gray-300">Completed</p>
               </div>
-              <div className="text-sm text-purple-500 dark:text-purple-300 font-medium">
+              <div className="text-sm text-indigo-500 dark:text-indigo-300 font-medium">
                 {getWeeklyWorkoutProgress()}%
               </div>
             </div>
@@ -458,11 +458,11 @@ export default function DashboardContentSimple() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           <Link
             to="/dashboard/diet"
-            className="flex items-center justify-between p-4 bg-yellow-50 dark:bg-yellow-900/30 hover:bg-yellow-100 dark:hover:bg-yellow-800/40 border border-yellow-200 dark:border-yellow-700/50 rounded-lg transition-colors group"
+            className="flex items-center justify-between p-4 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-800/40 border border-indigo-200 dark:border-indigo-700/50 rounded-lg transition-colors group"
           >
             <div className="flex items-center space-x-3">
-              <div className="bg-yellow-200 dark:bg-yellow-700 rounded-full p-2 group-hover:bg-yellow-300 dark:group-hover:bg-yellow-600 transition-colors">
-                <svg className="w-4 h-4 text-yellow-700 dark:text-yellow-200" fill="currentColor" viewBox="0 0 20 20">
+              <div className="bg-indigo-200 dark:bg-indigo-700 rounded-full p-2 group-hover:bg-indigo-300 dark:group-hover:bg-indigo-600 transition-colors">
+                <svg className="w-4 h-4 text-indigo-700 dark:text-indigo-200" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
                 </svg>
               </div>
@@ -475,11 +475,11 @@ export default function DashboardContentSimple() {
 
           <Link
             to="/dashboard/workout"
-            className="flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/30 hover:bg-purple-100 dark:hover:bg-purple-800/40 border border-purple-200 dark:border-purple-700/50 rounded-lg transition-colors group"
+            className="flex items-center justify-between p-4 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-800/40 border border-indigo-200 dark:border-indigo-700/50 rounded-lg transition-colors group"
           >
             <div className="flex items-center space-x-3">
-              <div className="bg-purple-200 dark:bg-purple-700 rounded-full p-2 group-hover:bg-purple-300 dark:group-hover:bg-purple-600 transition-colors">
-                <svg className="w-4 h-4 text-purple-700 dark:text-purple-200" fill="currentColor" viewBox="0 0 20 20">
+              <div className="bg-indigo-200 dark:bg-indigo-700 rounded-full p-2 group-hover:bg-indigo-300 dark:group-hover:bg-indigo-600 transition-colors">
+                <svg className="w-4 h-4 text-indigo-700 dark:text-indigo-200" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
                 </svg>
               </div>
@@ -492,11 +492,11 @@ export default function DashboardContentSimple() {
 
           <Link
             to="/dashboard/profile"
-            className="flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/30 hover:bg-purple-100 dark:hover:bg-purple-800/40 border border-purple-200 dark:border-purple-700/50 rounded-lg transition-colors group"
+            className="flex items-center justify-between p-4 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-800/40 border border-indigo-200 dark:border-indigo-700/50 rounded-lg transition-colors group"
           >
             <div className="flex items-center space-x-3">
-              <div className="bg-purple-200 dark:bg-purple-700 rounded-full p-2 group-hover:bg-purple-300 dark:group-hover:bg-purple-600 transition-colors">
-                <svg className="w-4 h-4 text-purple-700 dark:text-purple-200" fill="currentColor" viewBox="0 0 20 20">
+              <div className="bg-indigo-200 dark:bg-indigo-700 rounded-full p-2 group-hover:bg-indigo-300 dark:group-hover:bg-indigo-600 transition-colors">
+                <svg className="w-4 h-4 text-indigo-700 dark:text-indigo-200" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                 </svg>
               </div>

@@ -327,37 +327,37 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
         <p className="text-gray-600">
           Your personalized nutrition journey starts here. Track your meals and reach your goals!
         </p>
-        <div className="mt-2 text-sm bg-yellow-50 text-yellow-800 p-2 rounded-md">
+        <div className="mt-2 text-sm bg-indigo-50 text-indigo-800 p-2 rounded-md">
           <span className="font-semibold">Today is {currentDayName}:</span> You can only access and complete today's meals and previous days from this week.
         </div>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-yellow-50 p-6 rounded-xl">
+        <div className="bg-indigo-50 p-6 rounded-xl">
           <div className="flex items-center">
-            <div className="p-3 bg-yellow-100 rounded-lg">
-              <svg className="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+            <div className="p-3 bg-indigo-100 rounded-lg">
+              <svg className="w-6 h-6 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-yellow-600">Total Days</p>
-              <p className="text-2xl font-bold text-yellow-900">{weeklyStats.totalDays}</p>
+              <p className="text-sm font-medium text-indigo-600">Total Days</p>
+              <p className="text-2xl font-bold text-indigo-900">{weeklyStats.totalDays}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-yellow-50 p-6 rounded-xl">
+        <div className="bg-indigo-50 p-6 rounded-xl">
           <div className="flex items-center">
-            <div className="p-3 bg-yellow-100 rounded-lg">
-              <svg className="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+            <div className="p-3 bg-indigo-100 rounded-lg">
+              <svg className="w-6 h-6 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-yellow-600">Completed</p>
-              <p className="text-2xl font-bold text-yellow-900">{weeklyStats.completedDays}</p>
+              <p className="text-sm font-medium text-indigo-600">Completed</p>
+              <p className="text-2xl font-bold text-indigo-900">{weeklyStats.completedDays}</p>
             </div>
           </div>
         </div>
@@ -377,16 +377,16 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
           </div>
         </div>
 
-        <div className="bg-purple-50 p-6 rounded-xl">
+        <div className="bg-indigo-50 p-6 rounded-xl">
           <div className="flex items-center">
-            <div className="p-3 bg-purple-100 rounded-lg">
-              <svg className="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+            <div className="p-3 bg-indigo-100 rounded-lg">
+              <svg className="w-6 h-6 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-purple-600">Success Rate</p>
-              <p className="text-2xl font-bold text-purple-900">{weeklyStats.completionRate.toFixed(0)}%</p>
+              <p className="text-sm font-medium text-indigo-600">Success Rate</p>
+              <p className="text-2xl font-bold text-indigo-900">{weeklyStats.completionRate.toFixed(0)}%</p>
             </div>
           </div>
         </div>
@@ -410,9 +410,9 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
               <div key={dayIndex} className="bg-white rounded-xl shadow-lg border border-gray-200">
                 <div className={`p-6 border-b border-gray-200 ${
                   day.completed 
-                    ? 'bg-yellow-50' 
+                    ? 'bg-indigo-50' 
                     : extractDayName(day.day) === currentDayName
-                      ? 'bg-yellow-50'
+                      ? 'bg-indigo-50'
                       : isDayAccessible(extractDayName(day.day))
                         ? 'bg-gray-50'
                         : 'bg-gray-100'
@@ -422,7 +422,7 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
                       <div className="flex items-center">
                         <h3 className="text-xl font-bold text-gray-900">{day.day}</h3>
                         {extractDayName(day.day) === currentDayName && (
-                          <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                          <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800">
                             Today
                           </span>
                         )}
@@ -438,7 +438,7 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
                       <p className="text-sm text-gray-600 mt-1 sm:mt-0 sm:ml-3">{day.totalCalories} total calories</p>
                     </div>
                     {day.completed && (
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
                         <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                         </svg>
@@ -455,7 +455,7 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
                         key={mealIndex}
                         className={`p-4 rounded-lg border-2 transition-colors ${
                           meal.completed 
-                            ? 'border-green-200 bg-yellow-50' 
+                            ? 'border-indigo-200 bg-indigo-50' 
                             : isDayAccessible(extractDayName(day.day))
                               ? 'border-gray-200 bg-white hover:border-gray-300'
                               : 'border-gray-200 bg-gray-50 opacity-75'
@@ -469,7 +469,7 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
                                 disabled={!isDayAccessible(extractDayName(day.day))}
                                 className={`mr-3 p-1 rounded-full transition-colors ${
                                   meal.completed 
-                                    ? 'bg-yellow-600 text-white' 
+                                    ? 'bg-indigo-600 text-white' 
                                     : isDayAccessible(extractDayName(day.day))
                                       ? 'bg-gray-200 text-gray-400 hover:bg-gray-300'
                                       : 'bg-gray-200 text-gray-400 cursor-not-allowed'
@@ -481,7 +481,7 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
                               </button>
                               <h4 className={`text-lg font-semibold ${
                                 meal.completed 
-                                  ? 'text-yellow-800 line-through' 
+                                  ? 'text-indigo-800 line-through' 
                                   : isDayAccessible(extractDayName(day.day))
                                     ? 'text-gray-900'
                                     : 'text-gray-500'
@@ -541,14 +541,14 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
 
           {/* Show AI prompt preview */}
           {generatedPrompt && (
-            <div className="max-w-2xl mx-auto mb-6 bg-yellow-50 p-4 rounded-lg">
-              <h4 className="font-semibold text-yellow-900 mb-2">AI will use this information from your profile:</h4>
-              <div className="text-sm text-yellow-800 bg-white p-3 rounded border">
+            <div className="max-w-2xl mx-auto mb-6 bg-indigo-50 p-4 rounded-lg">
+              <h4 className="font-semibold text-indigo-900 mb-2">AI will use this information from your profile:</h4>
+              <div className="text-sm text-indigo-800 bg-white p-3 rounded border">
                 <div className="line-clamp-4">{generatedPrompt}</div>
               </div>
               <button
                 onClick={copyPromptToClipboard}
-                className="mt-2 text-yellow-600 hover:text-yellow-800 text-sm font-medium"
+                className="mt-2 text-indigo-600 hover:text-indigo-800 text-sm font-medium"
               >
                 📋 Copy Full Prompt
               </button>
@@ -559,7 +559,7 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
             <button
               onClick={() => generateDietPlan(false)}
               disabled={isLoading}
-              className="bg-yellow-600 hover:bg-yellow-700 text-white px-8 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
             >
               {isLoading ? (
                 <>
@@ -604,7 +604,7 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
               <textarea
                 value={customPrompt}
                 onChange={(e) => setCustomPrompt(e.target.value)}
-                className="w-full h-48 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full h-48 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 placeholder="Describe your diet preferences, goals, and any specific requirements..."
               />
             </div>
@@ -619,7 +619,7 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
               <button
                 onClick={() => generateDietPlan(true)}
                 disabled={isLoading}
-                className="px-6 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors disabled:opacity-50"
+                className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
               >
                 {isLoading ? 'Generating...' : '🤖 Generate with AI'}
               </button>
@@ -671,8 +671,8 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-md w-full shadow-2xl">
             <div className="text-center">
-              <div className="bg-yellow-100 dark:bg-yellow-900/30 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
-                <div className="animate-spin rounded-full h-10 w-10 border-4 border-yellow-600 border-t-transparent"></div>
+              <div className="bg-indigo-100 dark:bg-indigo-900/30 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+                <div className="animate-spin rounded-full h-10 w-10 border-4 border-indigo-600 border-t-transparent"></div>
               </div>
               
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
@@ -680,7 +680,7 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
               </h3>
               
               <div className="mb-6">
-                <div className="text-lg text-yellow-600 dark:text-yellow-400 font-medium mb-2">
+                <div className="text-lg text-indigo-600 dark:text-indigo-400 font-medium mb-2">
                   {loadingMessage}
                 </div>
                 <div className="text-gray-600 dark:text-gray-400 text-sm">
@@ -690,7 +690,7 @@ Please ensure the meal plan is safe, nutritious, and specifically designed for m
               
               {/* Progress Animation */}
               <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-4">
-                <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 h-2 rounded-full animate-pulse" style={{width: '75%'}}></div>
+                <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 h-2 rounded-full animate-pulse" style={{width: '75%'}}></div>
               </div>
               
               <div className="text-xs text-gray-500 dark:text-gray-400">

@@ -48,9 +48,9 @@ export default function PaymentSuccessContent() {
       <main className="max-w-4xl mx-auto py-6 px-4 sm:px-6 lg:px-8 min-h-full">
         <div className="text-center">
           {/* Success Icon */}
-          <div className="mx-auto flex items-center justify-center h-24 w-24 rounded-full bg-green-100 mb-8">
+          <div className="mx-auto flex items-center justify-center h-24 w-24 rounded-full bg-indigo-100 mb-8">
             <svg
-              className="h-12 w-12 text-green-600"
+              className="h-12 w-12 text-indigo-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -100,7 +100,7 @@ export default function PaymentSuccessContent() {
               
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Status:</span>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
                   Confirmed
                 </span>
               </div>
@@ -111,41 +111,41 @@ export default function PaymentSuccessContent() {
           <div className="space-y-4 sm:space-y-0 sm:space-x-4 sm:flex sm:justify-center">
             <Link
               to="/dashboard/store"
-              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               Continue Shopping
             </Link>
             
             <Link
               to="/dashboard"
-              className="inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+              className="inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               Back to Dashboard
             </Link>
           </div>
 
           {/* Delivery Information */}
-          <div className="mt-12 bg-blue-50 rounded-lg p-6">
-            <h3 className="text-lg font-medium text-blue-900 mb-4">
+          <div className="mt-12 bg-indigo-50 rounded-lg p-6">
+            <h3 className="text-lg font-medium text-indigo-900 mb-4">
               📦 What happens next?
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-blue-700">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-indigo-700">
               <div className="text-center">
-                <div className="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-2">
+                <div className="bg-indigo-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-2">
                   <span className="text-lg">📋</span>
                 </div>
                 <p className="font-medium">Order Processing</p>
                 <p>We're preparing your healthy items</p>
               </div>
               <div className="text-center">
-                <div className="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-2">
+                <div className="bg-indigo-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-2">
                   <span className="text-lg">🚚</span>
                 </div>
                 <p className="font-medium">Shipping</p>
                 <p>Your order will be shipped within 24 hours</p>
               </div>
               <div className="text-center">
-                <div className="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-2">
+                <div className="bg-indigo-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-2">
                   <span className="text-lg">📬</span>
                 </div>
                 <p className="font-medium">Delivery</p>
@@ -158,7 +158,7 @@ export default function PaymentSuccessContent() {
           <div className="mt-8 text-center">
             <p className="text-gray-600">
               Questions about your order? Contact our support team at{' '}
-              <a href="mailto:support@healthtacker.com" className="text-green-600 hover:text-green-500">
+              <a href="mailto:support@healthtacker.com" className="text-indigo-600 hover:text-indigo-500">
                 support@healthtacker.com
               </a>
             </p>
