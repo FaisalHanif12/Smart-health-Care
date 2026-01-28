@@ -17,7 +17,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     try {
       setIsMobileMenuOpen(false); // Close mobile menu
       await logout();
-      navigate('/');
+      // Root ("/") is a public dashboard route in this app; explicit logout should go to login instead.
+      navigate('/login', { replace: true });
     } catch (error) {
       console.error('Error logging out:', error);
     }
