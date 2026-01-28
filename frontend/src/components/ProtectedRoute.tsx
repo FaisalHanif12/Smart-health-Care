@@ -16,8 +16,8 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   useEffect(() => {
     if (!isLoading) {
       if (!isAuthenticated) {
-        // User is not authenticated, redirect to login
-        navigate('/login', { 
+        // User is not authenticated, redirect to signup (register)
+        navigate('/register', { 
           replace: true, 
           state: { from: location.pathname } 
         });

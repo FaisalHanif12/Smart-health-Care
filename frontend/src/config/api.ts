@@ -1,15 +1,9 @@
 // API Configuration
 export const API_CONFIG = {
-  // OpenAI API Key - Loaded from environment variables
-  // Set VITE_OPENAI_API_KEY in your .env file
-  // In production, this should be moved to backend for security
+
   OPENAI_API_KEY: import.meta.env.VITE_OPENAI_API_KEY || '',
-  
-  // Backend API URL - Use environment variable with fallback
-  // Set VITE_API_BASE_URL in your .env file or environment
-  // Production: https://smart-health-care-8isu.onrender.com/api
-  // Development: http://localhost:5000/api
-  BACKEND_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api',
+
+  BACKEND_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5003/api', // Matches backend port 5003
   
   // OpenAI API settings
   OPENAI: {

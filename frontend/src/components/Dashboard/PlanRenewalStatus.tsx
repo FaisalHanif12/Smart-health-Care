@@ -79,9 +79,9 @@ export default function PlanRenewalStatus() {
                 </p>
               )}
             </div>
-            <div className="mt-2 bg-green-200 rounded-full h-2">
+            <div className="mt-2 bg-yellow-200 rounded-full h-2">
               <div 
-                className="bg-green-600 h-2 rounded-full transition-all duration-300"
+                className="bg-yellow-600 h-2 rounded-full transition-all duration-300"
                 style={{ 
                   width: `${(renewalStatus.diet.currentWeek / renewalStatus.diet.totalWeeks) * 100}%` 
                 }}
@@ -114,9 +114,9 @@ export default function PlanRenewalStatus() {
                 </p>
               )}
             </div>
-            <div className="mt-2 bg-blue-200 rounded-full h-2">
+            <div className="mt-2 bg-purple-200 rounded-full h-2">
               <div 
-                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                className="bg-purple-600 h-2 rounded-full transition-all duration-300"
                 style={{ 
                   width: `${(renewalStatus.workout.currentWeek / renewalStatus.workout.totalWeeks) * 100}%` 
                 }}

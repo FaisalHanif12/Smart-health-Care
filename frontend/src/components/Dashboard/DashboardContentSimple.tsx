@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useProgress } from '../../contexts/ProgressContext';
 import { useAuth } from '../../contexts/AuthContext';
 import AIRecommendations from './AIRecommendations';
@@ -12,12 +12,11 @@ interface ProgressData {
 }
 
 export default function DashboardContentSimple() {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [waterIntake, setWaterIntake] = useState<ProgressData>({ value: 5, max: 8, percentage: 62.5 });
   const [weeklyProgress, setWeeklyProgress] = useState<number[]>([]);
   const [dailyCalories, setDailyCalories] = useState<number[]>([]);
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState<boolean>(false);
   
   const { 
     getTodaysDietProgress, 
@@ -139,172 +138,59 @@ export default function DashboardContentSimple() {
   }, [user?._id]); // Keep water intake separate from progress changes
 
   // Search functionality
-  const searchableContent = [
-    { id: 'progress-overview', title: 'Progress Overview', keywords: ['progress', 'overview', 'diet', 'workout', 'today', 'week'] },
-    { id: 'weekly-charts', title: 'Weekly Progress Charts', keywords: ['weekly', 'progress', 'charts', 'workout', 'calorie', 'intake', 'daily'] },
-    { id: 'ai-health-coach', title: 'AI Health Coach', keywords: ['ai', 'health', 'coach', 'recommendations', 'artificial', 'intelligence'] },
-    { id: 'quick-actions', title: 'Quick Actions', keywords: ['quick', 'actions', 'diet', 'workout', 'profile', 'store', 'plan'] }
-  ];
-
-  const filteredSections = searchQuery.trim() === '' 
-    ? searchableContent 
-    : searchableContent.filter(section => {
-        const query = searchQuery.toLowerCase();
-        return section.title.toLowerCase().includes(query) || 
-               section.keywords.some(keyword => keyword.toLowerCase().includes(query));
-      });
-
-  const shouldShowSection = (sectionId: string) => {
-    return searchQuery.trim() === '' || filteredSections.some(section => section.id === sectionId);
-  };
-
-  const highlightText = (text: string) => {
-    if (!searchQuery.trim()) return text;
-    
-    const query = searchQuery.toLowerCase();
-    const index = text.toLowerCase().indexOf(query);
-    
-    if (index === -1) return text;
-    
-    return (
-      <>
-        {text.substring(0, index)}
-        <span className="bg-yellow-200 px-1 rounded">{text.substring(index, index + query.length)}</span>
-        {text.substring(index + query.length)}
-      </>
-    );
-  };
 
   return (
     <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 pb-20">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold text-gray-800 dark:text-gray-100">Dashboard</h1>
-        <div className="flex items-center">
-          <div className="relative mr-4">
-            {/* Desktop Search Input */}
-            <div className="hidden sm:block">
-              <input 
-                type="text" 
-                placeholder="Search sections..." 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              />
-              <svg className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-              </svg>
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </button>
-              )}
-            </div>
-            
-            {/* Mobile Search Icon */}
-            <div className="sm:hidden">
-              <button
-                onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
-                className="p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
-              >
-                <svg className="w-5 h-5 text-gray-600 dark:text-gray-300" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
+        {/* Sign Up Button - Top Right Corner */}
+        {!isAuthenticated && (
+          <button
+            onClick={() => navigate('/register')}
+            className="px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors shadow-md hover:shadow-lg"
+          >
+            Sign Up
+          </button>
+        )}
       </div>
-
-      {/* Mobile Search Input */}
-      {isMobileSearchOpen && (
-        <div className="sm:hidden mb-6">
-          <div className="relative">
-            <input 
-              type="text" 
-              placeholder="Search sections..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-10 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              autoFocus
-            />
-            <svg className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-            </svg>
-            <button
-              onClick={() => {
-                setSearchQuery('');
-                setIsMobileSearchOpen(false);
-              }}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-            >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Search Results Info */}
-      {searchQuery && (
-        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-lg">
-          <div className="flex items-center space-x-2">
-            <svg className="w-5 h-5 text-blue-600 dark:text-blue-300" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-            </svg>
-            <span className="text-blue-800 dark:text-blue-200 font-medium">
-              {filteredSections.length > 0 
-                ? `Found ${filteredSections.length} section${filteredSections.length !== 1 ? 's' : ''} matching "${searchQuery}"`
-                : `No sections found matching "${searchQuery}"`
-              }
-            </span>
-          </div>
-        </div>
-      )}
 
       {/* Plan Renewal Status */}
       <PlanRenewalStatus />
 
       {/* Progress Overview Section */}
-      {shouldShowSection('progress-overview') && (
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">{highlightText('Progress Overview')}</h2>
+      <div className="mb-8">
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">Progress Overview</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Diet Progress Card */}
           <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/80 dark:to-green-800/80 border border-green-200 dark:border-green-500 rounded-xl p-6 dark:shadow-lg dark:shadow-green-900/20">
                           <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-green-800 dark:text-white">Today's Diet Progress</h3>
-                <div className="bg-green-200 dark:bg-green-600 rounded-full p-2">
-                  <svg className="w-5 h-5 text-green-700 dark:text-green-100" fill="currentColor" viewBox="0 0 20 20">
+                <h3 className="text-lg font-semibold text-yellow-800 dark:text-white">Today's Diet Progress</h3>
+                <div className="bg-yellow-200 dark:bg-yellow-600 rounded-full p-2">
+                  <svg className="w-5 h-5 text-yellow-700 dark:text-yellow-100" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
                   </svg>
                 </div>
               </div>
                           <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-green-700 dark:text-green-50">Meals Completed</span>
-                  <span className="font-semibold text-green-800 dark:text-white">{dietProgress.completedMeals}/{dietProgress.totalMeals}</span>
+                  <span className="text-sm text-yellow-700 dark:text-yellow-50">Meals Completed</span>
+                  <span className="font-semibold text-yellow-800 dark:text-white">{dietProgress.completedMeals}/{dietProgress.totalMeals}</span>
                 </div>
-                <div className="w-full bg-green-200 dark:bg-green-700/70 rounded-full h-2">
+                <div className="w-full bg-yellow-200 dark:bg-yellow-700/70 rounded-full h-2">
                   <div 
-                    className="bg-green-600 dark:bg-green-300 h-2 rounded-full transition-all duration-300" 
+                    className="bg-yellow-600 dark:bg-yellow-300 h-2 rounded-full transition-all duration-300" 
                     style={{ width: `${getTodaysDietProgress()}%` }}
                   ></div>
                 </div>
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-green-700 dark:text-green-50">Calories: {getCaloriesConsumed()}/{dietProgress.targetCalories}</span>
-                  <span className="font-semibold text-green-800 dark:text-white">{getTodaysDietProgress()}%</span>
+                  <span className="text-yellow-700 dark:text-yellow-50">Calories: {getCaloriesConsumed()}/{dietProgress.targetCalories}</span>
+                  <span className="font-semibold text-yellow-800 dark:text-white">{getTodaysDietProgress()}%</span>
                 </div>
                 <div className="pt-2">
                   <Link 
                     to="/dashboard/diet" 
-                    className="inline-flex items-center text-sm text-green-700 dark:text-green-100 hover:text-green-800 dark:hover:text-white font-medium"
+                    className="inline-flex items-center text-sm text-yellow-700 dark:text-yellow-100 hover:text-yellow-800 dark:hover:text-white font-medium"
                   >
                     View Diet Plan →
                   </Link>
@@ -315,32 +201,32 @@ export default function DashboardContentSimple() {
           {/* Workout Progress Card */}
           <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/80 dark:to-blue-800/80 border border-blue-200 dark:border-blue-500 rounded-xl p-6 dark:shadow-lg dark:shadow-blue-900/20">
                           <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-blue-800 dark:text-white">This Week's Workouts</h3>
-                <div className="bg-blue-200 dark:bg-blue-600 rounded-full p-2">
-                  <svg className="w-5 h-5 text-blue-700 dark:text-blue-100" fill="currentColor" viewBox="0 0 20 20">
+                <h3 className="text-lg font-semibold text-purple-800 dark:text-white">This Week's Workouts</h3>
+                <div className="bg-purple-200 dark:bg-purple-600 rounded-full p-2">
+                  <svg className="w-5 h-5 text-purple-700 dark:text-purple-100" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
                   </svg>
                 </div>
               </div>
                           <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-blue-700 dark:text-blue-50">Workouts Completed</span>
-                  <span className="font-semibold text-blue-800 dark:text-white">{workoutProgress.completedWorkouts}/{workoutProgress.totalWorkouts}</span>
+                  <span className="text-sm text-purple-700 dark:text-purple-50">Workouts Completed</span>
+                  <span className="font-semibold text-purple-800 dark:text-white">{workoutProgress.completedWorkouts}/{workoutProgress.totalWorkouts}</span>
                 </div>
-                <div className="w-full bg-blue-200 dark:bg-blue-700/70 rounded-full h-2">
+                <div className="w-full bg-purple-200 dark:bg-purple-700/70 rounded-full h-2">
                   <div 
-                    className="bg-blue-600 dark:bg-blue-300 h-2 rounded-full transition-all duration-300" 
+                    className="bg-purple-600 dark:bg-purple-300 h-2 rounded-full transition-all duration-300" 
                     style={{ width: `${getWeeklyWorkoutProgress()}%` }}
                   ></div>
                 </div>
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-blue-700 dark:text-blue-50">Exercises: {workoutProgress.completedExercises}/{workoutProgress.totalExercises}</span>
-                  <span className="font-semibold text-blue-800 dark:text-white">{getWeeklyWorkoutProgress()}%</span>
+                  <span className="text-purple-700 dark:text-purple-50">Exercises: {workoutProgress.completedExercises}/{workoutProgress.totalExercises}</span>
+                  <span className="font-semibold text-purple-800 dark:text-white">{getWeeklyWorkoutProgress()}%</span>
                 </div>
                 <div className="pt-2">
                   <Link 
                     to="/dashboard/workout" 
-                    className="inline-flex items-center text-sm text-blue-700 dark:text-blue-100 hover:text-blue-800 dark:hover:text-white font-medium"
+                    className="inline-flex items-center text-sm text-purple-700 dark:text-purple-100 hover:text-purple-800 dark:hover:text-white font-medium"
                   >
                     View Workout Plan →
                   </Link>
@@ -349,20 +235,18 @@ export default function DashboardContentSimple() {
           </div>
         </div>
       </div>
-      )}
 
       {/* Progress Charts Section */}
-      {shouldShowSection('weekly-charts') && (
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">{highlightText('Weekly Progress Charts')}</h2>
+      <div className="mb-8">
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">Weekly Progress Charts</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           
           {/* Workout Progress Chart */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Weekly Workout Progress</h3>
-              <div className="bg-blue-100 dark:bg-blue-800 rounded-full p-2">
-                <svg className="w-5 h-5 text-blue-600 dark:text-blue-300" fill="currentColor" viewBox="0 0 20 20">
+              <div className="bg-purple-100 dark:bg-purple-800 rounded-full p-2">
+                <svg className="w-5 h-5 text-purple-600 dark:text-purple-300" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
               </div>
@@ -373,7 +257,7 @@ export default function DashboardContentSimple() {
                   <span className="text-sm font-medium text-gray-600 dark:text-gray-200 w-8">{day}</span>
                   <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-3 relative">
                     <div 
-                      className="bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-400 dark:to-blue-500 h-3 rounded-full transition-all duration-500 ease-out"
+                      className="bg-gradient-to-r from-purple-500 to-purple-600 dark:from-purple-400 dark:to-purple-500 h-3 rounded-full transition-all duration-500 ease-out"
                       style={{ width: `${weeklyProgress[index] || 0}%` }}
                     ></div>
                   </div>
@@ -386,7 +270,7 @@ export default function DashboardContentSimple() {
             <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600 dark:text-gray-200">Average Completion</span>
-                <span className="font-semibold text-blue-600 dark:text-blue-400">
+                <span className="font-semibold text-purple-600 dark:text-purple-400">
                   {weeklyProgress.length > 0 ? Math.round(weeklyProgress.reduce((a, b) => a + b, 0) / weeklyProgress.length) : 0}%
                 </span>
               </div>
@@ -397,8 +281,8 @@ export default function DashboardContentSimple() {
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Daily Calorie Intake</h3>
-              <div className="bg-green-100 dark:bg-green-800 rounded-full p-2">
-                <svg className="w-5 h-5 text-green-600 dark:text-green-300" fill="currentColor" viewBox="0 0 20 20">
+              <div className="bg-yellow-100 dark:bg-yellow-800 rounded-full p-2">
+                <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-300" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
                 </svg>
               </div>
@@ -431,7 +315,7 @@ export default function DashboardContentSimple() {
             <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600 dark:text-gray-200">Daily Average</span>
-                <span className="font-semibold text-green-600 dark:text-green-400">
+                <span className="font-semibold text-yellow-600 dark:text-yellow-400">
                   {dailyCalories.length > 0 ? Math.round(dailyCalories.reduce((a, b) => a + b, 0) / dailyCalories.length) : 0} cal
                 </span>
               </div>
@@ -439,18 +323,16 @@ export default function DashboardContentSimple() {
           </div>
         </div>
       </div>
-      )}
 
       {/* Main Stats Cards - Always show, part of Progress Overview */}
-      {shouldShowSection('progress-overview') && (
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         {/* Daily Calorie Goal Card */}
         <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-lg rounded-xl border border-gray-100 dark:border-gray-600 transform transition-all duration-300 hover:shadow-xl dark:hover:shadow-2xl">
           <div className="px-4 py-5 sm:p-6">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-medium text-gray-500 dark:text-gray-200">Daily Calorie Goal</h3>
-              <div className="bg-green-100 dark:bg-green-700 rounded-full p-1.5">
-                <svg className="h-4 w-4 text-green-600 dark:text-green-200" fill="currentColor" viewBox="0 0 20 20">
+              <div className="bg-yellow-100 dark:bg-yellow-700 rounded-full p-1.5">
+                <svg className="h-4 w-4 text-yellow-600 dark:text-yellow-200" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
               </div>
@@ -460,7 +342,7 @@ export default function DashboardContentSimple() {
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">{dietProgress.targetCalories}</p>
                 <p className="text-xs text-gray-500 dark:text-gray-300">Target</p>
               </div>
-              <div className="text-sm text-green-500 dark:text-green-300 font-medium">
+              <div className="text-sm text-yellow-500 dark:text-yellow-300 font-medium">
                 {getTodaysDietProgress()}%
               </div>
             </div>
@@ -483,7 +365,7 @@ export default function DashboardContentSimple() {
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">{getCaloriesConsumed()}</p>
                 <p className="text-xs text-gray-500 dark:text-gray-300">Consumed</p>
               </div>
-              <div className="text-sm text-blue-500 dark:text-blue-300 font-medium">
+              <div className="text-sm text-yellow-500 dark:text-yellow-300 font-medium">
                 {dietProgress.completedMeals}/{dietProgress.totalMeals}
               </div>
             </div>
@@ -495,8 +377,8 @@ export default function DashboardContentSimple() {
           <div className="px-4 py-5 sm:p-6">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-medium text-gray-500 dark:text-gray-200">Workouts This Week</h3>
-              <div className="bg-blue-100 dark:bg-blue-700 rounded-full p-1.5">
-                <svg className="h-4 w-4 text-blue-600 dark:text-blue-200" fill="currentColor" viewBox="0 0 20 20">
+              <div className="bg-purple-100 dark:bg-purple-700 rounded-full p-1.5">
+                <svg className="h-4 w-4 text-purple-600 dark:text-purple-200" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
               </div>
@@ -506,7 +388,7 @@ export default function DashboardContentSimple() {
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">{getCompletedWorkoutsThisWeek()}</p>
                 <p className="text-xs text-gray-500 dark:text-gray-300">Completed</p>
               </div>
-              <div className="text-sm text-green-500 dark:text-green-300 font-medium">
+              <div className="text-sm text-purple-500 dark:text-purple-300 font-medium">
                 {getWeeklyWorkoutProgress()}%
               </div>
             </div>
@@ -564,27 +446,23 @@ export default function DashboardContentSimple() {
           </div>
         </div>
       </div>
-      )}
 
       {/* AI Recommendations Section */}
-      {shouldShowSection('ai-health-coach') && (
-        <div className="mb-8">
-          <AIRecommendations />
-        </div>
-      )}
+      <div className="mb-8">
+        <AIRecommendations />
+      </div>
 
       {/* Quick Actions */}
-      {shouldShowSection('quick-actions') && (
-        <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl border border-gray-100 dark:border-gray-700 p-6">
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">{highlightText('Quick Actions')}</h3>
+      <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl border border-gray-100 dark:border-gray-700 p-6">
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Quick Actions</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           <Link
             to="/dashboard/diet"
-            className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-800/40 border border-green-200 dark:border-green-700/50 rounded-lg transition-colors group"
+            className="flex items-center justify-between p-4 bg-yellow-50 dark:bg-yellow-900/30 hover:bg-yellow-100 dark:hover:bg-yellow-800/40 border border-yellow-200 dark:border-yellow-700/50 rounded-lg transition-colors group"
           >
             <div className="flex items-center space-x-3">
-              <div className="bg-green-200 dark:bg-green-700 rounded-full p-2 group-hover:bg-green-300 dark:group-hover:bg-green-600 transition-colors">
-                <svg className="w-4 h-4 text-green-700 dark:text-green-200" fill="currentColor" viewBox="0 0 20 20">
+              <div className="bg-yellow-200 dark:bg-yellow-700 rounded-full p-2 group-hover:bg-yellow-300 dark:group-hover:bg-yellow-600 transition-colors">
+                <svg className="w-4 h-4 text-yellow-700 dark:text-yellow-200" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
                 </svg>
               </div>
@@ -597,11 +475,11 @@ export default function DashboardContentSimple() {
 
           <Link
             to="/dashboard/workout"
-            className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-800/40 border border-blue-200 dark:border-blue-700/50 rounded-lg transition-colors group"
+            className="flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/30 hover:bg-purple-100 dark:hover:bg-purple-800/40 border border-purple-200 dark:border-purple-700/50 rounded-lg transition-colors group"
           >
             <div className="flex items-center space-x-3">
-              <div className="bg-blue-200 dark:bg-blue-700 rounded-full p-2 group-hover:bg-blue-300 dark:group-hover:bg-blue-600 transition-colors">
-                <svg className="w-4 h-4 text-blue-700 dark:text-blue-200" fill="currentColor" viewBox="0 0 20 20">
+              <div className="bg-purple-200 dark:bg-purple-700 rounded-full p-2 group-hover:bg-purple-300 dark:group-hover:bg-purple-600 transition-colors">
+                <svg className="w-4 h-4 text-purple-700 dark:text-purple-200" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
                 </svg>
               </div>
@@ -647,7 +525,6 @@ export default function DashboardContentSimple() {
           </Link>
         </div>
       </div>
-      )}
     </main>
   );
 } 

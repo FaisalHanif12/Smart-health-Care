@@ -11,7 +11,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, isAuthenticated } = useAuth();
 
   const handleLogout = async () => {
     try {
@@ -26,6 +26,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const goTo = (path: string) => {
     console.log('Navigation to:', path);
     setIsMobileMenuOpen(false);
+    
+    // If user is not authenticated and tries to access a feature, redirect to signup
+    if (!isAuthenticated && path !== '/dashboard') {
+      navigate('/register', { 
+        state: { from: path, message: 'Please sign up to access this feature' } 
+      });
+      return;
+    }
+    
     navigate(path);
   };
 
@@ -46,19 +55,19 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             />
           </div>
           <button 
-            className="text-white" 
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            {isMobileMenuOpen ? (
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            ) : (
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            )}
-          </button>
+              className="text-white" 
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
         </div>
 
         {/* Mobile Menu Overlay */}
@@ -82,7 +91,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               />
               <h1 className="text-xl font-bold text-yellow-400">
                 <span className="hidden lg:inline">SMART TRACKER</span>
-               
               </h1>
             </div>
             

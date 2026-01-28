@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useProgress } from '../../contexts/ProgressContext';
 // Import both services
@@ -22,8 +23,9 @@ interface WorkoutDay {
 }
 
 export default function WorkoutPlanContent() {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { archiveCurrentProgress, clearWorkoutProgress } = useProgress();
+  const navigate = useNavigate();
   const [workoutPlan, setWorkoutPlan] = useState<WorkoutDay[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
@@ -114,6 +116,17 @@ Please ensure exercises are safe, effective, and specifically designed for my go
   };
 
   const generateWorkoutPlan = async () => {
+    // Check if user is authenticated
+    if (!isAuthenticated || !user) {
+      navigate('/register', { 
+        state: { 
+          from: '/dashboard/workout',
+          message: 'Please sign up to generate workout plans'
+        }
+      });
+      return;
+    }
+    
     const promptToUse = generatedPrompt;
     
     if (!promptToUse.trim()) {
@@ -325,37 +338,37 @@ Please ensure exercises are safe, effective, and specifically designed for my go
         <p className="text-gray-600">
           Your personalized fitness journey starts here. Track your progress and stay consistent!
         </p>
-        <div className="mt-2 text-sm bg-blue-50 text-blue-800 p-2 rounded-md">
+        <div className="mt-2 text-sm bg-purple-50 text-purple-800 p-2 rounded-md">
           <span className="font-semibold">Today is {currentDayName}:</span> You can only access and complete today's workout and previous days from this week.
         </div>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-blue-50 p-6 rounded-xl">
+        <div className="bg-purple-50 p-6 rounded-xl">
           <div className="flex items-center">
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+            <div className="p-3 bg-purple-100 rounded-lg">
+              <svg className="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-blue-600">Total Workouts</p>
-              <p className="text-2xl font-bold text-blue-900">{weeklyStats.totalWorkouts}</p>
+              <p className="text-sm font-medium text-purple-600">Total Workouts</p>
+              <p className="text-2xl font-bold text-purple-900">{weeklyStats.totalWorkouts}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-green-50 p-6 rounded-xl">
+        <div className="bg-purple-50 p-6 rounded-xl">
           <div className="flex items-center">
-            <div className="p-3 bg-green-100 rounded-lg">
-              <svg className="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+            <div className="p-3 bg-purple-100 rounded-lg">
+              <svg className="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-green-600">Completed</p>
-              <p className="text-2xl font-bold text-green-900">{weeklyStats.completedWorkouts}</p>
+              <p className="text-sm font-medium text-purple-600">Completed</p>
+              <p className="text-2xl font-bold text-purple-900">{weeklyStats.completedWorkouts}</p>
             </div>
           </div>
         </div>
@@ -393,9 +406,9 @@ Please ensure exercises are safe, effective, and specifically designed for my go
               <div key={dayIndex} className="bg-white rounded-xl shadow-lg border border-gray-200">
                 <div className={`p-6 border-b border-gray-200 ${
                   day.completed 
-                    ? 'bg-green-50' 
+                    ? 'bg-purple-50' 
                     : extractDayName(day.day) === currentDayName
-                      ? 'bg-blue-50'
+                      ? 'bg-purple-50'
                       : isDayAccessible(extractDayName(day.day))
                         ? 'bg-gray-50'
                         : 'bg-gray-100'
@@ -404,7 +417,7 @@ Please ensure exercises are safe, effective, and specifically designed for my go
                     <div className="flex items-center">
                       <h3 className="text-xl font-bold text-gray-900">{day.day}</h3>
                       {extractDayName(day.day) === currentDayName && (
-                        <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                        <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
                           Today
                         </span>
                       )}
@@ -418,7 +431,7 @@ Please ensure exercises are safe, effective, and specifically designed for my go
                       )}
                     </div>
                     {day.completed && (
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
                         <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                         </svg>
@@ -435,7 +448,7 @@ Please ensure exercises are safe, effective, and specifically designed for my go
                         key={exerciseIndex}
                         className={`p-4 rounded-lg border-2 transition-colors ${
                           exercise.completed 
-                            ? 'border-green-200 bg-green-50' 
+                            ? 'border-green-200 bg-purple-50' 
                             : isDayAccessible(extractDayName(day.day))
                               ? 'border-gray-200 bg-white hover:border-gray-300'
                               : 'border-gray-200 bg-gray-50 opacity-75'
@@ -449,7 +462,7 @@ Please ensure exercises are safe, effective, and specifically designed for my go
                                 disabled={!isDayAccessible(extractDayName(day.day))}
                                 className={`mr-3 p-1 rounded-full transition-colors ${
                                   exercise.completed 
-                                    ? 'bg-green-600 text-white' 
+                                    ? 'bg-purple-600 text-white' 
                                     : isDayAccessible(extractDayName(day.day))
                                       ? 'bg-gray-200 text-gray-400 hover:bg-gray-300'
                                       : 'bg-gray-200 text-gray-400 cursor-not-allowed'
@@ -461,7 +474,7 @@ Please ensure exercises are safe, effective, and specifically designed for my go
                               </button>
                               <h4 className={`text-lg font-semibold ${
                                 exercise.completed 
-                                  ? 'text-green-800 line-through' 
+                                  ? 'text-purple-800 line-through' 
                                   : isDayAccessible(extractDayName(day.day))
                                     ? 'text-gray-900'
                                     : 'text-gray-500'
@@ -517,14 +530,14 @@ Please ensure exercises are safe, effective, and specifically designed for my go
 
           {/* Show AI prompt preview */}
           {generatedPrompt && (
-            <div className="max-w-2xl mx-auto mb-6 bg-blue-50 p-4 rounded-lg">
-              <h4 className="font-semibold text-blue-900 mb-2">AI will use this information from your profile:</h4>
-              <div className="text-sm text-blue-800 bg-white p-3 rounded border">
+            <div className="max-w-2xl mx-auto mb-6 bg-purple-50 p-4 rounded-lg">
+              <h4 className="font-semibold text-purple-900 mb-2">AI will use this information from your profile:</h4>
+              <div className="text-sm text-purple-800 bg-white p-3 rounded border">
                 <div className="line-clamp-4">{generatedPrompt}</div>
               </div>
               <button
                 onClick={copyPromptToClipboard}
-                className="mt-2 text-blue-600 hover:text-blue-800 text-sm font-medium"
+                className="mt-2 text-purple-600 hover:text-purple-800 text-sm font-medium"
               >
                 📋 Copy Full Prompt
               </button>
@@ -535,7 +548,7 @@ Please ensure exercises are safe, effective, and specifically designed for my go
             <button
               onClick={() => generateWorkoutPlan()}
               disabled={isLoading}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+              className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
             >
               {isLoading ? (
                 <>
@@ -619,7 +632,7 @@ Please ensure exercises are safe, effective, and specifically designed for my go
                 value={customPrompt}
                 onChange={(e) => setCustomPrompt(e.target.value)}
                 rows={12}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-purple-500 resize-none"
                 placeholder="Describe your ideal workout plan..."
               />
             </div>
@@ -634,7 +647,7 @@ Please ensure exercises are safe, effective, and specifically designed for my go
               <button
                 onClick={handleCustomGenerate}
                 disabled={isLoading || !customPrompt.trim()}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 flex items-center gap-2"
               >
                 {isLoading ? (
                   <>
@@ -658,8 +671,8 @@ Please ensure exercises are safe, effective, and specifically designed for my go
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-md w-full shadow-2xl">
             <div className="text-center">
-              <div className="bg-blue-100 dark:bg-blue-900/30 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
-                <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-600 border-t-transparent"></div>
+              <div className="bg-purple-100 dark:bg-purple-900/30 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+                <div className="animate-spin rounded-full h-10 w-10 border-4 border-purple-600 border-t-transparent"></div>
               </div>
               
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
@@ -667,7 +680,7 @@ Please ensure exercises are safe, effective, and specifically designed for my go
               </h3>
               
               <div className="mb-6">
-                <div className="text-lg text-blue-600 dark:text-blue-400 font-medium mb-2">
+                <div className="text-lg text-purple-600 dark:text-purple-400 font-medium mb-2">
                   {loadingMessage}
                 </div>
                 <div className="text-gray-600 dark:text-gray-400 text-sm">
@@ -677,7 +690,7 @@ Please ensure exercises are safe, effective, and specifically designed for my go
               
               {/* Progress Animation */}
               <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-4">
-                <div className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full animate-pulse" style={{width: '75%'}}></div>
+                <div className="bg-gradient-to-r from-purple-500 to-purple-600 h-2 rounded-full animate-pulse" style={{width: '75%'}}></div>
               </div>
               
               <div className="text-xs text-gray-500 dark:text-gray-400">
